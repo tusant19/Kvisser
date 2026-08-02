@@ -78,17 +78,19 @@
 .carouselItem{
     margin-left: 0.7vh;
     margin-right: 0.7vh;
-    border: solid 0.2dvh rgb(192, 192, 192);
-    border-radius: 4dvh;
+    border: solid 0.1vw rgb(232, 233, 234);
+    background-color: rgb(255,255,255);
+    border-radius: 2vh;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
 
 .carouselItemTitle{
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    margin: 0;
-    margin-bottom: 1dvh;
+    margin: 0.7vh;
 }
 
 .carouselWrapper {
