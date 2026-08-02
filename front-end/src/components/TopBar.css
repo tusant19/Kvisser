@@ -1,0 +1,33 @@
+.topBar {
+    width: 100vw;
+    border-bottom: 0.2vh solid rgb(232, 233, 234);
+}
+
+.topBarContent{ 
+    margin-left: 2vh;
+    margin-right: 2vh;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: 8vh;
+    
+}
+
+.title  {
+    font-size: 4vh;
+}
+
+.loginBtn{
+    font-size: 2vh;
+    border-radius: 1.5vh;
+    padding: 0.7vh;
+    border: 0.1vw solid rgb(232, 233, 234);
+    background-color: white;
+    padding-right: 0.8vw;
+    padding-left: 0.8vw;
+}
+
+.dark{
+    color: rgb(78, 25, 25);
+}
