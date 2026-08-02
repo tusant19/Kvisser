@@ -3,10 +3,10 @@ const app = express();
 const cors = require('cors')
 
 const corsOptions = {
-    origin: ["http://localhost:5173"]
+    origin: ["http://localhost:5173", "http://192.168.68.100:5173"]
 }
 
-app.use(cors(corsOptions))
+app.use(cors())
 
 app.get('/', (req, res) => {
   res.json({"examplelist": [

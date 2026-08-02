@@ -1,0 +1,23 @@
+.bottomBarBtn{
+    background-color: white;
+    border: none;
+    color: rgb(59, 59, 59);
+    margin-left: 1vw;
+    margin-right: 1vw;
+}
+
+.bottomBarBtn img {
+    height: 4vh;
+}
+
+.bottomBarContent {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 8.45vh;
+}
+
+.bottomBar {
+    background-color: white;
+    height: 8.45vh;
+}

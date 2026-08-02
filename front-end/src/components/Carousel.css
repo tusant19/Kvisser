@@ -20,10 +20,10 @@
 
 .navLBtn{
     box-sizing: border-box;
-    margin-top: 12.5dvh;
-    height: 5dvh;
-    width: 5dvh;
-    border-radius: 2.5dvh;
+    margin-top: 12.5vh;
+    height: 5vh;
+    width: 5vh;
+    border-radius: 2.5vh;
     background-color: white;
     border: solid 0.2dvh rgb(192, 192, 192);
     display: flex;
@@ -33,10 +33,10 @@
 
 .navRBtn{
     box-sizing: border-box;
-    margin-top: 12.5dvh;
-    height: 5dvh;
-    width: 5dvh;
-    border-radius: 2.5dvh;
+    margin-top: 12.5vh;
+    height: 5vh;
+    width: 5vh;
+    border-radius: 2.5vh;
     background-color: white;
     border: solid 0.2dvh rgb(192, 192, 192);
     display: flex;
@@ -45,12 +45,12 @@
 }
 
 .chevronL{
-    height: 2.4dvh;
+    height: 2.4vh;
     padding-right: 0dvw;
 }
 
 .chevronR{
-    height: 2.4dvh;
+    height: 2.4vh;
     padding-left: 0dvw;
 }
 

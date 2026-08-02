@@ -1,5 +1,5 @@
 
 .homePageMain{
-    height: 83.4dvh;
+    min-height: 83.4vh;
     background-color: rgb(246, 247, 248);
 }

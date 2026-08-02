@@ -36,18 +36,12 @@ function Carousel() {
             let carouselItemStyle = window.getComputedStyle(el)
             let carouselItemMargins = parseFloat(carouselItemStyle.getPropertyValue('margin-right')) + parseFloat(carouselItemStyle.getPropertyValue('margin-left'))
             carouselItemWidths.current[id] = parseFloat(el.getBoundingClientRect().width) + carouselItemMargins;
-            console.log("id: " + id + " width: " + (parseFloat(el.getBoundingClientRect().width) + carouselItemMargins))
-            //console.log(carouselItemWidths[id])
-            // console.log(carouselItemRefs.current[el.id].getBoundingClientRect())
-            //console.log(el.getBoundingClientRect())
         })
     };
 
     function previousSlide() {
         if (currentItem > 0) {
-            console.log(currentItem)
             offset.current = parseFloat(offset.current) - parseFloat(carouselItemWidths.current[currentItem - 1])
-            console.log(offset.current)
             setCurrentItem(item => item - 1)
             carouselDivRef.current.style.transform = `translateX(-${
                 offset.current
@@ -58,7 +52,6 @@ function Carousel() {
     function nextSlide() {
         if (carouselItemWidths.current[currentItem + 1] != null) {
             offset.current = parseFloat(offset.current) + parseFloat(carouselItemWidths.current[currentItem])
-            console.log(offset.current)
             setCurrentItem(item => item + 1)
         
             carouselDivRef.current.style.transform = `translateX(-${
