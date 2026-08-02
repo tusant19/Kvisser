@@ -1,0 +1,95 @@
+.carouselContainer {
+    width: 100dvw;
+    height: 30dvh;
+    position: relative;
+    display: flex;
+}
+
+.navL{
+    position: fixed;
+    left: 2dvw;
+    z-index: 2;
+}
+
+.navR{
+
+    position: fixed;
+    right: 2dvw;
+    z-index: 3;
+}
+
+.navLBtn{
+    box-sizing: border-box;
+    margin-top: 12.5dvh;
+    height: 5dvh;
+    width: 5dvh;
+    border-radius: 2.5dvh;
+    background-color: white;
+    border: solid 0.2dvh rgb(192, 192, 192);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navRBtn{
+    box-sizing: border-box;
+    margin-top: 12.5dvh;
+    height: 5dvh;
+    width: 5dvh;
+    border-radius: 2.5dvh;
+    background-color: white;
+    border: solid 0.2dvh rgb(192, 192, 192);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chevronL{
+    height: 2.4dvh;
+    padding-right: 0dvw;
+}
+
+.chevronR{
+    height: 2.4dvh;
+    padding-left: 0dvw;
+}
+
+.carouselWrapper{
+    margin: 1dvw;
+    margin-right: 0vw;
+    height: 30dvh;
+    width: 100dvw;
+    height: 30dvh;
+    
+    overflow: hidden;
+}
+
+.carousel{
+    display: flex;
+}
+
+.carouselImg {
+    height: 25dvh;
+    border-top-right-radius: inherit;
+    border-top-left-radius: inherit;
+}
+
+.carouselItem{
+    margin-left: 0.7vh;
+    margin-right: 0.7vh;
+    border: solid 0.2dvh rgb(192, 192, 192);
+    border-radius: 4dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.carouselItemTitle{
+    text-align: center;
+    margin: 0;
+    margin-bottom: 1dvh;
+}
+
+.carouselWrapper {
+    overflow: hidden;
+}
