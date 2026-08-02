@@ -13,11 +13,13 @@ function Carousel() {
     let offset = useRef(0);
 
     addEventListener("resize", (event) => {
+        console.log("resize")
         carouselDivRef.current.style.transform = `translateX(-${
             0
-            
         }px)`;
-        setCurrentItem(0)
+        setCurrentItem(0);
+        offset.current = 0;
+        getItemSizes();
     })
 
     useEffect(() => {
