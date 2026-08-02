@@ -27,10 +27,6 @@ function Carousel() {
         .catch((error) => {
             console.error(error);
         })
-        .finally(() => {
-            setCurrentItem(1)
-            setCurrentItem(0)
-        });
     }, [])
 
     const getItemSizes = () => {
