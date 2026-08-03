@@ -6,15 +6,15 @@
 }
 
 .navL{
-    position: fixed;
-    left: 2dvw;
+    position: relative;
+    left: 1dvw;
     z-index: 2;
 }
 
 .navR{
 
-    position: fixed;
-    right: 2dvw;
+    position: relative;
+    right: 1dvw;
     z-index: 3;
 }
 

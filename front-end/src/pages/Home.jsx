@@ -1,6 +1,6 @@
 import './Home.css'
 import Carousel from '../components/Carousel.jsx'
-import TopBar from '../components/topBar.jsx'
+import TopBar from '../components/TopBar.jsx'
 import BottomBar from '../components/BottomBar.jsx'
 
 function Koti() {
@@ -9,6 +9,9 @@ function Koti() {
         <div className='homePage'>
             <TopBar />
             <div className='homePageMain'>
+                <Carousel />
+                <Carousel />
+                <Carousel />
                 <Carousel />
             </div>
             <BottomBar />

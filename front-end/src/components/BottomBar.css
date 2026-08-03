@@ -15,9 +15,12 @@
     justify-content: space-around;
     align-items: center;
     height: 8.45vh;
+    width: 95dvw;
 }
 
 .bottomBar {
     background-color: white;
     height: 8.45vh;
+    width: 94dvw;
 }
+
