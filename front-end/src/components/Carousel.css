@@ -1,9 +1,8 @@
 .carouselContainer {
     width: 100dvw;
-    height: 30dvh;
     position: relative;
     display: flex;
-    box-sizing: border-box;
+    margin-bottom: 2vh;
 }
 
 .navL{
@@ -23,12 +22,12 @@
 
 .navLBtn{
     box-sizing: border-box;
-    margin-top: 12.5vh;
+    margin-top: 16vh;
     height: 5vh;
     width: 5vh;
     border-radius: 2.5vh;
     background-color: white;
-    border: solid 0.2dvh rgb(192, 192, 192);
+    border: solid 0.2vh rgb(192, 192, 192);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -36,12 +35,12 @@
 
 .navRBtn{
     box-sizing: border-box;
-    margin-top: 12.5vh;
+    margin-top: 16vh;
     height: 5vh;
     width: 5vh;
     border-radius: 2.5vh;
     background-color: white;
-    border: solid 0.2dvh rgb(192, 192, 192);
+    border: solid 0.2vh rgb(192, 192, 192);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -60,25 +59,24 @@
 .carouselWrapper{
     margin: 1dvw;
     margin-right: 0vw;
-    height: 30dvh;
     width: 100dvw;
-    height: 30dvh;
-    
     overflow: hidden;
 }
 
 .carousel{
     transition: transform 0.3s ease-in-out;
     display: flex;
+    height: 30vh;
 }
 
 .carouselImg {
-    height: 25dvh;
+    height: 25vh;
     border-top-right-radius: inherit;
     border-top-left-radius: inherit;
 }
 
 .carouselItem{
+    box-sizing: border-box;
     margin-left: 0.7vh;
     margin-right: 0.7vh;
     border: solid 0.1vw rgb(232, 233, 234);
@@ -96,6 +94,10 @@
     margin: 0.7vh;
 }
 
-.carouselWrapper {
-    overflow: hidden;
+.carouselTitle {
+    font-size: min(2.5vh, 170%);
+    margin: 0;
+    margin-left: 12px;
+    padding: 0;
+    margin-bottom: 1vh;
 }

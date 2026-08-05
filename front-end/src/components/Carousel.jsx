@@ -4,7 +4,7 @@ import chevronL from '../assets/chevron60L.svg';
 import chevronR from '../assets/chevron60R.svg';
 import './Carousel.css'
 
-function Carousel({ path }) {
+function Carousel({ path, title }) {
     const [carouselData, setCarouselData] = useState([])
     const [currentItem, setCurrentItem] = useState(0)
     const carouselDivRef = useRef()
@@ -76,6 +76,7 @@ function Carousel({ path }) {
                 </button>
             </div>
             <div className="carouselWrapper">
+                <p className="carouselTitle">{title}</p>
                 <div className='carousel' ref={carouselDivRef}>
                     {carouselData.map((carouselItem, id) => (
                         <div className="carouselItem" key={id} ref={el => (carouselItemRefs.current[id] = el)}>
