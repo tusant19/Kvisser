@@ -42,21 +42,28 @@ function Carousel() {
     function previousSlide() {
         if (currentItem > 0) {
             offset.current = parseFloat(offset.current) - parseFloat(carouselItemWidths.current[currentItem - 1])
-            setCurrentItem(item => item - 1)
+            setCurrentItem(item => item - 1);
             carouselDivRef.current.style.transform = `translateX(-${
                 offset.current
             }px)`;
+            carouselDivRef.current.style.transition = `transform ${
+                0.25 + (0.25 * parseFloat(carouselItemWidths.current[currentItem-1]) / 600)
+            }s ease-in-out`; 
+            
         }
     } 
 
     function nextSlide() {
         if (carouselItemWidths.current[currentItem + 1] != null) {
-            offset.current = parseFloat(offset.current) + parseFloat(carouselItemWidths.current[currentItem])
+            offset.current = parseFloat(offset.current) + parseFloat(carouselItemWidths.current[currentItem]);
             setCurrentItem(item => item + 1)
         
             carouselDivRef.current.style.transform = `translateX(-${
             offset.current
             }px)`;
+            carouselDivRef.current.style.transition = `transform ${
+                0.25 + (0.25 * parseFloat(carouselItemWidths.current[currentItem]) / 600)
+            }s ease-in-out`; 
         } 
     }
 
