@@ -7,9 +7,10 @@ import './Carousel.css'
 function Carousel({ path, title }) {
     const [carouselData, setCarouselData] = useState([])
     const [currentItem, setCurrentItem] = useState(0)
-    const carouselDivRef = useRef()
-    const carouselItemRefs = useRef([])
+    const carouselDivRef = useRef();
+    const carouselItemRefs = useRef([]);
     const carouselItemWidths = useRef([]);
+    const totalWidth = useRef(0);
     let offset = useRef(0);
 
     addEventListener("resize", (event) => {
@@ -23,24 +24,27 @@ function Carousel({ path, title }) {
     })
 
     useEffect(() => {
-        console.log(`http://localhost:8080${path}`)
         axios.get(`http://localhost:8080${path}`).then((res) => {
             setCarouselData(res.data.examplelist)
         })
         .catch((error) => {
             console.error(error);
         })
-    }, [])
+    }, []) 
+    
+    const delay = ms => new Promise(res => setTimeout(res, ms))
 
     const getItemSizes = () => {
+        totalWidth.current = 0;
         carouselItemRefs.current.forEach((el, id) => {
             let carouselItemStyle = window.getComputedStyle(el)
             let carouselItemMargins = parseFloat(carouselItemStyle.getPropertyValue('margin-right')) + parseFloat(carouselItemStyle.getPropertyValue('margin-left'))
             carouselItemWidths.current[id] = parseFloat(el.getBoundingClientRect().width) + carouselItemMargins;
+            totalWidth.current += carouselItemWidths.current[id]
         })
     };
 
-    function previousSlide() {
+    async function previousSlide() {
         if (currentItem > 0) {
             offset.current = parseFloat(offset.current) - parseFloat(carouselItemWidths.current[currentItem - 1])
             setCurrentItem(item => item - 1);
@@ -50,12 +54,26 @@ function Carousel({ path, title }) {
             carouselDivRef.current.style.transition = `transform ${
                 0.25 + (0.25 * parseFloat(carouselItemWidths.current[currentItem-1]) / 600)
             }s ease-in-out`; 
-            
         }
+        else {
+            carouselDivRef.current.style.transition = `transform ${
+                0.15
+            }s ease-in-out`; 
+            offset.current += 22
+            carouselDivRef.current.style.transform = `translateX(+${
+            offset.current
+            }px)`;
+            await delay(200)
+            offset.current -= 22
+            carouselDivRef.current.style.transform = `translateX(-${
+            offset.current
+            }px)`;
+        } 
     } 
+   
 
-    function nextSlide() {
-        if (carouselItemWidths.current[currentItem + 1] != null) {
+    async function nextSlide() {
+        if (carouselItemWidths.current[currentItem + 1] != null && offset.current < (totalWidth.current - window.innerWidth)) {
             offset.current = parseFloat(offset.current) + parseFloat(carouselItemWidths.current[currentItem]);
             setCurrentItem(item => item + 1)
         
@@ -65,6 +83,20 @@ function Carousel({ path, title }) {
             carouselDivRef.current.style.transition = `transform ${
                 0.25 + (0.25 * parseFloat(carouselItemWidths.current[currentItem]) / 600)
             }s ease-in-out`; 
+        }
+        else {
+            carouselDivRef.current.style.transition = `transform ${
+                0.15
+            }s ease-in-out`; 
+            offset.current += 22
+            carouselDivRef.current.style.transform = `translateX(-${
+            offset.current
+            }px)`;
+            await delay(200)
+            offset.current -= 22
+            carouselDivRef.current.style.transform = `translateX(-${
+            offset.current
+            }px)`;
         } 
     }
 
