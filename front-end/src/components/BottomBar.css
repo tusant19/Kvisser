@@ -14,13 +14,14 @@
     display: flex;
     justify-content: space-around;
     align-items: center;
-    height: 6.45vh;
+    height: 6.25vh;
     width: 100dvw;
 }
 
 .bottomBar {
     background-color: white;
-    height: 6.45vh;
+    height: 6.25vh;
     width: 100dvw;
+    border-top: 0.2vh solid rgb(232, 233, 234);
 }
 
