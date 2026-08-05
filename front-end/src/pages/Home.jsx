@@ -9,10 +9,10 @@ function Koti() {
         <div className='homePage'>
             <TopBar />
             <div className='homePageMain'>
-                <Carousel />
-                <Carousel />
-                <Carousel />
-                <Carousel />
+                <Carousel path={'/'}/>
+                <Carousel path={'/'}/>
+                <Carousel path={'/'}/>
+                <Carousel path={'/'}/>
 
             </div>
             <BottomBar />

@@ -4,7 +4,7 @@ import chevronL from '../assets/chevron60L.svg';
 import chevronR from '../assets/chevron60R.svg';
 import './Carousel.css'
 
-function Carousel() {
+function Carousel({ path }) {
     const [carouselData, setCarouselData] = useState([])
     const [currentItem, setCurrentItem] = useState(0)
     const carouselDivRef = useRef()
@@ -23,7 +23,8 @@ function Carousel() {
     })
 
     useEffect(() => {
-        axios.get("http://localhost:8080/").then((res) => {
+        console.log(`http://localhost:8080${path}`)
+        axios.get(`http://localhost:8080${path}`).then((res) => {
             setCarouselData(res.data.examplelist)
         })
         .catch((error) => {
