@@ -2,4 +2,11 @@
 .homePageMain{
     min-height: 83.4vh;
     background-color: rgb(246, 247, 248);
+    
+}
+
+.homePage{
+    max-width: 100dvw;
+    box-sizing: border-box;
+    overflow:hidden;
 }

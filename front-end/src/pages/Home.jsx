@@ -13,6 +13,7 @@ function Koti() {
                 <Carousel />
                 <Carousel />
                 <Carousel />
+
             </div>
             <BottomBar />
         </div>
