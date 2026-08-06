@@ -1,0 +1,40 @@
+.playPageMain {
+    min-height: 85.4dvh;
+    
+}
+
+.joinForm {
+    min-height: 85.4dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.playInput {
+    font-size: min(3vh, 220%);
+    text-align: center;
+    box-sizing: border-box;
+    background-color: rgb(245, 246, 247);
+    border: 0;
+    border-radius: 2vh;
+    padding: 0.5vh;
+    margin: 0.5vh;
+    width: min(70vw, 35vh);
+}
+
+.playInput::placeholder {
+    color: rgb(126, 126, 126);
+}
+
+.playJoin {
+    color: rgb(56, 56, 56);
+    font-size: min(3vh, 200%);
+    box-sizing: border-box;
+    margin: 0.5vh;
+    background-color: rgb(245, 246, 247);
+    border: 0;
+    width: min(70vw, 35vh);
+    border-radius: 2vh;
+    padding: 0.5vh;
+}

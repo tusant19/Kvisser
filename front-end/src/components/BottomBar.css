@@ -23,5 +23,8 @@
     height: 6.25vh;
     width: 100dvw;
     border-top: 0.2vh solid rgb(232, 233, 234);
+    position: fixed;
+    bottom:0;
+    z-index: 3;
 }
 

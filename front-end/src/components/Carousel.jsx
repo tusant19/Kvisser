@@ -25,7 +25,7 @@ function Carousel({ path, title }) {
 
     useEffect(() => {
         axios.get(`http://localhost:8080${path}`).then((res) => {
-            setCarouselData(res.data.examplelist)
+            setCarouselData(res.data)
         })
         .catch((error) => {
             console.error(error);
@@ -110,9 +110,10 @@ function Carousel({ path, title }) {
             <div className="carouselWrapper">
                 <p className="carouselTitle">{title}</p>
                 <div className='carousel' ref={carouselDivRef}>
-                    {carouselData.map((carouselItem, id) => (
+
+                    {carouselData?.map((carouselItem, id) => (
                         <div className="carouselItem" key={id} ref={el => (carouselItemRefs.current[id] = el)}>
-                                <img className="carouselImg" src={carouselItem.  imglink} onLoad={getItemSizes} alt="quiz image" />
+                                <img className="carouselImg" src={carouselItem.img_link} onLoad={getItemSizes} alt="quiz image" />
                             <p className="carouselItemTitle">{carouselItem.title}</p>
                         </div>
                     ))}
