@@ -12,6 +12,18 @@ function Carousel({ path, title }) {
     const carouselItemWidths = useRef([]);
     const totalWidth = useRef(0);
     let offset = useRef(0);
+    let baseUrl = "";
+
+    if (import.meta.env.DEV) {
+        if (import.meta.env.VITE_API_DEV_BASE_URL != null) {
+            baseUrl = import.meta.env.VITE_API_DEV_BASE_URL
+        }
+    } 
+    else {
+        if (import.meta.env.VITE_API_PROD_BASE_URL != null) {
+            baseUrl = import.meta.env.VITE_API_PROD_BASE_URL
+        }
+    }
 
     addEventListener("resize", (event) => {
         console.log("resize")
@@ -24,7 +36,8 @@ function Carousel({ path, title }) {
     })
 
     useEffect(() => {
-        axios.get(`http://localhost:8080${path}`).then((res) => {
+        console.log(`${baseUrl}${path}`)
+        axios.get(`${baseUrl}${path}`).then((res) => {
             setCarouselData(res.data)
         })
         .catch((error) => {
@@ -47,6 +60,9 @@ function Carousel({ path, title }) {
     async function previousSlide() {
         if (currentItem > 0) {
             offset.current = parseFloat(offset.current) - parseFloat(carouselItemWidths.current[currentItem - 1])
+            if (offset.current < 0) {
+                offset.current = 0
+            }
             setCurrentItem(item => item - 1);
             carouselDivRef.current.style.transform = `translateX(-${
                 offset.current
@@ -55,7 +71,7 @@ function Carousel({ path, title }) {
                 0.25 + (0.25 * parseFloat(carouselItemWidths.current[currentItem-1]) / 600)
             }s ease-in-out`; 
         }
-        else {
+        else{
             carouselDivRef.current.style.transition = `transform ${
                 0.15
             }s ease-in-out`; 
