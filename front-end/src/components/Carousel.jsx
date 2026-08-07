@@ -36,7 +36,6 @@ function Carousel({ path, title }) {
     })
 
     useEffect(() => {
-        console.log(`${baseUrl}${path}`)
         axios.get(`${baseUrl}${path}`).then((res) => {
             setCarouselData(res.data)
         })
@@ -89,7 +88,7 @@ function Carousel({ path, title }) {
    
 
     async function nextSlide() {
-        if (carouselItemWidths.current[currentItem + 1] != null && offset.current < (totalWidth.current - window.innerWidth)) {
+        if (carouselItemWidths.current[currentItem + 1] != null && offset.current < (totalWidth.current - window.innerWidth + 90 )) {
             offset.current = parseFloat(offset.current) + parseFloat(carouselItemWidths.current[currentItem]);
             setCurrentItem(item => item + 1)
         
