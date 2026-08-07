@@ -88,7 +88,7 @@ function Carousel({ path, title }) {
    
 
     async function nextSlide() {
-        if (carouselItemWidths.current[currentItem + 1] != null && offset.current < (totalWidth.current - window.innerWidth + 90 )) {
+        if (carouselItemWidths.current[currentItem + 1] != null && offset.current < (totalWidth.current - carouselDivRef.current.getBoundingClientRect().width)) {
             offset.current = parseFloat(offset.current) + parseFloat(carouselItemWidths.current[currentItem]);
             setCurrentItem(item => item + 1)
         
