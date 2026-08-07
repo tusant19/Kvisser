@@ -80,7 +80,7 @@ function Carousel({ path, title }) {
             }px)`;
             await delay(200)
             offset.current -= 22
-            carouselDivRef.current.style.transform = `translateX(-${
+            carouselDivRef.current.style.transform = `translateX(+${
             offset.current
             }px)`;
         } 

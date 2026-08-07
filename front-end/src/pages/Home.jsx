@@ -9,10 +9,10 @@ function Home() {
         <div className='homePage'>
             <TopBar />
             <div className='homePageMain'>
-                <Carousel path={'/'} title={"Example"}/>
-                <Carousel path={'/'} title={"Example"}/>
-                <Carousel path={'/'} title={"Example"}/>
-                <Carousel path={'/'} title={"Example"}/>
+                <Carousel path={'/v1/mostPlayed'} title={"Most played"}/>
+                <Carousel path={'/v1/mostPlayed'} title={"Example"}/>
+                <Carousel path={'/v1/mostPlayed'} title={"Example"}/>
+                <Carousel path={'/v1/mostPlayed'} title={"Example"}/>
             </div>
             <BottomBar />
         </div>
