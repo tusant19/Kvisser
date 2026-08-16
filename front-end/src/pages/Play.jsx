@@ -30,12 +30,17 @@ function Play() {
         axios.put(`${apiBaseUrl}/v1/joinRoom`, {
             code: codeRef.current.value,
             name: nameRef.current.value
+        }, {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'application/json'
+            }
         })
         .then((res) => {
-            console.log(res)
-            console.log(res.status)
             if (res.status = 200) {
-                window.location.replace(`${siteBaseUrl}/game/${codeRef.current.value}`)
+                window.location.replace(`${siteBaseUrl}/waiting`)
+            } else {
+                console.log(res.status)
             }
         })
         .catch((error) => {

@@ -68,7 +68,7 @@ function Carousel({ path, title }) {
             }px)`;
             carouselDivRef.current.style.transition = `transform ${
                 0.25 + (0.25 * parseFloat(carouselItemWidths.current[currentItem-1]) / 600)
-            }s ease-in-out`; 
+            }s ease-out`; 
         }
         else{
             carouselDivRef.current.style.transition = `transform ${
@@ -97,7 +97,7 @@ function Carousel({ path, title }) {
             }px)`;
             carouselDivRef.current.style.transition = `transform ${
                 0.25 + (0.25 * parseFloat(carouselItemWidths.current[currentItem]) / 600)
-            }s ease-in-out`; 
+            }s ease-out`; 
         }
         else {
             carouselDivRef.current.style.transition = `transform ${
