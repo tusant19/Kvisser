@@ -88,7 +88,7 @@ const playerInsert = db.prepare('INSERT INTO game_players (game_id, game_code, t
 const getPlayer = db.prepare('SELECT * FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1')
 const getPlayerCount = db.prepare('SELECT COUNT(*) FROM game_players WHERE game_code = ?')
 
-const updateSocket = db.prepare('UPDATE game_players SET socket_id = ? WHERE uuid = ?')
+const updateSocket = db.prepare('UPDATE game_players SET socket_id = ? WHERE id = (SELECT id FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1)')
 
 app.get('/v1/mostPlayed', (req, res) => {
   quizInsert.run(-1, 0, 0, "1", "https://placehold.co/600x400", "english", 0);
