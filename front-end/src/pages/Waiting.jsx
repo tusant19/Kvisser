@@ -5,26 +5,11 @@ import axios from "axios";
 import { use, useState } from 'react';
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 import { useEffect } from 'react';
+import apiBaseUrl from '../components/apiAdress.js';
+import siteBaseUrl from '../components/baseAdress.js';
 
 axios.defaults.withCredentials = true;
 
-
-let apiBaseUrl = "";
-let siteBaseUrl = "";
-
-
-if (import.meta.env.DEV) {
-    if (import.meta.env.VITE_API_DEV_BASE_URL != null) {
-        apiBaseUrl = import.meta.env.VITE_API_DEV_BASE_URL;
-        siteBaseUrl = import.meta.env.VITE_DEV_SITE_BASE_URL;
-    }
-}
-else {
-    if (import.meta.env.VITE_API_PROD_BASE_URL != null) {
-        apiBaseUrl = import.meta.env.VITE_API_PROD_BASE_URL;
-        siteBaseUrl = import.meta.env.VITE_SITE_BASE_URL;
-    }
-}
 
 function Waiting() {
     const [name, setName] = useState("user")

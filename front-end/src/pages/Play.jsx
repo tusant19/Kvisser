@@ -4,28 +4,15 @@ import TopBar from '../components/TopBar.jsx'
 import BottomBar from '../components/BottomBar.jsx'
 import axios from "axios";
 import { useRef } from 'react';
+import apiBaseUrl from '../components/apiAdress.js';
+import siteBaseUrl from '../components/baseAdress.js';
 
 function Play() {
     const codeRef = useRef();
     const nameRef = useRef();
 
     function joinRoom() {
-        console.log("joinRoom")
-        let apiBaseUrl = "";
-        let siteBaseUrl = "";
-
-        if (import.meta.env.DEV) {
-            if (import.meta.env.VITE_API_DEV_BASE_URL != null) {
-                apiBaseUrl = import.meta.env.VITE_API_DEV_BASE_URL;
-                siteBaseUrl = import.meta.env.VITE_DEV_SITE_BASE_URL;
-            }
-        }
-        else {
-            if (import.meta.env.VITE_API_PROD_BASE_URL != null) {
-                apiBaseUrl = import.meta.env.VITE_API_PROD_BASE_URL;
-                siteBaseUrl = import.meta.env.VITE_SITE_BASE_URL;
-            }
-        }
+        console.log("joinRoom");
 
         axios.put(`${apiBaseUrl}/v1/joinRoom`, {
             code: codeRef.current.value,
