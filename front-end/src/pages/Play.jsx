@@ -32,12 +32,14 @@ function Play() {
             name: nameRef.current.value
         }, {
             withCredentials: true,
-            headers: {
+            /* headers: {
                 'Content-Type': 'application/json'
-            }
+            } */
         })
         .then((res) => {
             if (res.status = 200) {
+                console.log(res.data.playerUuid)
+                localStorage.setItem("uuid", res.data.playerUuid)
                 window.location.replace(`${siteBaseUrl}/waiting`)
             } else {
                 console.log(res.status)

@@ -1,0 +1,15 @@
+.waitingPageMain {
+    min-height: 85.4dvh;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.playerGreet p{
+    font-size: min(150%, 2.5vh);
+    padding: 0;
+    margin-top: min(1vh, 50%);
+    margin-bottom: min(1vh, 50%);
+}

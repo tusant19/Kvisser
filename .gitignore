@@ -25,3 +25,6 @@ dist-ssr
 
 *.zip
 *.db
+
+backup.txt
+toDO.txt
