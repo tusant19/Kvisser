@@ -9,6 +9,8 @@ import cookieParser from 'cookie-parser';
 import { createServer } from "http";
 import { Server } from "socket.io";
 
+db.pragma('journal_mode = WAL');
+
 const httpServer = createServer(app)
 const io = new Server(httpServer, {
   cors: {
@@ -17,6 +19,26 @@ const io = new Server(httpServer, {
   }
 });
 
+function setInactivePlayers(room) {
+  let inactivePlayerSocIds = [];
+  for(let player of getPlayers.iterate(room)) {
+    let pSocId = player.socket_id
+    console.log(pSocId)
+    let connected = io.sockets.adapter.sids.has(pSocId);
+    console.log(connected)
+    if (!connected) {
+      inactivePlayerSocIds.push(pSocId)
+    }
+  }
+  for (let i = 0; i < inactivePlayerSocIds.length; i++) {
+    console.log("marked inactive: " + inactivePlayerSocIds[0])
+    markPlayerInactive.run(inactivePlayerSocIds[i]);
+  }
+  let playerCount = getPlayerCount.all(room);
+  console.log(playerCount)
+  io.to(room).emit("playerCount", playerCount[0]['COUNT(*)'])
+};
+
 io.on("connection", (socket) => {
   console.log("connect");
   socket.on("joinRoom", (room, uuid) => {
@@ -24,7 +46,9 @@ io.on("connection", (socket) => {
     socket.join(room);
     let playerCount = getPlayerCount.all(room);
     io.to(room).emit("playerCount", playerCount[0]['COUNT(*)'])
-    updateSocket.run(socket.id, uuid)
+    updateSocket.run(socket.id, 1, uuid)
+
+    setInactivePlayers(room);
   });
 });
 
@@ -73,7 +97,8 @@ db.exec(`
     uuid TEXT,
     name TEXT,
     score INTEGER,
-    socket_id TEXT
+    socket_id TEXT,
+    connected INTEGER
   );
 `); 
 
@@ -86,9 +111,13 @@ const gameCheck = db.prepare('SELECT * FROM games WHERE room_code = ? AND active
 
 const playerInsert = db.prepare('INSERT INTO game_players (game_id, game_code, time_joined, user_id, uuid, name, score) VALUES (?, ?, ?, ?, ?, ?, ?)');
 const getPlayer = db.prepare('SELECT * FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1')
-const getPlayerCount = db.prepare('SELECT COUNT(*) FROM game_players WHERE game_code = ?')
+const getPlayerBySocket = db.prepare('SELECT * FROM game_players WHERE socket_id = ? ORDER BY time_joined DESC LIMIT 1')
+const deletePlayerBySocket = db.prepare('DELETE FROM game_players WHERE socket_id = ?')
+const getPlayerCount = db.prepare('SELECT COUNT(*) FROM game_players WHERE game_code = ? AND connected = 1')
+const getPlayers = db.prepare('SELECT * FROM game_players WHERE game_code = ? AND connected = 1')
 
-const updateSocket = db.prepare('UPDATE game_players SET socket_id = ? WHERE id = (SELECT id FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1)')
+const markPlayerInactive = db.prepare('UPDATE game_players SET connected = 0 WHERE socket_id = ?')
+const updateSocket = db.prepare('UPDATE game_players SET socket_id = ?, connected = ? WHERE id = (SELECT id FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1)')
 
 app.get('/v1/mostPlayed', (req, res) => {
   quizInsert.run(-1, 0, 0, "1", "https://placehold.co/600x400", "english", 0);
@@ -112,7 +141,7 @@ app.put('/v1/joinRoom', async (req, res) => {
   gameInsert.run(-1, "aaaa", 100, 1);
   let alrInRoom = false;
   if (req.body.code != null && req.body.name != null && req.body.code != "" && req.body.name != "") {
-    for (const game of getPlayer.iterate(req?.cookies?.playerUuid)) {
+    for (let game of getPlayer.iterate(req?.cookies?.playerUuid)) {
       let active = gameCheck.all(req.body?.code)
       if (active[0].active) {
         alrInRoom = true;
