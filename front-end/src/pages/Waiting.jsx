@@ -15,7 +15,8 @@ function Waiting() {
     const [name, setName] = useState("user")
     const [count, setCount] = useState(0)
     const [room, setRoom] = useState(null)
-    
+    const [singularPlayer, setSingularPlayer] = useState("player")
+    const [isAre, setIsAre] = useState("is")
     
     
 
@@ -54,6 +55,10 @@ function Waiting() {
         socket.emit("joinRoom", room, uuid)
         socket.on("playerCount", (playerCount) => {
             console.log("pcu")
+            if (playerCount > 1) {
+                setSingularPlayer("players")
+                setIsAre("are")
+            }
             setCount(playerCount)
         })
 
@@ -73,7 +78,7 @@ function Waiting() {
                 <div className='playerGreet'>
                     <p>Welcome {name} to {room} </p>
                     <p>the game will be starting soon</p>
-                    <p>There are currently {count} players</p>
+                    <p>There {isAre} currently {count} {singularPlayer}</p>
                 </div>
             </div>
             <BottomBar />
