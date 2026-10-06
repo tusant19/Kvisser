@@ -44,8 +44,6 @@ io.on("connection", (socket) => {
   socket.on("joinRoom", (room, uuid) => {
     console.log("joinRoom: " + room)
     socket.join(room);
-    let playerCount = getPlayerCount.all(room);
-    io.to(room).emit("playerCount", playerCount[0]['COUNT(*)'])
     updateSocket.run(socket.id, 1, uuid)
 
     setInactivePlayers(room);
