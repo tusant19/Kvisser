@@ -58,6 +58,9 @@ function Waiting() {
             if (playerCount > 1) {
                 setSingularPlayer("players")
                 setIsAre("are")
+            } else {
+                setSingularPlayer("player")
+                setIsAre("is")
             }
             setCount(playerCount)
         })
