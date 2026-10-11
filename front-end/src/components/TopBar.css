@@ -1,5 +1,5 @@
 .topBar {
-    width: 100vw;
+    max-width: 100dvw;
     border-bottom: 0.2vh solid rgb(232, 233, 234);
 }
 
@@ -11,11 +11,17 @@
     align-items: center;
     justify-content: space-between;
     height: 8vh;
-    
 }
 
-.title  {
+.title {
     font-size: 4vh;
+    text-decoration: none;
+    color: black;
+}
+
+a {
+    text-decoration: none;
+
 }
 
 .loginBtn{
