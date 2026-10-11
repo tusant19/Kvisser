@@ -8,7 +8,7 @@ function BottomBar() {
     return (
         <div className='bottomBar'>
             <div className='bottomBarContent'>
-                <a href="./">
+                <a href="../">
                     <button className='bottomBarBtn'>
                         <img src={homeSymbol} alt="Home" />
                     </button>
