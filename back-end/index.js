@@ -63,6 +63,7 @@ app.use(cookieParser())
 db.exec(` 
   CREATE TABLE IF NOT EXISTS quizzes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    public_uuid TEXT,
     user_id INTEGER,
     play_count INTEGER,
     time_created INTEGER,
@@ -100,8 +101,25 @@ db.exec(`
   );
 `); 
 
-const quizInsert = db.prepare('INSERT INTO quizzes (user_id, play_count, time_created, title, img_link, language, private) VALUES (?, ?, ?, ? ,?, ?, ?)');
+db.exec(`
+  CREATE TABLE IF NOT EXISTS quiz_questions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    quiz_id INTEGER,
+    type TEXT,
+    order_number INTEGER,
+    img_link TEXT,
+    score_value INTEGER,
+    time_given INTEGER,
+    title TEXT
+  );
+`);
+
+
+const quizInsert = db.prepare('INSERT INTO quizzes (user_id, public_uuid, play_count, time_created, title, img_link, language, private) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+const realQuizDelete = db.prepare('DELETE FROM quizzes WHERE id = ?');
 const quizDelete = db.prepare('DELETE FROM quizzes WHERE user_id = -1')
+const quizGet = db.prepare('SELECT * FROM quizzes WHERE id = ? LIMIT 1');
+const quizGetByUuid = db.prepare('SELECT * FROM quizzes WHERE public_uuid = ? LIMIT 1');
 
 const gameInsert = db.prepare('INSERT INTO games (user_id, room_code, capacity, active) VALUES (?, ?, ?, ?)');
 const gameDelete = db.prepare('DELETE FROM games WHERE user_id = -1');
@@ -117,28 +135,46 @@ const getPlayers = db.prepare('SELECT * FROM game_players WHERE game_code = ? AN
 const markPlayerInactive = db.prepare('UPDATE game_players SET connected = 0 WHERE socket_id = ?')
 const updateSocket = db.prepare('UPDATE game_players SET socket_id = ?, connected = ? WHERE id = (SELECT id FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1)')
 
-app.get('/v1/mostPlayed', (req, res) => {
-  quizInsert.run(-1, 0, 0, "1", "https://placehold.co/600x400", "english", 0);
-  quizInsert.run(-1, 0, 0, "2", "https://placehold.co/900x400", "english", 0);
-  quizInsert.run(-1, 0, 0, "3", "https://placehold.co/300x400", "english", 0);
-  quizInsert.run(-1, 0, 0, "4", "https://placehold.co/600x400", "english", 0);
-  quizInsert.run(-1, 0, 0, "5", "https://placehold.co/900x400", "english", 0);
-  quizInsert.run(-1, 0, 0, "6", "https://placehold.co/300x400", "english", 0);
-  quizInsert.run(-1, 0, 0, "7", "https://placehold.co/600x400", "english", 0);
-  quizInsert.run(-1, 0, 0, "8", "https://placehold.co/900x400", "english", 0);
-  quizInsert.run(-1, 0, 0, "9", "https://placehold.co/300x400", "english", 0);
+const questionInsert = db.prepare('INSERT INTO quiz_questions (quiz_id, type, order_number, img_link, score_value, time_given, title) VALUES (?, ?, ?, ?, ?, ?, ?)');
+const questionDelete = db.prepare('DELETE FROM quiz_questions WHERE id = ?');
+const questionDeleteByQuiz = db.prepare('DELETE FROM quiz_questions WHERE quiz_id = ?');
+const getQuestions = db.prepare('SELECT * FROM quiz_questions WHERE quiz_id = ? ORDER BY order_number ASC')
+const getQuestion = db.prepare('SELECT * FROM quiz_questions WHERE quiz_id = ? AND order_number = ? LIMIT 1')
+const getQuestionById = db.prepare('SELECT * FROM quiz_questions WHERE id = ? LIMIT 1')
 
-  const getMostPlayed = db.prepare('SELECT * FROM quizzes WHERE private != 1 ORDER BY play_count DESC LIMIT 20');
-  let mostPlayed = getMostPlayed.all();
-  res.send(mostPlayed)
+
+//debug   v
+const getAllQuizzes = db.prepare('SELECT * FROM quizzes');
+
+//queries ^
+
+app.get('/v1/mostPlayed', (req, res) => {
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "1", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "2", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "3", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "4", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "5", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "6", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "7", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "8", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "9", "https://placehold.co/600x400", "english", 0);
+
+  const getMostPlayed = db.prepare('SELECT * FROM quizzes WHERE private != 1 ORDER BY play_count DESC LIMIT 30');
+  let sanitizedMostPlayed = []
+  for (let quiz of getMostPlayed.all()) {
+    sanitizedMostPlayed.push({"title": quiz.title, "img_link": quiz.img_link, "uuid": quiz.public_uuid})
+  }
+
+  res.send(sanitizedMostPlayed)
 
   quizDelete.run();
 });
 
 app.put('/v1/joinRoom', async (req, res) => {
   gameInsert.run(-1, "aaaa", 100, 1);
+  let caseUpperCode = req?.body?.code?.toLowerCase();
   let alrInRoom = false;
-  if (req.body.code != null && req.body.name != null && req.body.code != "" && req.body.name != "") {
+  if (caseUpperCode != null && req.body.name != null && caseUpperCode != "" && req.body.name != "") {
     for (let game of getPlayer.iterate(req?.cookies?.playerUuid)) {
       let active = gameCheck.all(req.body?.code)
       if (active[0].active) {
@@ -150,7 +186,7 @@ app.put('/v1/joinRoom', async (req, res) => {
 
 
     
-    let gameExists = gameCheck.all(req.body.code);
+    let gameExists = gameCheck.all(caseUpperCode);
     if (gameExists[0]?.active != undefined && gameExists[0]?.active != 0) {
       let gameId = gameExists[0].id;
       let uuid = null;
@@ -163,7 +199,7 @@ app.put('/v1/joinRoom', async (req, res) => {
 
       }
       if (alrInRoom !== true) {
-        playerInsert.run(gameId, req.body.code, Date.now(), 0, uuid, (req.body.name + "-" + uuid.slice(0,3)), 0)
+        playerInsert.run(gameId, caseUpperCode, Date.now(), 0, uuid, (req.body.name + "-" + uuid.slice(0,3)), 0)
       }
       
       res.status(200)
@@ -199,6 +235,41 @@ app.get('/v1/playerDetails', (req, res) => {
     )
   }
 })
+
+app.get('/v1/quiz/:uuid', (req, res) => {
+  let testUuid = "abcd";
+  console.log(testUuid)
+  quizInsert.run(-1, testUuid, 0, Date.now(), "Example quiz!", "https://placehold.co/600x400", "english", 0);
+  let quiz = quizGetByUuid.all(req.params.uuid);
+  questionInsert.run(quiz[0]?.id, "multipleChoice", 1, "https://placehold.co/600x400", 10, 30, "Question 1");
+  questionInsert.run(quiz[0]?.id, "multipleChoice", 2, "https://placehold.co/600x400", 10, 30, "Question 2");
+  questionInsert.run(quiz[0]?.id, "multipleChoice", 3, "https://placehold.co/600x400", 10, 30, "Question 3");
+  questionInsert.run(quiz[0]?.id, "multipleChoice", 4, "https://placehold.co/600x400", 10, 30, "Question 4");
+  questionInsert.run(quiz[0]?.id, "multipleChoice", 5, "https://placehold.co/600x400", 10, 30, "Question 5");
+  questionInsert.run(quiz[0]?.id, "multipleChoice", 6, "https://placehold.co/600x400", 10, 30, "Question 6");
+  questionInsert.run(quiz[0]?.id, "multipleChoice", 7, "https://placehold.co/600x400", 10, 30, "Question 8");
+
+  let questions = getQuestions.all(quiz[0]?.id)
+  let sanitizedQuestions = []
+  for (let question of questions) {
+    console.log("loop")
+    sanitizedQuestions.push({"title": question.title, "question": question.img_link})
+  }
+  if (quiz[0] == undefined) {
+    res.status(404).send("quiz not found")
+  } else {
+    res.json(
+      {
+        title: quiz[0]?.title,
+        img_link: quiz[0]?.img_link,
+        questions: sanitizedQuestions
+      }
+    )
+    }
+
+  quizDelete.run()
+  questionDeleteByQuiz.run(testUuid)
+});
 
 httpServer.listen(8080, () => {
   console.log(`Server listening on port 8080`);
