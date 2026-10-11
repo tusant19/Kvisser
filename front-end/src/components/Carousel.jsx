@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import chevronL from '../assets/chevron60L.svg';
 import chevronR from '../assets/chevron60R.svg';
 import './Carousel.css'
+import siteBaseUrl from "./baseAdress";
 
 function Carousel({ path, title }) {
     const [carouselData, setCarouselData] = useState([])
@@ -128,7 +129,9 @@ function Carousel({ path, title }) {
 
                     {carouselData?.map((carouselItem, id) => (
                         <div className="carouselItem" key={id} ref={el => (carouselItemRefs.current[id] = el)}>
-                                <img className="carouselImg" src={carouselItem.img_link} onLoad={getItemSizes} alt="quiz image" />
+                                <a href={siteBaseUrl + "/quiz/" + carouselItem.uuid}>
+                                    <img className="carouselImg" src={carouselItem.img_link} onLoad={getItemSizes} alt="quiz image" />
+                                </a>
                             <p className="carouselItemTitle">{carouselItem.title}</p>
                         </div>
                     ))}
