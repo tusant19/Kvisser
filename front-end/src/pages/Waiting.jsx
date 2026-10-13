@@ -18,11 +18,6 @@ function Waiting() {
     const [singularPlayer, setSingularPlayer] = useState("player")
     const [isAre, setIsAre] = useState("is")
     
-    
-
-    console.log(apiBaseUrl)
-    
-
     useEffect(() => {
         axios.get(`${apiBaseUrl}/v1/playerDetails`, {},
             {

@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import cookieParser from 'cookie-parser';
 import { createServer } from "http";
 import { Server } from "socket.io";
+import bcrypt from 'bcrypt';
 
 db.pragma('journal_mode = WAL');
 
@@ -114,6 +115,24 @@ db.exec(`
   );
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    password TEXT
+  );
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    token TEXT,
+    expiry INTEGER
+  );
+`);
+
+
 
 const quizInsert = db.prepare('INSERT INTO quizzes (user_id, public_uuid, play_count, time_created, title, img_link, language, private) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
 const realQuizDelete = db.prepare('DELETE FROM quizzes WHERE id = ?');
@@ -142,12 +161,233 @@ const getQuestions = db.prepare('SELECT * FROM quiz_questions WHERE quiz_id = ? 
 const getQuestion = db.prepare('SELECT * FROM quiz_questions WHERE quiz_id = ? AND order_number = ? LIMIT 1')
 const getQuestionById = db.prepare('SELECT * FROM quiz_questions WHERE id = ? LIMIT 1')
 
+const userInsert = db.prepare('INSERT INTO users (name, password) VALUES (?, ?)');
+const getUserByName = db.prepare('SELECT * FROM users WHERE name = ? LIMIT 1');
+const tokenInsert = db.prepare('INSERT INTO sessions (user_id, token, expiry) VALUES (?, ?, ?)');
+const getUserIdByToken = db.prepare('SELECT * FROM sessions WHERE token = ? LIMIT 1');
+const updateUserPassword = db.prepare('UPDATE users SET password = ? WHERE id = ?');
+const deleteSessionByToken = db.prepare('DELETE FROM sessions WHERE token = ?');
 
 //debug   v
-const getAllQuizzes = db.prepare('SELECT * FROM quizzes');
+const getAllQuizzes = db.prepare('SELECT * FROM quizzes')
+const getAllSessions = db.prepare('SELECT * FROM sessions')
 
 //queries ^
 
+const saltRounds = 10;
+
+//auth
+function checkQuizAccess(req, res, next) {
+  let testUuid = "abcd";
+  let secretTestUuid = "abdc"
+  console.log(testUuid)
+  
+  
+  quizInsert.run(-1, testUuid, 0, Date.now(), "Example quiz!", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(1, secretTestUuid, 0, Date.now(), "Secret example quiz!", "https://placehold.co/800x400", "english", 1);
+  let quiz = quizGetByUuid.all(req.params.uuid);
+  questionInsert.run(quiz[0]?.id, "multipleChoice", 1, "https://placehold.co/600x400", 10, 30, "Question 1");
+  questionInsert.run(quiz[0]?.id, "multipleChoice", 2, "https://placehold.co/600x400", 10, 30, "Question 2");
+  questionInsert.run(quiz[0]?.id, "multipleChoice", 3, "https://placehold.co/600x400", 10, 30, "Question 3");
+  questionInsert.run(quiz[0]?.id, "multipleChoice", 4, "https://placehold.co/600x400", 10, 30, "Question 4");
+  questionInsert.run(quiz[0]?.id, "multipleChoice", 5, "https://placehold.co/600x400", 10, 30, "Question 5");
+  questionInsert.run(quiz[0]?.id, "multipleChoice", 6, "https://placehold.co/600x400", 10, 30, "Question 6");
+  questionInsert.run(quiz[0]?.id, "multipleChoice", 7, "https://placehold.co/600x400", 10, 30, "Question 8");
+
+  if (quiz.length === 0) {
+    return res.sendStatus(404);
+  }
+  console.log(quiz[0].private)
+  if (quiz[0]?.private == 0) {
+    return next();
+  }
+
+  let token = req?.cookies?.sessionToken
+  console.log(token)
+  if (token === null  || token === undefined) {
+    return res.sendStatus(404);
+  }
+  let user = getUserIdByToken.all(token);
+  if (user.expiry < Date.now()) {
+    return res.sendStatus(404);
+  }
+  let userId = user[0]?.user_id
+  if (userId === null || userId === undefined) {
+    return res.sendStatus(404);
+  }
+  console.log(quiz[0]?.user_id)
+  console.log(userId)
+  if(quiz[0]?.user_id == userId) {
+    return next();
+  } else {
+    return res.sendStatus(404)
+  }
+
+}
+
+app.put('/v1/register', async (req, res) => {
+  let user = getUserByName.get(req.body?.name);
+  if (user?.id != undefined) {
+    res.status(401)
+    return res.json(
+      {
+        error: "Username is taken"
+      }
+    )
+  }
+  let name = req.body?.name;
+  let password = req.body?.password; 
+  bcrypt.hash(password, saltRounds, function(err, hash) {
+    if (err) {
+      res.sendStatus(500)
+    } else {
+      userInsert.run(name, hash);
+      let token = uuidv4();
+      console.log(token)
+      let expiry = Date.now() + 3600000 * 24 * 7; // 1 week
+      tokenInsert.run(user?.id, token, expiry);
+      res.cookie('sessionToken', token, { maxAge: (3600000 * 24 * 7), httpOnly: true })
+      res.sendStatus(200)
+    }
+  });
+}); 
+
+app.put('/v1/login', (req, res) => {
+  console.log("login received")
+  let name = req.body?.name;
+  let password = req.body?.password; 
+  let user = getUserByName.get(name);
+  bcrypt.compare(password, user?.password, function(err, result) {
+    if (result) {
+        
+        let token = uuidv4();
+        console.log(token)
+        let expiry = Date.now() + 3600000 * 24 * 7; // 1 week
+        tokenInsert.run(user?.id, token, expiry);
+        res.cookie('sessionToken', token, { maxAge: (3600000 * 24 * 7), httpOnly: true })
+        res.sendStatus(200)
+      
+    }
+    else if (!result) {
+        res.status(404)
+        res.json(
+          {
+            error: "Wrong username or password"
+          }
+        )
+      }
+    else if (err) {
+      res.status(500)
+      res.json(
+        {
+          error: "A server error occured"
+        }
+      )
+    }
+  });
+});
+
+app.put('/v1/changepassword', (req, res) => {
+  let name = req.body?.name;
+  let password = req.body?.password;
+  let newPassword = req.body?.newPassword;
+  let user = getUserByName.get(name);
+  if (user?.id == undefined) {
+    res.status(401)
+    res.json(
+      {
+        error: "Wrong username or password"
+      }
+    )
+  }
+  bcrypt.compare(password, user?.password, function(err, result) {
+    if (result) {
+      bcrypt.hash(newPassword, saltRounds, function(err, hash) {
+        if (err) {
+          res.status(500)
+          res.json(
+            {
+              error: "A server error occured"
+            }
+          )
+        } else {
+          // new Session copypaste
+          updateUserPassword.run(hash, user?.id);
+          let token = uuidv4();
+          console.log(token)
+          let expiry = Date.now() + 3600000 * 24 * 7; // 1 week
+          tokenInsert.run(user?.id, token, expiry);
+          res.cookie('sessionToken', token, { maxAge: (3600000 * 24 * 7), httpOnly: true })
+          res.sendStatus(200)
+        }
+      });
+    }
+    else if (!result) {
+        res.status(401)
+        res.json(
+          {
+            error: "Wrong username or password"
+          }
+        )
+    }
+    else if (err) {
+      res.status(500)
+      res.json(
+        {
+          error: "A server error occured"
+        }
+      )
+    }
+  });
+});    
+
+app.get('/v1/loginstatus', (req, res) => {
+  let token = req?.cookies?.sessionToken
+  console.log(token)
+  if (token == undefined || token == null) {
+    res.status(401)
+    res.json(
+      {
+        msg: "Log in"
+      }
+    )
+  }
+  let exists = getUserIdByToken.all(token)
+  if (exists[0]?.id != undefined && exists[0]?.expiry > Date.now()) {
+    res.status(200)
+    res.json(
+      {
+        msg: "Log out"
+      }
+    )
+  }
+});
+
+app.put('/v1/logout', (req, res) => {
+  let token = req?.cookies?.sessionToken
+  if (token == undefined || token == null) {
+    res.status(401)
+    return res.json(
+      {
+        error: "Not logged in"
+      }
+    )
+  }
+  let user = getUserIdByToken.all(token)
+  if (user[0]?.id == undefined) {
+    res.status(401)
+    return res.json(
+      {
+        error: "Not logged in"
+      }
+    )
+  }
+  deleteSessionByToken.run(token);
+  res.clearCookie('sessionToken');
+  res.sendStatus(200)
+});
+
+//main
 app.get('/v1/mostPlayed', (req, res) => {
   quizInsert.run(-1, uuidv4(), 0, Date.now(), "1", "https://placehold.co/600x400", "english", 0);
   quizInsert.run(-1, uuidv4(), 0, Date.now(), "2", "https://placehold.co/600x400", "english", 0);
@@ -236,19 +476,12 @@ app.get('/v1/playerDetails', (req, res) => {
   }
 })
 
-app.get('/v1/quiz/:uuid', (req, res) => {
+app.get('/v1/quiz/:uuid', checkQuizAccess, (req, res) => {
   let testUuid = "abcd";
   console.log(testUuid)
-  quizInsert.run(-1, testUuid, 0, Date.now(), "Example quiz!", "https://placehold.co/600x400", "english", 0);
+  
   let quiz = quizGetByUuid.all(req.params.uuid);
-  questionInsert.run(quiz[0]?.id, "multipleChoice", 1, "https://placehold.co/600x400", 10, 30, "Question 1");
-  questionInsert.run(quiz[0]?.id, "multipleChoice", 2, "https://placehold.co/600x400", 10, 30, "Question 2");
-  questionInsert.run(quiz[0]?.id, "multipleChoice", 3, "https://placehold.co/600x400", 10, 30, "Question 3");
-  questionInsert.run(quiz[0]?.id, "multipleChoice", 4, "https://placehold.co/600x400", 10, 30, "Question 4");
-  questionInsert.run(quiz[0]?.id, "multipleChoice", 5, "https://placehold.co/600x400", 10, 30, "Question 5");
-  questionInsert.run(quiz[0]?.id, "multipleChoice", 6, "https://placehold.co/600x400", 10, 30, "Question 6");
-  questionInsert.run(quiz[0]?.id, "multipleChoice", 7, "https://placehold.co/600x400", 10, 30, "Question 8");
-
+  
   let questions = getQuestions.all(quiz[0]?.id)
   let sanitizedQuestions = []
   for (let question of questions) {
