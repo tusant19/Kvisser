@@ -21,7 +21,7 @@ ReactDOM.createRoot(root).render(
       <Route path="/waiting" element={<Waiting />} />
       <Route path="/quiz/:quizid" element={<Quiz />}/>
       <Route path="/login" element={<Login />}/>
-      <Route path="/createaccount" element={<CreateAccount />}/>
+      <Route path="/register" element={<CreateAccount />}/>
       <Route path="/changepassword" element={<ChangePassword />}/>
       <Route path="logout" element={<Logout />}/>
     </Routes>

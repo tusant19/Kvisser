@@ -43,7 +43,7 @@ function Login() {
                     <button className='loginPageBtn' onClick={logIn}>Login</button>
                 </div>
                 <div className='noAccountDiv'>
-                    <a href="../createaccount">
+                    <a href="../register">
                         <p>Don't have an account yet?</p>
                     </a>
                 </div>
