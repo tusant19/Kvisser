@@ -1,4 +1,4 @@
-import './CreateAccount.css'
+import './Logout.css'
 import TopBar from '../components/TopBar.jsx'
 import BottomBar from '../components/BottomBar.jsx'
 import axios from "axios";
@@ -8,13 +8,15 @@ import siteBaseUrl from '../components/baseAdress.js';
 import { useState } from 'react';
 
 function Logout() {
+    const [errorState, setErrorState] = useState(null);
+
     function logout() {
         axios.put(`${apiBaseUrl}/v1/logout`, {}, {
             withCredentials: true
         })
         .then((res) => {
             if (res.status === 200) {
-                window.location.replace(`${siteBaseUrl}/`);
+                window.history.back()
             }
             else if (res.status === 401) {
                 setErrorState(res?.data?.error);
@@ -38,6 +40,11 @@ function Logout() {
                         Log out
                     </button>
                 </div>
+                {errorState && (
+                    <div className='errorDiv'>
+                        <p className='errorText'>{errorState}</p>
+                    </div>
+                )}
             </div>
             <BottomBar />
         </div>

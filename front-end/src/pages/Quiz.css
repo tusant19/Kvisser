@@ -171,3 +171,51 @@
     overflow: hidden;
 }
 
+.popupDiv{
+    border: solid rgb(240, 241, 242) 2px;
+    border-radius: 2vh;
+    background-color: rgb(246, 247, 248);
+    height: 20vh;
+    width: 40vw;
+    position: fixed;
+    top: 33vh;
+    left: 30vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    display: none;
+    
+}
+
+@media (width <= 700px) {
+    .popupDiv {
+        width: 95vw;
+        left: 2.5vw;
+    }
+}
+
+.popupDiv p {
+    font-size: 120%;
+}
+
+.popUpBtn {
+     font-size: 100%;
+    width: 15vw;
+    background-color: rgb(235, 236, 237);
+    border-radius: 1vh;
+    padding: 1vh;
+    margin-left: 1vw;
+    margin-right: 1vw;
+    border: none;
+}
+
+@media (width <= 700px) {
+    .popUpBtn {
+        width: 40vw;
+        border-radius: 1vh;
+        padding: 1vh;
+        margin-left: 3vw;
+        margin-right: 3vw;
+    }
+}

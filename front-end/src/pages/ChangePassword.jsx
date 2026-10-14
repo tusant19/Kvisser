@@ -1,4 +1,4 @@
-import './CreateAccount.css'
+import './ChangePassword.css'
 import TopBar from '../components/TopBar.jsx'
 import BottomBar from '../components/BottomBar.jsx'
 import axios from "axios";
@@ -24,7 +24,7 @@ function ChangePassword() {
         })
         .then((res) => {
             if (res.status === 200) {
-                window.location.replace(`${siteBaseUrl}/`);
+                window.history.back()
                 
             }
             else if (res.status === 401) {
@@ -33,7 +33,7 @@ function ChangePassword() {
         })
         .catch((error) => {
             console.error(error);
-            setErrorState(error?.response?.data?.error || "An error occurred while registering.");
+            setErrorState(error?.response?.data?.error || "An error occurred while changing the password.");
         })
     }
 

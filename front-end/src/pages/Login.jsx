@@ -21,12 +21,14 @@ function Login() {
         })
         .then((res) => {
             if (res.status === 200) {
-                window.location.replace(`${siteBaseUrl}/`);
+                
+                window.history.back()
             }
-            
+            console.log(res.status)
         })
         .catch((error) => {
-            setErrorState(error?.response?.data?.error || "An error occurred while logging in.");
+            console.log(error)
+            setErrorState(error?.response?.data?.error);
         })
     }
 

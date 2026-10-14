@@ -7,11 +7,13 @@ import { useParams } from 'react-router';
 import apiBaseUrl from '../components/apiAdress.js';
 
 function Quiz(props) {
+    
     const { quizid } = useParams();
     const [imgLink, setImgLink] = useState("https://placehold.co/600x400");
     const [title, setTitle] = useState(quizid)
     const [questions, setQuestions] = useState([]);
     const [notFound, setNotFound] = useState(false);
+    const popupRef = useRef(null);
     
     useEffect(() => {
         axios.get(`${apiBaseUrl}/v1/quiz/${quizid}`, {},
@@ -50,6 +52,29 @@ function Quiz(props) {
         )
     }
 
+    function host() {
+        if (popupRef.current.style.display === "none" || popupRef.current.style.display === "") {
+            axios.get(`${apiBaseUrl}/v1/loginstatus`, {
+                withCredentials: true
+            })
+            .then((res) => {
+                if (res.status === 200) {
+                    window.location.assign(`../host/${quizid}`)
+                } else {
+                    popupRef.current.style.display = "flex";
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                popupRef.current.style.display = "flex";
+            });
+        } else {
+            popupRef.current.style.display = "none";
+        }
+        
+
+    }
+
     return (
         <div className='quizPage'>
             <TopBar />
@@ -80,10 +105,21 @@ function Quiz(props) {
                 </div>
 
                 <div className='quizPlayDiv'>
-                    <button >Host</button>
+                    <button onClick={host}>Host</button>
                     <button >Play alone</button>
                 </div>
                 
+            </div>
+            <div className='popupDiv' ref={popupRef}>
+                <p>Hosting without logging in will not save your scores</p>
+                <div className='popupOptions'>
+                    <a href="../login">
+                        <button className='popUpBtn'>Log in</button>
+                    </a>
+                    <a href={`../host/${quizid}`}> 
+                        <button className='popUpBtn'>Continue</button>
+                    </a>
+                </div>
             </div>
             <BottomBar />
         </div>
