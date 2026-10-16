@@ -22,7 +22,7 @@ const io = new Server(httpServer, {
 
 function setInactivePlayers(room) {
   let inactivePlayerSocIds = [];
-  for(let player of getPlayers.iterate(room)) {
+  for(let player of getPlayers.iterate(room, "host")) {
     let pSocId = player.socket_id
     console.log(pSocId)
     let connected = io.sockets.adapter.sids.has(pSocId);
@@ -48,9 +48,15 @@ function setInactivePlayers(room) {
 };
 
 function sendPlayersToHost(room) {
-  let players = getPlayers.all(room)
+  let players = getPlayers.all(room, "host")
+  console.log("hostRoom " + room)
+  console.log("players" + players)
+  console.log("allPlayers")
+  for (let player of getAllPlayers.iterate()) {
+    console.log(player)
+  }
   let sanitizedPlayers = []
-  for (let i = 0; i < players.length; i++) {
+  for (let i = 0; i < players?.length; i++) {
     sanitizedPlayers.push({"name": players[i]?.name})
   }
   io.to(room + "host").emit("updatePlayers", sanitizedPlayers);
@@ -177,13 +183,15 @@ const gameCheck = db.prepare('SELECT * FROM games WHERE room_code = ? AND active
 const gameInactive = db.prepare('UPDATE games SET active = 0 WHERE room_code = ?');
 
 const playerInsert = db.prepare('INSERT INTO game_players (game_id, game_code, time_joined, user_id, uuid, name, score) VALUES (?, ?, ?, ?, ?, ?, ?)');
-const getPlayer = db.prepare('SELECT * FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1')
+const getPlayer = db.prepare('SELECT * FROM game_players WHERE uuid = ? ORDER BY time_joined DESC')
 const getPlayerBySocket = db.prepare('SELECT * FROM game_players WHERE socket_id = ? ORDER BY time_joined DESC LIMIT 1')
 const deletePlayerBySocket = db.prepare('DELETE FROM game_players WHERE socket_id = ?')
 const getPlayerCount = db.prepare('SELECT COUNT(*) FROM game_players WHERE game_code = ? AND connected = 1 AND role != \'host\'')
-const getPlayers = db.prepare('SELECT * FROM game_players WHERE game_code = ? AND connected = 1 AND role != \'host\' ORDER BY time_joined ASC')
+const getPlayers = db.prepare('SELECT * FROM game_players WHERE game_code = ? AND connected = 1 AND role != ? ORDER BY time_joined ASC')
 const hostInsert = db.prepare('INSERT INTO game_players (game_id, game_code, time_joined, user_id, uuid, name, score, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
 const getHostUuid = db.prepare('SELECT * FROM game_players WHERE game_code = ? AND role = \'host\' ORDER BY time_joined DESC LIMIT 1')
+const setAsPlayerByUuid = db.prepare('UPDATE game_players SET role = ? WHERE uuid = ?')
+const setAsPlayerByName = db.prepare('UPDATE game_players SET role = ? WHERE name = ?')
 
 const markPlayerInactive = db.prepare('UPDATE game_players SET connected = 0 WHERE socket_id = ?')
 const updateSocket = db.prepare('UPDATE game_players SET socket_id = ?, connected = ? WHERE id = (SELECT id FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1)')
@@ -206,6 +214,7 @@ const getuserById = db.prepare('SELECT * FROM users WHERE id = ? LIMIT 1')
 //debug   v
 const getAllQuizzes = db.prepare('SELECT * FROM quizzes')
 const getAllSessions = db.prepare('SELECT * FROM sessions')
+const getAllPlayers = db.prepare('SELECT * FROM game_players')
 
 //queries ^
 
@@ -215,7 +224,6 @@ const saltRounds = 10;
 function checkQuizAccess(req, res, next) {
   let testUuid = "abcd";
   let secretTestUuid = "abdc"
-  console.log(testUuid)
   
   
   quizInsert.run(-1, testUuid, 0, Date.now(), "Example quiz!", "https://placehold.co/600x400", "english", 0);
@@ -375,6 +383,14 @@ app.put('/v1/changepassword', (req, res) => {
         }
       )
     }
+    else {
+      res.status(500)
+      res.json(
+        {
+          error: "A server error occured"
+        }
+      )
+    }
   });
 });    
 
@@ -455,13 +471,14 @@ app.get('/v1/mostPlayed', (req, res) => {
 });
 
 app.put('/v1/joinRoom', async (req, res) => {
-  gameInsert.run(-1, "aaaa", 100, 1);
   let caseUpperCode = req?.body?.code?.toLowerCase();
   let alrInRoom = false;
   if (caseUpperCode != null && req.body.name != null && caseUpperCode != "" && req.body.name != "") {
     for (let game of getPlayer.iterate(req?.cookies?.playerUuid)) {
-      let active = gameCheck.all(req.body?.code)
-      if (active[0].active) {
+      console.log("BODY code" + req.body?.code)
+      let active = gameCheck.all(game?.game_code)
+      console.log("result" + active[0]?.active)
+      if (active[0]?.active == 1) {
         alrInRoom = true;
       }
     }
@@ -489,7 +506,9 @@ app.put('/v1/joinRoom', async (req, res) => {
           let user = getUserIdByToken.all(token);
           playerId = user[0]?.user_id
         }
-        playerInsert.run(gameId, caseUpperCode, Date.now(), playerId, uuid, (req.body.name + "-" + uuid.slice(0,3)), 0)
+        let name = req.body.name + "-" + uuid.slice(0,3)
+        playerInsert.run(gameId, caseUpperCode, Date.now(), playerId, uuid, name, 0)
+        setAsPlayerByName.run("player", name)
       }
       
       res.status(200)
@@ -506,12 +525,12 @@ app.put('/v1/joinRoom', async (req, res) => {
   else {
     res.sendStatus(422)
   }
-  gameDelete.run();
 });
 
 app.get('/v1/playerDetails', (req, res) => {
   console.log(req.cookies.playerUuid)
   let player = getPlayer.all(req.cookies.playerUuid)
+  //console.log(player)
   // console.log(player[0])
   if (player[0] == undefined) {
     res.sendStatus(404)
@@ -554,7 +573,21 @@ app.get('/v1/quiz/:uuid', checkQuizAccess, (req, res) => {
   questionDeleteByQuiz.run(testUuid)
 });
 
-app.put('/v1/host/:quizuuid', checkQuizAccess, (req, res) => {
+function generateCode(len) {
+  let code = '';
+  for (let i = 0; i < len; i++) {
+    let randNum = 0;
+    while (randNum < 97) {
+      randNum = (Math.floor(Math.random() * 122))
+      console.log(randNum)
+    } 
+    code += (String.fromCharCode(randNum));
+  }
+  return code;
+}
+
+app.put('/v1/host/:uuid', checkQuizAccess, (req, res) => {
+  console.log("host request received")
   let sessionToken = req?.cookies?.sessionToken
   let tokenUser = getUserIdByToken.all(sessionToken)
   let uuidGivenToClient;
@@ -565,12 +598,13 @@ app.put('/v1/host/:quizuuid', checkQuizAccess, (req, res) => {
     uuidGivenToClient = uuidv4();
   }
 
-  let gamecode = uuidv4().slice(0, 4);
+  let gamecode = generateCode(4)
   let gameExists = gameCheck.all(gamecode);
   while (gameExists[0]?.active != undefined && gameExists[0]?.active != 0) {
-    gamecode = uuidv4().slice(0, 4);
+    gamecode = generateCode(4)
     gameExists = gameCheck.all(gamecode);
   }
+  
   gameInsert.run(uuidGivenToClient, gamecode, 100, 1);
   let game = gameCheck.all(gamecode);
   hostInsert.run(game[0]?.id, gamecode, Date.now(), uuidGivenToClient, uuidGivenToClient, "host", 0, "host");

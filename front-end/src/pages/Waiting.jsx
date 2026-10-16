@@ -74,7 +74,7 @@ function Waiting() {
             <TopBar />
             <div className='waitingPageMain'>
                 <div className='playerGreet'>
-                    <p>Welcome {name} to {room} </p>
+                    <p>Welcome {name}</p>
                     <p>the game will be starting soon</p>
                     <p>There {isAre} currently {count} {singularPlayer}</p>
                 </div>
