@@ -16,8 +16,10 @@ jobs:
                 port: ${{ secrets.PORT }}
                 script: |
                     cd /
+                    pm2 stop index.js
+                    rm -rf Kvisser
                     git clone https://github.com/tusant19/Kvisser.git
                     cd Kvisser
                     cd back-end
                     npm install
-                    pm2 restart index.js
+                    pm2 start index.js
