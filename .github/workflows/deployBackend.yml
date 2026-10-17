@@ -17,9 +17,12 @@ jobs:
                 username: ${{ secrets.USERNAME }}
                 key: ${{ secrets.KEY }}
                 port: ${{ secrets.PORT }}
+                timeout: 30s
+                command_timeout: 5m
+                script_stop: true
                 script: |
                     cd /
-                    pm2 stop index.js
+                    pm2 delete index.js || true
                     rm -rf Kvisser
                     git clone https://github.com/tusant19/Kvisser.git
                     cd Kvisser
@@ -27,10 +30,11 @@ jobs:
                     npm install
                     pm2 start index.js
           - name: verify ssh key
+            if: always()
             env:
                 SSH_KEY: ${{ secrets.KEY }}
             run: |
-                printf '%s' ${{ secrets.KEY }} > /tmp/deploy_key
-                chmod 600 /tmp/deploy_key
-                ssh-keygen -y -f /tmp/deploy_key | ssh-keygen -lf -
-                rm -f /tmp/deploy_key
+                printf '%s\n' "$SSH_KEY" > "$RUNNER_TEMP/deploy_key"
+                chmod 600 "$RUNNER_TEMP/deploy_key"
+                ssh-keygen -y -f "$RUNNER_TEMP/deploy_key" | ssh-keygen -lf -
+                rm -f "$RUNNER_TEMP/deploy_key"
