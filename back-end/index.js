@@ -474,6 +474,9 @@ app.put('/v1/joinRoom', async (req, res) => {
   let caseUpperCode = req?.body?.code?.toLowerCase();
   let alrInRoom = false;
   if (caseUpperCode != null && req.body.name != null && caseUpperCode != "" && req.body.name != "") {
+    if (req?.body?.name?.length > 30) {
+      return res.sendStatus(422);
+    }
     for (let game of getPlayer.iterate(req?.cookies?.playerUuid)) {
       console.log("BODY code" + req.body?.code)
       let active = gameCheck.all(game?.game_code)
