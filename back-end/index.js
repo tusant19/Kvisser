@@ -576,11 +576,9 @@ app.get('/v1/quiz/:uuid', checkQuizAccess, (req, res) => {
 function generateCode(len) {
   let code = '';
   for (let i = 0; i < len; i++) {
-    let randNum = 0;
-    while (randNum < 97) {
-      randNum = (Math.floor(Math.random() * 122))
-      console.log(randNum)
-    } 
+    let randNum = 97;
+    randNum += (Math.floor(Math.random() * 25))
+    console.log(randNum)
     code += (String.fromCharCode(randNum));
   }
   return code;
@@ -598,10 +596,10 @@ app.put('/v1/host/:uuid', checkQuizAccess, (req, res) => {
     uuidGivenToClient = uuidv4();
   }
 
-  let gamecode = generateCode(4)
+  let gamecode = generateCode(6)
   let gameExists = gameCheck.all(gamecode);
   while (gameExists[0]?.active != undefined && gameExists[0]?.active != 0) {
-    gamecode = generateCode(4)
+    gamecode = generateCode(6)
     gameExists = gameCheck.all(gamecode);
   }
   
