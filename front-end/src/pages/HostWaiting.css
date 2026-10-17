@@ -1,0 +1,103 @@
+.hostWaitingPageMain {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: rgb(246, 247, 248);
+    min-height: 87vh;
+    max-width: 100dvw;
+}
+
+.roomCodeDiv {
+    display: flex;
+}
+
+.roomCodeDiv p {
+    font-size: 2.8vh;
+    margin: 0;
+    margin-top: 2vh;
+    background-color: white;
+    padding: 1.3vh;
+    padding-left: min(25px, 2vw);
+    padding-right: min(25px, 2vw);
+    margin-left: 0.5vw;
+    margin-right: 0.5vw;
+    border-radius: 1vh;
+    border: solid var(--border1) 2px;
+}
+
+@media (width < 700px) {
+    .roomCodeDiv p {
+        padding: 1vh;
+        padding-left: 3.5vw;
+        padding-right: 3.5vw;
+        
+    }
+}
+
+.hostWaitingTitle {
+    font-size: 120%;
+    margin: 0;
+    margin: 1vh;
+    background-color: white;
+    padding: 0.8vh;
+    padding-left: min(25px, 2vw);
+    padding-right: min(25px, 2vw);
+    margin-left: 0.5vw;
+    margin-right: 0.5vw;
+    border-radius: 1vh;
+    border: solid var(--border1) 2px;
+}
+
+@media (width < 700px) {
+    .hostWaitingTitle {
+        padding: 0.5vh;
+        padding-left: 3vw;
+        padding-right: 3vw;
+        
+    }
+}
+
+.playerListDiv{
+    max-width: 80dvw;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.playerListEntryDiv button {
+    font-size: 100%;
+    margin: 0;
+    margin: 1vh;
+    background-color: white;
+    padding: 0.8vh;
+    padding-left: min(25px, 2vw);
+    padding-right: min(25px, 2vw);
+    margin-left: 0.5vw;
+    margin-right: 0.5vw;
+    border-radius: 1vh;
+    border: solid var(--border1) 2px;
+}
+
+.startBtn{
+    position: absolute;
+    top: 9vh;
+    right: 1vh;
+    background-color: white;
+    border: solid var(--border1) 1.5px;
+    padding: 0.8vh;
+    padding-left: min(25px, 2vw);
+    padding-right: min(25px, 2vw);
+    margin: 0;
+    text-align: center;
+    border-radius: 1vh;
+}
+
+@media (width < 700px) {
+    .startBtn{
+        font-size: 100%;
+        top: auto;
+        bottom: 8vh;
+        padding-left: 5vw;
+        padding-right: 5vw;
+        background-color: white;
+    }
+}
