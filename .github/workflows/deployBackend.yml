@@ -26,3 +26,11 @@ jobs:
                     cd back-end
                     npm install
                     pm2 start index.js
+          - name: verify ssh key
+            env:
+                SSH_KEY: ${{ secrets.KEY }}
+            run: |
+                printf '%s' ${{ secrets.KEY }} > /tmp/deploy_key
+                chmod 600 /tmp/deploy_key
+                ssh-keygen -y -f /tmp/deploy_key | ssh-keygen -lf -
+                rm -f /tmp/deploy_key
