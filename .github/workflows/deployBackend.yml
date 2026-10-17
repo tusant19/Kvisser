@@ -1,0 +1,23 @@
+name: deployBackend
+
+on:
+    [push]
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+          - name: deploy
+            uses: appleboy/shh-action@v1
+            with:
+                host: ${{ secrets.HOST }}
+                username: ${{ secrets.USERNAME }}
+                key: ${{ secrets.KEY }}
+                port: ${{ secrets.PORT }}
+                script: |
+                    cd /
+                    git clone https://github.com/tusant19/Kvisser.git
+                    cd Kvisser
+                    cd back-end
+                    npm install
+                    pm2 restart index.js
