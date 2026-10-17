@@ -2,6 +2,8 @@
     margin: 0;
     padding: 0;
     scrollbar-gutter: stable both-edges;
+    --border1: rgb(240, 241, 242);
+    --bg1: rgb(246, 247, 248);
 }
 
 body {
