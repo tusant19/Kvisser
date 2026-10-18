@@ -142,7 +142,7 @@ function MuChoQuestion() {
                 </div>
                     
                 
-                <div className='questionTitleDiv'>
+                <div className='muChoQuestionTitleDiv'>
                     <p>{question?.title}</p >
                 </div>
                 
