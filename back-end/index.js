@@ -94,7 +94,7 @@ io.on("connection", (socket) => {
         console.log("gameState check pass")
         console.log("emit " + roomCode)
         io.to(roomCode).to(roomCode + "host").emit("nextQuestionSwap", (questionType?.type));
-        io.to(roomCode + "host").emit("nextQuestionSwap", (questionType?.type));
+
       }
     }
   });
@@ -192,6 +192,16 @@ db.exec(`
   );
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS answer_options (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    question_id INTEGER,
+    answer TEXT,
+    order_number INTEGER,
+    is_correct INTEGER
+  );
+`);
+
 
 
 const quizInsert = db.prepare('INSERT INTO quizzes (user_id, public_uuid, play_count, time_created, title, img_link, language, private) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
@@ -199,13 +209,13 @@ const realQuizDelete = db.prepare('DELETE FROM quizzes WHERE id = ?');
 const quizDelete = db.prepare('DELETE FROM quizzes WHERE user_id = -1')
 const quizGet = db.prepare('SELECT * FROM quizzes WHERE id = ? LIMIT 1');
 const quizGetByUuid = db.prepare('SELECT * FROM quizzes WHERE public_uuid = ? LIMIT 1');
-
 const gameInsert = db.prepare('INSERT INTO games (user_id, room_code, capacity, active, state) VALUES (?, ?, ?, ?, ?)');
 const gameDelete = db.prepare('DELETE FROM games WHERE user_id = -1');
 const gameCheck = db.prepare('SELECT * FROM games WHERE room_code = ? AND active = 1 LIMIT 1');
 const gameInactive = db.prepare('UPDATE games SET active = 0 WHERE room_code = ?');
 const getGameState = db.prepare('SELECT state FROM games WHERE room_code = ? LIMIT 1');
 const updateQuizIdInGame = db.prepare('UPDATE games SET quiz_id = ? WHERE room_code = ?');
+const updapteGameState = db.prepare('UPDATE games SET state = ? WHERE room_code = ?');
 
 const playerInsert = db.prepare('INSERT INTO game_players (game_id, game_code, time_joined, user_id, uuid, name, score) VALUES (?, ?, ?, ?, ?, ?, ?)');
 const getPlayer = db.prepare('SELECT * FROM game_players WHERE uuid = ? ORDER BY time_joined DESC')
@@ -229,6 +239,7 @@ const getQuestion = db.prepare('SELECT * FROM quiz_questions WHERE quiz_id = ? A
 const getQuestionById = db.prepare('SELECT * FROM quiz_questions WHERE id = ? LIMIT 1')
 const getQuestionCountByRoomCode = db.prepare('SELECT COUNT(*) FROM quiz_questions WHERE quiz_id = (SELECT quiz_id FROM games WHERE room_code = ? LIMIT 1)')
 const getQuestionType = db.prepare('SELECT type FROM quiz_questions WHERE quiz_id = ? AND order_number = ? LIMIT 1')
+const getQuestionByRoomCodeAndOrder = db.prepare('SELECT * FROM quiz_questions WHERE quiz_id = (SELECT quiz_id FROM games WHERE room_code = ? LIMIT 1) AND order_number = ? LIMIT 1')
 
 const userInsert = db.prepare('INSERT INTO users (name, public_uuid, password) VALUES (?, ?, ?)');
 const getUserByName = db.prepare('SELECT * FROM users WHERE name = ? LIMIT 1'); 
@@ -237,6 +248,12 @@ const getUserIdByToken = db.prepare('SELECT * FROM sessions WHERE token = ? LIMI
 const updateUserPassword = db.prepare('UPDATE users SET password = ? WHERE id = ?');
 const deleteSessionByToken = db.prepare('DELETE FROM sessions WHERE token = ?');
 const getuserById = db.prepare('SELECT * FROM users WHERE id = ? LIMIT 1')
+
+const answerOptionInsert = db.prepare('INSERT INTO answer_options (question_id, answer, order_number, is_correct) VALUES (?, ?, ?, ?)');
+const answerOptionInsertByQuizIdAndOrder = db.prepare('INSERT INTO answer_options (question_id, answer, order_number, is_correct) VALUES ((SELECT id FROM quiz_questions WHERE quiz_id = ? AND order_number = ? LIMIT 1), ?, ?, ?)');
+const answerOptionDelete = db.prepare('DELETE FROM answer_options WHERE id = ?');
+const answerOptionDeleteByQuestionId = db.prepare('DELETE FROM answer_options WHERE question_id = ?');
+const getAnswerOptionsByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? ORDER BY order_number ASC');
 
 //debug   v
 const getAllQuizzes = db.prepare('SELECT * FROM quizzes')
@@ -268,6 +285,13 @@ if (doesExampleQuizExist.length === 0) {
   questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 8, "https://placehold.co/600x400", 10, 30, "Question 8");
   questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 9, "https://placehold.co/600x400", 10, 30, "Question 9");
   questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 10, "https://placehold.co/600x400", 10, 30, "Question 10");
+
+  for (let i = 1; i <= 10; i++) {
+    answerOptionInsertByQuizIdAndOrder.run(publicQuiz[0]?.id, i, "Answer 1", 1, 1);
+    answerOptionInsertByQuizIdAndOrder.run(publicQuiz[0]?.id, i, "Answer 2", 2, 0);
+    answerOptionInsertByQuizIdAndOrder.run(publicQuiz[0]?.id, i, "Answer 3", 3, 0);
+    answerOptionInsertByQuizIdAndOrder.run(publicQuiz[0]?.id, i, "Answer 4", 4, 0);
+  }
 }
 
 const saltRounds = 10;
@@ -643,6 +667,41 @@ app.put('/v1/host/:uuid', checkQuizAccess, (req, res) => {
     {
       roomCode: gamecode,
       uuid: uuidGivenToClient
+    }
+  )
+});
+
+app.get('/v1/question/:roomCode/', (req, res) => {
+  let currentQuestionNumber = getGameState.get(req.params?.roomCode)
+  if (currentQuestionNumber?.state == undefined) {
+    return res.sendStatus(404)
+  }
+  let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, (currentQuestionNumber?.state / 2 + 1));
+  let sanitizedQuestion = []
+  if (question[0] != undefined) {
+    sanitizedQuestion.push({
+      title: question[0]?.title,
+      img_link: question[0]?.img_link,
+      score_value: question[0]?.score_value,
+      time_given: question[0]?.time_given,
+      type: question[0]?.type,
+    })
+  } else {
+    return res.sendStatus(404)
+  }
+
+  let answerOptions = getAnswerOptionsByQuestionId.all(question[0]?.id)
+  let sanitizedAnswerOptions = []
+  for (let i = 0; i < answerOptions?.length; i++) {
+    sanitizedAnswerOptions.push({
+      answer: answerOptions[i]?.answer,
+      order_number: answerOptions[i]?.order_number,
+    })
+  }
+  return res.json(
+    {
+      question: sanitizedQuestion[0],
+      answerOptions: sanitizedAnswerOptions
     }
   )
 });
