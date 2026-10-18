@@ -11,6 +11,12 @@ function Play() {
     const codeRef = useRef();
     const nameRef = useRef();
 
+    addEventListener("keypress", (event) => {
+        if (event.key === "Enter") {
+            joinRoom()
+        }
+    });
+
     function joinRoom() {
         console.log("joinRoom");
 
