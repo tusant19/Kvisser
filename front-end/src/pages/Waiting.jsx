@@ -29,6 +29,7 @@ function Waiting() {
             .then((res) => {
                 setName(res?.data?.name)
                 setRoom(res?.data?.room)
+                localStorage.setItem("roomCode", res?.data?.room)
                 console.log(res)
             })
             .catch((error) => {

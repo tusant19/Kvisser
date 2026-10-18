@@ -11,6 +11,7 @@ import CreateAccount from "./pages/CreateAccount.jsx";
 import ChangePassword from "./pages/ChangePassword.jsx";
 import Logout from "./pages/Logout.jsx";
 import HostWaiting from "./pages/HostWaiting.jsx";
+import MuChoQuestion from "./pages/MuChoQuestion.jsx";
 
 const root = document.getElementById("root");
 
@@ -26,6 +27,7 @@ ReactDOM.createRoot(root).render(
       <Route path="/changepassword" element={<ChangePassword />}/>
       <Route path="logout" element={<Logout />}/>
       <Route path="/host/:quizid" element={<HostWaiting/>}/>
+      <Route path="multipleChoice" element={<MuChoQuestion/>}/>
     </Routes>
   </BrowserRouter>,
 );

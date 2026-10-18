@@ -24,19 +24,19 @@ function setInactivePlayers(room) {
   let inactivePlayerSocIds = [];
   for(let player of getPlayers.iterate(room, "host")) {
     let pSocId = player.socket_id
-    console.log(pSocId)
+    //console.log(pSocId)
     let connected = io.sockets.adapter.sids.has(pSocId);
-    console.log(connected)
+    //console.log(connected)
     if (!connected) {
       inactivePlayerSocIds.push(pSocId)
     }
   }
   for (let i = 0; i < inactivePlayerSocIds.length; i++) {
-    console.log("marked inactive: " + inactivePlayerSocIds[i])
+    //console.log("marked inactive: " + inactivePlayerSocIds[i])
     markPlayerInactive.run(inactivePlayerSocIds[i]);
   }
   let playerCount = getPlayerCount.all(room);
-  console.log(playerCount)
+  //console.log(playerCount)
 
   let host = getHostUuid.get(room);
   if (host == undefined || host.socket_id == undefined || !io.sockets.adapter.sids.has(host.socket_id)) {
@@ -49,11 +49,11 @@ function setInactivePlayers(room) {
 
 function sendPlayersToHost(room) {
   let players = getPlayers.all(room, "host")
-  console.log("hostRoom " + room)
-  console.log("players" + players)
-  console.log("allPlayers")
+  //console.log("hostRoom " + room)
+  //console.log("players" + players)
+  //console.log("allPlayers")
   for (let player of getAllPlayers.iterate()) {
-    console.log(player)
+    //console.log(player)
   }
   let sanitizedPlayers = []
   for (let i = 0; i < players?.length; i++) {
@@ -63,14 +63,14 @@ function sendPlayersToHost(room) {
 }
 
 io.on("connection", (socket) => {
-  console.log("connect");
+  //console.log("connect");
   socket.on("joinRoom", (room, uuid) => {
-    console.log("joinRoom: " + room)
+    //console.log("joinRoom: " + room)
     socket.join(room);
     updateSocket.run(socket.id, 1, uuid)
 
     setInactivePlayers(room);
-    console.log("room joined " +  room)
+    //console.log("room joined " +  room)
   });
   socket.on("joinRoomAsHost", (roomCode, uuid) => {
     socket.join(roomCode + "host")
@@ -80,26 +80,26 @@ io.on("connection", (socket) => {
   })
   socket.on("nextQuestion", (roomCode, uuid) => {
     setInactivePlayers(roomCode)
-    console.log("nextQuestion: " + roomCode)
+    //console.log("nextQuestion: " + roomCode)
     let host = getHostUuid.get(roomCode);
     let questionCount = getQuestionCountByRoomCode.all((roomCode))
     let gameState = getGameState.get(roomCode)
-    console.log("gameState: " + gameState?.state)
+    //console.log("gameState: " + gameState?.state)
     let game = gameCheck.all(roomCode)
     let questionType = getQuestionType.get(game[0]?.quiz_id, (gameState?.state / 2 + 1))
-    console.log("questionType: " + questionType?.type)
+    //console.log("questionType: " + questionType?.type)
     if (host?.uuid == uuid) {
-      console.log("host is correct")
+      //console.log("host is correct")
       if (gameState?.state < (questionCount[0]['COUNT(*)'] * 2)) {
-        console.log("gameState check pass")
-        console.log("emit " + roomCode)
+        //console.log("gameState check pass")
+        //console.log("emit " + roomCode)
         io.to(roomCode).to(roomCode + "host").emit("nextQuestionSwap", (questionType?.type));
 
       }
     }
   });
   socket.on("disconnect", () => {
-    console.log("disconnect");
+    //console.log("disconnect");
     let player = getPlayerBySocket.all(socket.id)
     if (player[0] != undefined) {
       let room = player[0]?.game_code
@@ -259,14 +259,16 @@ const getAnswerOptionsByQuestionId = db.prepare('SELECT * FROM answer_options WH
 const getAllQuizzes = db.prepare('SELECT * FROM quizzes')
 const getAllSessions = db.prepare('SELECT * FROM sessions')
 const getAllPlayers = db.prepare('SELECT * FROM game_players')
+const getAllAnswerOptions = db.prepare('SELECT * FROM answer_options')
 
 //queries ^
 
-let doesExampleQuizExist = getAllQuizzes.all(); 
+let doesExampleQuizExist = getAllQuizzes.all();
 if (doesExampleQuizExist.length === 0) {
+  console.log("ran");
   let exampleQuizUuid = uuidv4();
   quizInsert.run(-1, uuidv4(), 0, Date.now(), "Secret example quiz!", "https://placehold.co/800x400", "english", 1);
-  quizInsert.run(-1, exampleQuizUuid, 0, Date.now(), "Playable Example quiz!", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, exampleQuizUuid, 0, Date.now(), "Hostable Example quiz!", "https://placehold.co/600x400", "english", 0);
   quizInsert.run(-1, uuidv4(), 0, Date.now(), "Empty placeholder quiz 1", "https://placehold.co/600x400", "english", 0);
   quizInsert.run(-1, uuidv4(), 0, Date.now(), "Empty placeholder quiz 2", "https://placehold.co/600x400", "english", 0);
   quizInsert.run(-1, uuidv4(), 0, Date.now(), "Empty placeholder quiz 3", "https://placehold.co/600x400", "english", 0);
@@ -303,13 +305,13 @@ function checkQuizAccess(req, res, next) {
   if (quiz.length === 0) {
     return res.sendStatus(404);
   }
-  console.log(quiz[0].private)
+  //console.log(quiz[0].private)
   if (quiz[0]?.private == 0) {
     return next();
   }
 
   let token = req?.cookies?.sessionToken
-  console.log(token)
+  //console.log(token)
   if (token === null  || token === undefined) {
     return res.sendStatus(404);
   }
@@ -321,8 +323,8 @@ function checkQuizAccess(req, res, next) {
   if (userId === null || userId === undefined) {
     return res.sendStatus(404);
   }
-  console.log(quiz[0]?.user_id)
-  console.log(userId)
+  //console.log(quiz[0]?.user_id)
+  //console.log(userId)
   if(quiz[0]?.user_id == userId) {
     return next();
   } else {
@@ -349,7 +351,7 @@ app.put('/v1/register', async (req, res) => {
     } else {
       userInsert.run(name, uuidv4(), hash);
       let token = uuidv4();
-      console.log(token)
+      //console.log(token)
       let expiry = Date.now() + 3600000 * 24 * 7; // 1 week
       tokenInsert.run(user?.id, token, expiry);
       res.cookie('sessionToken', token, { maxAge: (3600000 * 24 * 7), httpOnly: true })
@@ -359,18 +361,18 @@ app.put('/v1/register', async (req, res) => {
 }); 
 
 app.put('/v1/login', (req, res) => {
-  console.log("login received")
+  //console.log("login received")
   let name = req.body?.name;
   let password = req.body?.password; 
-  console.log(name)
-  console.log(password)
+  //console.log(name)
+  //console.log(password)
   let user = getUserByName.get(name);
-  console.log(user)
+  //console.log(user)
   bcrypt.compare(password, user?.password, function(err, result) {
     if (result) {
-        console.log("s login")
+        //console.log("s login")
         let token = uuidv4();
-        console.log(token)
+        //console.log(token)
         let expiry = Date.now() + 3600000 * 24 * 7; // 1 week
         tokenInsert.run(user?.id, token, expiry);
         res.cookie('sessionToken', token, { maxAge: (3600000 * 24 * 7), httpOnly: true })
@@ -422,7 +424,7 @@ app.put('/v1/changepassword', (req, res) => {
           // new Session copypaste
           updateUserPassword.run(hash, user?.id);
           let token = uuidv4();
-          console.log(token)
+          //console.log(token)
           let expiry = Date.now() + 3600000 * 24 * 7; // 1 week
           tokenInsert.run(user?.id, token, expiry);
           res.cookie('sessionToken', token, { maxAge: (3600000 * 24 * 7), httpOnly: true })
@@ -459,7 +461,7 @@ app.put('/v1/changepassword', (req, res) => {
 
 app.get('/v1/loginstatus', (req, res) => {
   let token = req?.cookies?.sessionToken
-  console.log(token)
+  //console.log(token)
   if (token == undefined || token == null) {
     res.status(401)
     return res.json(
@@ -530,9 +532,9 @@ app.put('/v1/joinRoom', async (req, res) => {
       return res.sendStatus(422);
     }
     for (let game of getPlayer.iterate(req?.cookies?.playerUuid)) {
-      console.log("BODY code" + req.body?.code)
+      //console.log("BODY code" + req.body?.code)
       let active = gameCheck.all(game?.game_code)
-      console.log("result" + active[0]?.active)
+      //console.log("result" + active[0]?.active)
       if (active[0]?.active == 1) {
         alrInRoom = true;
       }
@@ -583,10 +585,10 @@ app.put('/v1/joinRoom', async (req, res) => {
 });
 
 app.get('/v1/playerDetails', (req, res) => {
-  console.log(req.cookies.playerUuid)
+  //console.log(req.cookies.playerUuid)
   let player = getPlayer.all(req.cookies.playerUuid)
-  //console.log(player)
-  // console.log(player[0])
+  ////console.log(player)
+  // //console.log(player[0])
   if (player[0] == undefined) {
     res.sendStatus(404)
   } else {
@@ -602,14 +604,14 @@ app.get('/v1/playerDetails', (req, res) => {
 
 app.get('/v1/quiz/:uuid', checkQuizAccess, (req, res) => {
   let testUuid = "abcd";
-  console.log(testUuid)
+  //console.log(testUuid)
   
   let quiz = quizGetByUuid.all(req.params.uuid);
   
   let questions = getQuestions.all(quiz[0]?.id)
   let sanitizedQuestions = []
   for (let question of questions) {
-    console.log("loop")
+    //console.log("loop")
     sanitizedQuestions.push({"title": question.title, "question": question.img_link})
   }
   if (quiz[0] == undefined) {
@@ -631,14 +633,14 @@ function generateCode(len) {
   for (let i = 0; i < len; i++) {
     let randNum = 97;
     randNum += (Math.floor(Math.random() * 25))
-    console.log(randNum)
+    //console.log(randNum)
     code += (String.fromCharCode(randNum));
   }
   return code;
 }
 
 app.put('/v1/host/:uuid', checkQuizAccess, (req, res) => {
-  console.log("host request received")
+  //console.log("host request received")
   let sessionToken = req?.cookies?.sessionToken
   let tokenUser = getUserIdByToken.all(sessionToken)
   let uuidGivenToClient;
@@ -671,7 +673,7 @@ app.put('/v1/host/:uuid', checkQuizAccess, (req, res) => {
   )
 });
 
-app.get('/v1/question/:roomCode/', (req, res) => {
+app.get('/v1/question/:roomCode', (req, res) => {
   let currentQuestionNumber = getGameState.get(req.params?.roomCode)
   if (currentQuestionNumber?.state == undefined) {
     return res.sendStatus(404)
@@ -689,7 +691,7 @@ app.get('/v1/question/:roomCode/', (req, res) => {
   } else {
     return res.sendStatus(404)
   }
-
+  console.log("question id: " + question[0]?.id)
   let answerOptions = getAnswerOptionsByQuestionId.all(question[0]?.id)
   let sanitizedAnswerOptions = []
   for (let i = 0; i < answerOptions?.length; i++) {
@@ -707,7 +709,7 @@ app.get('/v1/question/:roomCode/', (req, res) => {
 });
 
 httpServer.listen(8080, () => {
-  console.log(`Server listening on port 8080`);
+  //console.log(`Server listening on port 8080`);
 });
 
 app.get('/v1/role', (req, res) => {
