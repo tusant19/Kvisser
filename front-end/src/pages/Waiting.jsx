@@ -59,14 +59,16 @@ function Waiting() {
             }
             setCount(playerCount)
         })
+        socket.on("nextQuestionSwap", (type) => {
+            console.log("NQS")
+            window.location.replace(`${siteBaseUrl}/${type}`);
+        })
 
         return () => {
             socket.off("playerCount")
             socket.disconnect();
         }
     }, [room, uuid])
-        
-
     
     
     return (

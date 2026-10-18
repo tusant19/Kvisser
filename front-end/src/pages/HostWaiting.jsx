@@ -57,6 +57,10 @@ function HostWaiting() {
             console.log(players);
             setPlayers(players)
         })
+        socket.on("nextQuestionSwap", (type) => {
+            console.log("NQS")
+            window.location.replace(`${siteBaseUrl}/${type}`);
+        })
 
         return () => {
             socket.off("updatePlayers")
@@ -65,6 +69,8 @@ function HostWaiting() {
     }, [roomCode, uuid])
 
     function startRoom() {
+        console.log("startRoom")
+        const socket = io(apiBaseUrl)
         socket.emit("nextQuestion", roomCode, uuid)
     } 
 

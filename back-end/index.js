@@ -70,12 +70,34 @@ io.on("connection", (socket) => {
     updateSocket.run(socket.id, 1, uuid)
 
     setInactivePlayers(room);
+    console.log("room joined " +  room)
   });
   socket.on("joinRoomAsHost", (roomCode, uuid) => {
     socket.join(roomCode + "host")
     updateSocket.run(socket.id, 1, uuid)
     sendPlayersToHost(roomCode);
+    
   })
+  socket.on("nextQuestion", (roomCode, uuid) => {
+    setInactivePlayers(roomCode)
+    console.log("nextQuestion: " + roomCode)
+    let host = getHostUuid.get(roomCode);
+    let questionCount = getQuestionCountByRoomCode.all((roomCode))
+    let gameState = getGameState.get(roomCode)
+    console.log("gameState: " + gameState?.state)
+    let game = gameCheck.all(roomCode)
+    let questionType = getQuestionType.get(game[0]?.quiz_id, (gameState?.state / 2 + 1))
+    console.log("questionType: " + questionType?.type)
+    if (host?.uuid == uuid) {
+      console.log("host is correct")
+      if (gameState?.state < (questionCount[0]['COUNT(*)'] * 2)) {
+        console.log("gameState check pass")
+        console.log("emit " + roomCode)
+        io.to(roomCode).to(roomCode + "host").emit("nextQuestionSwap", (questionType?.type));
+        io.to(roomCode + "host").emit("nextQuestionSwap", (questionType?.type));
+      }
+    }
+  });
   socket.on("disconnect", () => {
     console.log("disconnect");
     let player = getPlayerBySocket.all(socket.id)
@@ -113,11 +135,12 @@ db.exec(`
 db.exec(`
   CREATE TABLE IF NOT EXISTS games (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    quiz_id INTEGER,
     user_id INTEGER,
     room_code TEXT,
     capacity INTEGER,
     time_started INTEGER,
-    current_question_number INTEGER,
+    state INTEGER,
     active INTEGER
   );
 `);
@@ -177,10 +200,12 @@ const quizDelete = db.prepare('DELETE FROM quizzes WHERE user_id = -1')
 const quizGet = db.prepare('SELECT * FROM quizzes WHERE id = ? LIMIT 1');
 const quizGetByUuid = db.prepare('SELECT * FROM quizzes WHERE public_uuid = ? LIMIT 1');
 
-const gameInsert = db.prepare('INSERT INTO games (user_id, room_code, capacity, active) VALUES (?, ?, ?, ?)');
+const gameInsert = db.prepare('INSERT INTO games (user_id, room_code, capacity, active, state) VALUES (?, ?, ?, ?, ?)');
 const gameDelete = db.prepare('DELETE FROM games WHERE user_id = -1');
 const gameCheck = db.prepare('SELECT * FROM games WHERE room_code = ? AND active = 1 LIMIT 1');
 const gameInactive = db.prepare('UPDATE games SET active = 0 WHERE room_code = ?');
+const getGameState = db.prepare('SELECT state FROM games WHERE room_code = ? LIMIT 1');
+const updateQuizIdInGame = db.prepare('UPDATE games SET quiz_id = ? WHERE room_code = ?');
 
 const playerInsert = db.prepare('INSERT INTO game_players (game_id, game_code, time_joined, user_id, uuid, name, score) VALUES (?, ?, ?, ?, ?, ?, ?)');
 const getPlayer = db.prepare('SELECT * FROM game_players WHERE uuid = ? ORDER BY time_joined DESC')
@@ -202,6 +227,8 @@ const questionDeleteByQuiz = db.prepare('DELETE FROM quiz_questions WHERE quiz_i
 const getQuestions = db.prepare('SELECT * FROM quiz_questions WHERE quiz_id = ? ORDER BY order_number ASC')
 const getQuestion = db.prepare('SELECT * FROM quiz_questions WHERE quiz_id = ? AND order_number = ? LIMIT 1')
 const getQuestionById = db.prepare('SELECT * FROM quiz_questions WHERE id = ? LIMIT 1')
+const getQuestionCountByRoomCode = db.prepare('SELECT COUNT(*) FROM quiz_questions WHERE quiz_id = (SELECT quiz_id FROM games WHERE room_code = ? LIMIT 1)')
+const getQuestionType = db.prepare('SELECT type FROM quiz_questions WHERE quiz_id = ? AND order_number = ? LIMIT 1')
 
 const userInsert = db.prepare('INSERT INTO users (name, public_uuid, password) VALUES (?, ?, ?)');
 const getUserByName = db.prepare('SELECT * FROM users WHERE name = ? LIMIT 1'); 
@@ -218,24 +245,36 @@ const getAllPlayers = db.prepare('SELECT * FROM game_players')
 
 //queries ^
 
+let doesExampleQuizExist = getAllQuizzes.all(); 
+if (doesExampleQuizExist.length === 0) {
+  let exampleQuizUuid = uuidv4();
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "Secret example quiz!", "https://placehold.co/800x400", "english", 1);
+  quizInsert.run(-1, exampleQuizUuid, 0, Date.now(), "Playable Example quiz!", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "Empty placeholder quiz 1", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "Empty placeholder quiz 2", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "Empty placeholder quiz 3", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "Empty placeholder quiz 4", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "Empty placeholder quiz 5", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "Empty placeholder quiz 6", "https://placehold.co/600x400", "english", 0);
+  quizInsert.run(-1, uuidv4(), 0, Date.now(), "Empty placeholder quiz 7", "https://placehold.co/600x400", "english", 0);
+  let publicQuiz = quizGetByUuid.all(exampleQuizUuid);
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 1, "https://placehold.co/600x400", 10, 30, "Question 1");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 2, "https://placehold.co/600x400", 10, 30, "Question 2");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 3, "https://placehold.co/600x400", 10, 30, "Question 3");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 4, "https://placehold.co/600x400", 10, 30, "Question 4");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 5, "https://placehold.co/600x400", 10, 30, "Question 5");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 6, "https://placehold.co/600x400", 10, 30, "Question 6");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 7, "https://placehold.co/600x400", 10, 30, "Question 7");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 8, "https://placehold.co/600x400", 10, 30, "Question 8");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 9, "https://placehold.co/600x400", 10, 30, "Question 9");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 10, "https://placehold.co/600x400", 10, 30, "Question 10");
+}
+
 const saltRounds = 10;
 
 //auth
 function checkQuizAccess(req, res, next) {
-  let testUuid = "abcd";
-  let secretTestUuid = "abdc"
-  
-  
-  quizInsert.run(-1, testUuid, 0, Date.now(), "Example quiz!", "https://placehold.co/600x400", "english", 0);
-  quizInsert.run(1, secretTestUuid, 0, Date.now(), "Secret example quiz!", "https://placehold.co/800x400", "english", 1);
   let quiz = quizGetByUuid.all(req.params.uuid);
-  questionInsert.run(quiz[0]?.id, "multipleChoice", 1, "https://placehold.co/600x400", 10, 30, "Question 1");
-  questionInsert.run(quiz[0]?.id, "multipleChoice", 2, "https://placehold.co/600x400", 10, 30, "Question 2");
-  questionInsert.run(quiz[0]?.id, "multipleChoice", 3, "https://placehold.co/600x400", 10, 30, "Question 3");
-  questionInsert.run(quiz[0]?.id, "multipleChoice", 4, "https://placehold.co/600x400", 10, 30, "Question 4");
-  questionInsert.run(quiz[0]?.id, "multipleChoice", 5, "https://placehold.co/600x400", 10, 30, "Question 5");
-  questionInsert.run(quiz[0]?.id, "multipleChoice", 6, "https://placehold.co/600x400", 10, 30, "Question 6");
-  questionInsert.run(quiz[0]?.id, "multipleChoice", 7, "https://placehold.co/600x400", 10, 30, "Question 8");
 
   if (quiz.length === 0) {
     return res.sendStatus(404);
@@ -449,16 +488,6 @@ app.put('/v1/logout', (req, res) => {
 
 //main
 app.get('/v1/mostPlayed', (req, res) => {
-  quizInsert.run(-1, uuidv4(), 0, Date.now(), "1", "https://placehold.co/600x400", "english", 0);
-  quizInsert.run(-1, uuidv4(), 0, Date.now(), "2", "https://placehold.co/600x400", "english", 0);
-  quizInsert.run(-1, uuidv4(), 0, Date.now(), "3", "https://placehold.co/600x400", "english", 0);
-  quizInsert.run(-1, uuidv4(), 0, Date.now(), "4", "https://placehold.co/600x400", "english", 0);
-  quizInsert.run(-1, uuidv4(), 0, Date.now(), "5", "https://placehold.co/600x400", "english", 0);
-  quizInsert.run(-1, uuidv4(), 0, Date.now(), "6", "https://placehold.co/600x400", "english", 0);
-  quizInsert.run(-1, uuidv4(), 0, Date.now(), "7", "https://placehold.co/600x400", "english", 0);
-  quizInsert.run(-1, uuidv4(), 0, Date.now(), "8", "https://placehold.co/600x400", "english", 0);
-  quizInsert.run(-1, uuidv4(), 0, Date.now(), "9", "https://placehold.co/600x400", "english", 0);
-
   const getMostPlayed = db.prepare('SELECT * FROM quizzes WHERE private != 1 ORDER BY play_count DESC LIMIT 30');
   let sanitizedMostPlayed = []
   for (let quiz of getMostPlayed.all()) {
@@ -467,7 +496,6 @@ app.get('/v1/mostPlayed', (req, res) => {
 
   res.send(sanitizedMostPlayed)
 
-  quizDelete.run();
 });
 
 app.put('/v1/joinRoom', async (req, res) => {
@@ -572,8 +600,6 @@ app.get('/v1/quiz/:uuid', checkQuizAccess, (req, res) => {
     )
     }
 
-  quizDelete.run()
-  questionDeleteByQuiz.run(testUuid)
 });
 
 function generateCode(len) {
@@ -606,7 +632,9 @@ app.put('/v1/host/:uuid', checkQuizAccess, (req, res) => {
     gameExists = gameCheck.all(gamecode);
   }
   
-  gameInsert.run(uuidGivenToClient, gamecode, 100, 1);
+  gameInsert.run(uuidGivenToClient, gamecode, 100, 1, 0);
+  let quiz = quizGetByUuid.all(req.params?.uuid);
+  updateQuizIdInGame.run(quiz[0]?.id, gamecode);
   let game = gameCheck.all(gamecode);
   hostInsert.run(game[0]?.id, gamecode, Date.now(), uuidGivenToClient, uuidGivenToClient, "host", 0, "host");
   res.cookie('playerUuid', uuidGivenToClient, { maxAge: (3600000), httpOnly: true })
@@ -622,3 +650,16 @@ app.put('/v1/host/:uuid', checkQuizAccess, (req, res) => {
 httpServer.listen(8080, () => {
   console.log(`Server listening on port 8080`);
 });
+
+app.get('/v1/role', (req, res) => {
+  let player = getPlayer.all(req.cookies.playerUuid)
+  if (player[0] == undefined) {
+    res.sendStatus(404)
+  } else {
+    res.json(
+      {
+        role: player[0]?.role
+      }
+    )
+  }
+})
