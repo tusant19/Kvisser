@@ -35,7 +35,7 @@ function Waiting() {
             .catch((error) => {
                 console.error(error);
             });
-    }, [])
+    }, [isAre, singularPlayer])
         
 
     let uuid = localStorage.getItem("uuid")
