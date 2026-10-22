@@ -1,4 +1,6 @@
-Kvisser: A self hosted quiz platform.
+Kvisser: A self hosted quiz platform. 
+The goal of this project is to build a locally hosted service to replace services like kahoot. 
+Built with react as the frontend framework and expressJS as the backend.
 Currently in very early development.
 
 Try it: https://kvisser.santtu.uk
