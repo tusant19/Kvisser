@@ -5,6 +5,11 @@ Currently in very early development.
 
 Try it: https://kvisser.santtu.uk
 
+Note: the page for changing your password exists but there is currently no ui element to access it. To change password go to: https://kvisser.santtu.uk/changepassword.
+
+To test locally:
+run "npm i" and "npm run dev" in both the front-end and backend directiories.
+
 Current features that exist:
 - The home page
 <img alt="image of home page" src="image.png" height="200"/>
@@ -23,7 +28,3 @@ Current features that exist:
 <img alt="Image of account creation page" src="image-8.png" height="200"/>
 <img alt="Image of password changing page" src="image-9.png" height="200"/>
 
-Note: the page for changing your password exists but there is currently no ui element to access it. To change password go to: https://kvisser.santtu.uk/changepassword.
-
-To test locally:
-run "npm i" and "npm run dev" in both the front-end and backend directiories.
