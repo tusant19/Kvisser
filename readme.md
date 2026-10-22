@@ -1,25 +1,25 @@
-Kvisser: A quiz self hosted platform.
+Kvisser: A self hosted quiz platform.
 Currently in very early development.
 
 Try it: https://kvisser.santtu.uk
 
 Current features that exist:
 - The home page
-![image of home page](image.png)
+<img alt="image of home page" src="image.png" height="200"/>
 - Quiz pages
-![image of quiz specific page](image-1.png)
+<img alt="image of quiz specific page" src="image-1.png" height="200/>
 - Hosting a lobby
-![Image of hosting screen](image-2.png)
+<img alt="Image of hosting screen" src="image-2.png" height="200/>
 - Joining a lobby
-![Image of room joining screen](image-3.png)
-![Image of waiting screen](image-4.png)
+<img alt="Image of room joining screen" src="image-3.png" height="200/>
+<img alt="Image of waiting screen" src="image-4.png" height="200/>
 - The front page
-![Image of the front page](image-5.png)
+<img alt="Image of the front page" src="image-5.png" height="200/>
 - Auth pages
-![Image of login page](image-6.png)
-![Image of logout page](image-7.png)
-![Image of account creation page](image-8.png)
-![Image of password changing page](image-9.png)
+<img alt="Image of login page" src="image-6.png" height="200/>
+<img alt="Image of logout page" src="image-7.png" height="200/>
+<img alt="Image of account creation page" src="image-8.png" height="200/>
+<img alt="Image of password changing page" src="image-9.png" height="200/>
 
 Note: the page for changing your password exists but there is currently no ui element to access it. To change password go to: https://kvisser.santtu.uk/changepassword.
 
