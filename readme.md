@@ -7,7 +7,7 @@ Try it: https://kvisser.santtu.uk
 
 How to access the available features:
  - Both the quiz page and the ability to host lobbies are viewable when clicking on the hostable example quiz on the carousel on the first carousel in the home screen
- - To host the example quiz and then continue or login and try again. 
+ - To host the example quiz click the host button in the example quizzes page and then continue or login and try again. 
  - You can join a room by clicking on the play button and then typing in the 6 letter code visible on the hosts screen and then your chosen username.
  - To access to login/logout and sign up pages click on the login button in the top right corner of the site
 
