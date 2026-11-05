@@ -30,6 +30,7 @@ function MuChoQuestion() {
             setQuestion(response.data.question);
             console.log(response.data.answerOptions);
             setAnswerOptions(response.data.answerOptions);
+            setupTimerBar(response.data.question.time_given);
         })
         .catch((error) => {
             console.error(error);
@@ -54,6 +55,7 @@ function MuChoQuestion() {
         })
         .then((response) => {
             setIsHost(response.data.role === "host");
+            hideForNonHosts();
         })
         .catch((error) => {
             console.error(error);
@@ -101,13 +103,19 @@ function MuChoQuestion() {
             } else if (answerOptions?.length > 3) {
                 for (let i = 0; i < answerOptions?.length; i++) {
                     // set the row and column
-                    let column = i % 2 + 1 
+                    let modulo = i % 2
+                    let column;
+                    if (modulo == 0) {
+                        column = 2
+                    } else {
+                        column = 4
+                    }
                     let row;
                     if (i > 1) {
-                        row = 5
+                        row = 9
                     }
                     else {
-                        row = 4
+                        row = 7
                     }
                     console.log("row: " + row)
                     console.log("column: " + column)
@@ -118,6 +126,30 @@ function MuChoQuestion() {
             }
         }
     }
+    
+    function hideForNonHosts() {
+        if (!isHost) {
+            const leaderBoardBtn = document.querySelector('.leaderBoardBtn');
+            leaderBoardBtn.style.display = 'none';
+        }
+    }
+
+    function setupTimerBar(seconds) {
+        const timeLeftBar = document.querySelector('.timeLeftBar');
+        let timeLeft = seconds;
+        const timer = setInterval(() => {
+            timeLeft -= 1;
+            let percentage = (timeLeft / seconds) * 100;
+            let wholeNumberPercentage = Math.floor(percentage);
+            console.log("percentage: " + wholeNumberPercentage);
+            timeLeftBar.style.background = 'linear-gradient(to right, var(--border2) ' + wholeNumberPercentage + '%, #ffffff ' + wholeNumberPercentage + '%)';
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                timeLeftBar.style.background = '#ffffff';
+            }
+        }, 1000);
+    }
+
 
     function handleAnswerOptionClick(order_number) {
         console.log("click option" + order_number)
@@ -136,7 +168,6 @@ function MuChoQuestion() {
         <div className='muChoPage'>
             <TopBar />
             <div className='aargh'>
-                <div className='timeLeftBar'></div>
                 <div className='muChoQuestionImgDiv'>
                     <img onLoad={() => handleAnswerOptions()} className='muChoQuestionImg' src={question?.img_link} alt="Question" />
                 </div>
@@ -147,12 +178,13 @@ function MuChoQuestion() {
                 </div>
                 
                     {answerOptions?.map((answer, order_number) => (
-                        <div key={order_number} ref={el => answerOptionRefs.current[order_number + 1] = el} className='answerOption'>
-                            <p onClick={() => handleAnswerOptionClick(order_number + 1)}>{answer?.answer}</p>
+                        <div key={order_number} ref={el => answerOptionRefs.current[order_number + 1] = el} onClick={() => handleAnswerOptionClick(order_number + 1)} className='answerOption'>
+                            <p>{answer?.answer}</p>
                         </div>
                     ))}
                 <div className='playerDetailsDiv'>
                     <p>{playerDetails?.name}</p>
+                    <div className='timeLeftBar'></div>
                     <p>{playerDetails?.score} points</p>
                 </div>
                 <div className='leaderBoardBtnDiv'>
