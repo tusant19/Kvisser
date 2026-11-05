@@ -202,6 +202,17 @@ db.exec(`
   );
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS game_answers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    game_code TEXT,
+    question_id INTEGER,
+    player_uuid TEXT,
+    answer TEXT,
+    is_correct INTEGER
+  );
+`);
+
 
 
 const quizInsert = db.prepare('INSERT INTO quizzes (user_id, public_uuid, play_count, time_created, title, img_link, language, private) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
@@ -227,6 +238,7 @@ const hostInsert = db.prepare('INSERT INTO game_players (game_id, game_code, tim
 const getHostUuid = db.prepare('SELECT * FROM game_players WHERE game_code = ? AND role = \'host\' ORDER BY time_joined DESC LIMIT 1')
 const setAsPlayerByUuid = db.prepare('UPDATE game_players SET role = ? WHERE uuid = ?')
 const setAsPlayerByName = db.prepare('UPDATE game_players SET role = ? WHERE name = ?')
+const updatePlayerScore = db.prepare('UPDATE game_players SET score = ? WHERE uuid = ?')
 
 const markPlayerInactive = db.prepare('UPDATE game_players SET connected = 0 WHERE socket_id = ?')
 const updateSocket = db.prepare('UPDATE game_players SET socket_id = ?, connected = ? WHERE id = (SELECT id FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1)')
@@ -253,7 +265,11 @@ const answerOptionInsert = db.prepare('INSERT INTO answer_options (question_id, 
 const answerOptionInsertByQuizIdAndOrder = db.prepare('INSERT INTO answer_options (question_id, answer, order_number, is_correct) VALUES ((SELECT id FROM quiz_questions WHERE quiz_id = ? AND order_number = ? LIMIT 1), ?, ?, ?)');
 const answerOptionDelete = db.prepare('DELETE FROM answer_options WHERE id = ?');
 const answerOptionDeleteByQuestionId = db.prepare('DELETE FROM answer_options WHERE question_id = ?');
+const getCorrectAnswerByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? AND is_correct = 1 LIMIT 1');
 const getAnswerOptionsByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? ORDER BY order_number ASC');
+
+const insertAnswerForPlayer = db.prepare('INSERT INTO game_answers (game_code, question_id, player_uuid, answer, is_correct) VALUES (?, ?, ?, ?, ?)');
+const hasAnswered = db.prepare('SELECT * FROM game_answers WHERE game_code = ? AND question_id = ? AND player_uuid = ? LIMIT 1');
 
 //debug   v
 const getAllQuizzes = db.prepare('SELECT * FROM quizzes')
@@ -724,3 +740,38 @@ app.get('/v1/role', (req, res) => {
     )
   }
 })
+
+app.put('/v1/answer/:roomCode', (req, res) => {
+  let player = getPlayer.all(req.cookies.playerUuid)
+  if (player[0] == undefined) {
+    return res.sendStatus(404)
+  }
+  let orderNumber = req.body?.order_number
+  let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, (getGameState.get(req.params?.roomCode)?.state / 2 + 1));
+  if (question[0] == undefined) {
+    return res.sendStatus(404)
+  }
+  let hasAlreadyAnswered = hasAnswered.get(req.params?.roomCode, question[0]?.id, player[0]?.uuid)
+  if (hasAlreadyAnswered != undefined) {
+    return res.sendStatus(409)
+  }
+  insertAnswerForPlayer.run(req.params?.roomCode, question[0]?.id, player[0]?.uuid, req.body?.answer, 0)
+  let correctAnswer = getCorrectAnswerByQuestionId.get(question[0]?.id)
+  if (correctAnswer && correctAnswer.order_number === orderNumber && player[0]?.role !== "host" && question[0]?.type === "multipleChoice" && question[0]?.score_value != undefined && question[0]?.score_value != null && question[0]?.score_value > 0) {
+    updatePlayerScore.run(player[0]?.score + question[0]?.score_value, player[0]?.uuid)
+    res.status(200)
+    return res.json(
+      {
+        correct: true,
+        newScore: player[0]?.score + question[0]?.score_value
+      }
+    )
+  }
+  res.status(200)
+  return res.json(
+    {
+      correct: false
+    }
+  )
+
+});
