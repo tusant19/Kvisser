@@ -1,0 +1,61 @@
+.answerStatusPageMain {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 85.4dvh;
+    text-align: center;
+    background-color: var(--bg1);
+}
+
+.answerStatusPoints{
+    font-size: 140%;
+    margin-top: 0.5vh;
+    margin-bottom: 0.3vh;
+    padding: 1vh;
+    background-color: white;
+    border: 2px solid var(--border1);
+    width: 20dvw;
+    color: var(--text1);
+}
+
+.answerStatusText {
+    font-size: 200%;
+    margin-top: 0vh;
+    margin-bottom: 1vh;
+    padding: 0;
+    color: var(--text1);
+}
+
+.answerStatusSymbol {
+    width: 5dvw;
+    height: 5dvw;
+    background-color: white;
+    border: 2px solid var(--border1);
+    border-radius: 20%;
+    padding: 1dvw;
+    margin-bottom: 0vh;
+}
+
+@media (width <= 700px) {
+    .answerStatusPoints {
+        min-width: 60dvw;
+    }
+
+    .answerStatusText {
+        font-size: 150%;
+    }
+
+    .answerStatusSymbol {
+        width: 25dvw;
+        height: 25dvw;
+    }
+}
+
+.answerStatusPlace{
+    font-size: 80%;
+    margin-top: 0vh;
+    margin-bottom: 1vh;
+    padding: 0;
+    color: var(--text2);
+}

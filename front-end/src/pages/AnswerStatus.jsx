@@ -6,6 +6,8 @@ import { useParams } from "react-router";
 import axios from "axios";
 import "../Main.css";
 import "./AnswerStatus.css";
+import correctSymbol from "../assets/check_24dp_505050_FILL0_wght400_GRAD0_opsz24.svg";
+import incorrectSymbol from "../assets/close_24dp_505050_FILL0_wght400_GRAD0_opsz24.svg";
 
 function AnswerStatus() {
     let roomCodeLoStor = localStorage.getItem("roomCode") 
@@ -14,6 +16,7 @@ function AnswerStatus() {
     const [points, setPoints] = useState(0);
     const [placeMsg, setPlaceMsg] = useState(null);
     const playerDetails = useRef(null);
+    const [symbol, setSymbol] = useState(null);
 
     useEffect(() => {
         axios.get(`${apiBaseUrl}/v1/playerDetails`, {
@@ -36,11 +39,13 @@ function AnswerStatus() {
             console.log(response.data);
             setPlaceMsg(response.data.msg);
             if (response.data.status) {
-                setAnswerStatus("You answered correctly!");
+                setAnswerStatus("Correct!");
                 setPoints(playerDetails.current?.score);
+                setSymbol(correctSymbol);
             } else {
-                setAnswerStatus("Your answer was incorrect");
+                setAnswerStatus("Incorrect");
                 setPoints(playerDetails.current?.score);
+                setSymbol(incorrectSymbol);
             }
         })
         .catch((error) => {
@@ -52,9 +57,13 @@ function AnswerStatus() {
         <div className="answerStatusPage">
             <TopBar />
             <div className="answerStatusPageMain">
-                <p className="answerStatusText">{answerStatus}</p>
-                <p className="answerStatusPoints">You currently have {points} points</p>
-                <p className="answerStatusPlace">{placeMsg}</p>
+                <div className="answerStatusTexts">
+                    <p className="answerStatusText">{answerStatus}</p>
+                    <img className="answerStatusSymbol" src={symbol} alt="answer status symbol" />
+                    
+                    <p className="answerStatusPoints">{points} points</p>
+                    <p className="answerStatusPlace">{placeMsg}</p>
+                </div>
             </div>
             <BottomBar />
         </div>
