@@ -14,11 +14,14 @@ import '../Main.css'
 
 function MuChoQuestion() {
     const [playerDetails, setPlayerDetails] = useState(null)
-    const [isHost, setIsHost] = useState(null)
+    const isHost = useRef(null)
     const [question, setQuestion] = useState(null)
     const [answerOptions, setAnswerOptions] = useState([])
-    const [answerCount, setAnswerCount] = useState(0)
-    let roomCodeLoStor = localStorage.getItem("roomCode") 
+    const [answerCount, setAnswerCount] = useState("0 answers")
+    let roomCodeLoStor = localStorage.getItem("roomCode")
+    const [roomCode, setRoomCode] = useState(roomCodeLoStor)
+    const timeLeftBar = useRef(null);
+    const hostTimeLeftBar = useRef(null);
     
     let answerOptionRefs = useRef([]);
 
@@ -55,7 +58,7 @@ function MuChoQuestion() {
             withCredentials: true
         })
         .then((response) => {
-            setIsHost(response.data.role === "host");
+            isHost.current = response.data.role === "host";
         })
         .catch((error) => {
             console.error(error);
@@ -137,25 +140,35 @@ function MuChoQuestion() {
     }
     
     function setupTimerBar(seconds) {
-        const timeLeftBar = document.querySelector('.timeLeftBar');
         let timeLeft = seconds;
         const timer = setInterval(() => {
             timeLeft -= 1;
             let percentage = (timeLeft / seconds) * 100;
             let wholeNumberPercentage = Math.floor(percentage);
-            console.log("percentage: " + wholeNumberPercentage);
-            timeLeftBar.style.background = 'linear-gradient(to right, var(--border2) ' + wholeNumberPercentage + '%, #ffffff ' + wholeNumberPercentage + '%)';
+            if (wholeNumberPercentage < 0) {
+                wholeNumberPercentage = 0;
+                timeLeft = 0;
+            }
+            if (isHost.current) {
+                hostTimeLeftBar.current.style.background = 'linear-gradient(to right, var(--border2) ' + wholeNumberPercentage + '%, #ffffff ' + wholeNumberPercentage + '%)';
+            } else {
+                timeLeftBar.current.style.background = 'linear-gradient(to right, var(--border2) ' + wholeNumberPercentage + '%, #ffffff ' + wholeNumberPercentage + '%)';
+            }
             if (timeLeft <= 0) {
                 clearInterval(timer);
-                timeLeftBar.style.background = '#ffffff';
+                if (isHost.current) {
+                    hostTimeLeftBar.current.style.background = '#ffffff';
+                } else {
+                    timeLeftBar.current.style.background = '#ffffff';
+                }
             }
         }, 1000);
     }
 
 
     function handleAnswerOptionClick(order_number) {
-        console.log("isHost: " + isHost)
-        if (!roomCodeLoStor || isHost) {
+        console.log("isHost: " + isHost.current)
+        if (!roomCodeLoStor || isHost.current) {
             return;
         }
 
@@ -205,13 +218,19 @@ function MuChoQuestion() {
                             <p>{answer?.answer}</p>
                         </div>
                     ))}
+
                 <div className='playerDetailsDiv'>
                     <p>{playerDetails?.name}</p>
-                    <div className='timeLeftBar'></div>
+                    <div ref={timeLeftBar} className='timeLeftBar'></div>
                     <p>{playerDetails?.score} points</p>
                 </div>
+                {isHost.current && <div className='hostDetailsDiv'>
+                    {isHost.current && <p>{playerDetails?.name}</p>}
+                    {isHost.current && <div ref={hostTimeLeftBar} className='hostTimeLeftBar'></div>}
+                    {isHost.current && <p>{roomCode}</p>}
+                </div>}
                 <div className='leaderBoardBtnDiv'>
-                    {isHost && <button className='leaderBoardBtn' on>Leaderboard</button>}
+                    {isHost.current && <button className='leaderBoardBtn' on>Leaderboard</button>}
                 </div>
             </div>
             <BottomBar />

@@ -92,7 +92,31 @@
     border-top-right-radius: 3vh;
 }
 
+.hostDetailsDiv {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row;
+    height: 8vh;
+    position: absolute;
+    bottom: 6.5vh;
+    border-top: solid var(--border1) 2px;
+    right: 0;
+    display: flex;
+    width: 100dvw;
+    background-color: white;
+    border-top-left-radius: 3vh;
+    border-top-right-radius: 3vh;
+}
+
 .playerDetailsDiv p {
+    font-size: 120%;
+    margin: 0;
+    margin-left: 1vw;
+    margin-right: 1vw;
+}
+
+.hostDetailsDiv p {
     font-size: 120%;
     margin: 0;
     margin-left: 1vw;
@@ -101,6 +125,11 @@
 
 @media (width <= 700px) {
     .playerDetailsDiv p {
+        font-size: 1.5vh;
+        margin-left: 3.5vw;
+        margin-right: 3.5vw;
+    }
+    .hostDetailsDiv p {
         font-size: 1.5vh;
         margin-left: 3.5vw;
         margin-right: 3.5vw;
@@ -132,3 +161,16 @@
     /* add intial gradient with 100% border2 */
     background: linear-gradient(to right, var(--border2) 100%, #ffffff 0%);
 }
+
+
+.hostTimeLeftBar {
+    height: max(1vh, 1dvw);
+    width: 50%;;
+    border-radius: 1vh;
+    margin-left: 1vw;
+    margin-right: 1vw;
+    border: solid var(--border3) 2px;
+    /* add intial gradient with 100% border2 */
+    background: linear-gradient(to right, var(--border2) 100%, #ffffff 0%);
+}
+
