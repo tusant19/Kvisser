@@ -26,21 +26,7 @@ function HostWaiting() {
     let { quizid } = useParams();
     console.log(quizid)
     useEffect(() => {
-        axios.put(`${apiBaseUrl}/v1/host/${quizid}`, {
-                withCredentials: true
-            })
-            .then((res) => {
-                if (res.status === 200) {
-                    setRoomCode(res.data.roomCode);
-                    setUuid(res.data.uuid);
-                    localStorage.setItem("uuid", res.data.uuid);
-                    localStorage.setItem("roomCode", res.data.roomCode);
-                }
-            })
-            .catch((error) => {
-                console.error(error);
-                // window.location.replace(`${siteBaseUrl}/quiz/${quizid}`);
-            });
+        setUpNewRoom();
     }, [])
     
 
@@ -66,6 +52,32 @@ function HostWaiting() {
             socket.disconnect();
         }
     }, [roomCode, uuid])
+
+    //if bfcache, setup new room
+    window.onpageshow = function(event) {
+        if (event.persisted) {
+            setUpNewRoom();
+        }
+    };
+
+    function setUpNewRoom() {
+        localStorage.removeItem("uuid");
+        localStorage.removeItem("roomCode");
+        axios.put(`${apiBaseUrl}/v1/host/${quizid}`, {
+            withCredentials: true
+        })
+        .then((res) => {
+            if (res.status === 200) {
+                setRoomCode(res.data.roomCode);
+                setUuid(res.data.uuid);
+                localStorage.setItem("uuid", res.data.uuid);
+                localStorage.setItem("roomCode", res.data.roomCode);
+            }
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+    }
 
     function startRoom() {
         console.log("startRoom")

@@ -844,3 +844,11 @@ app.get('/v1/playercount/:roomCode', (req, res) => {
     count: playerCount[0]['COUNT(*)']
   })
 });
+
+app.get('/v1/gameexists/:roomCode', (req, res) => {
+  let gameExists = gameCheck.all(req.params?.roomCode);
+  if (gameExists[0]?.active != undefined && gameExists[0]?.active != 0) {
+    return res.sendStatus(200)
+  }
+  return res.sendStatus(404)
+});
