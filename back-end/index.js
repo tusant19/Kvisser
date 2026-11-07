@@ -280,6 +280,7 @@ const insertAnswerForPlayer = db.prepare('INSERT INTO game_answers (game_code, q
 const hasAnswered = db.prepare('SELECT * FROM game_answers WHERE game_code = ? AND question_id = ? AND player_uuid = ? LIMIT 1');
 const updateCorrectnessForPlayer = db.prepare('UPDATE game_answers SET is_correct = ? WHERE game_code = ? AND question_id = ? AND player_uuid = ?');
 const isCorrectAnswer = db.prepare('SELECT is_correct FROM game_answers WHERE game_code = ? AND player_uuid = ? ORDER BY answer_time DESC LIMIT 1');
+const getAnswerCountForQuestion = db.prepare('SELECT COUNT(*) FROM game_answers WHERE game_code = ? AND question_id = ?');
 
 //debug   v
 const getAllQuizzes = db.prepare('SELECT * FROM quizzes')
@@ -767,6 +768,10 @@ app.put('/v1/answer/:roomCode', (req, res) => {
   }
   insertAnswerForPlayer.run(req.params?.roomCode, question[0]?.id, player[0]?.uuid, orderNumber, 0, Date.now())
   let correctAnswer = getCorrectAnswerByQuestionId.get(question[0]?.id)
+  console.log("roomCode: " + req.params?.roomCode)
+  let answerCount = getAnswerCountForQuestion.get(req.params?.roomCode, question[0]?.id)['COUNT(*)']
+  console.log("answerCount: " + answerCount)
+  io.to(req.params?.roomCode + "host").emit("answerCount", answerCount)
   if (correctAnswer && correctAnswer.order_number === orderNumber && player[0]?.role !== "host" && question[0]?.type === "multipleChoice" && question[0]?.score_value != undefined && question[0]?.score_value != null && question[0]?.score_value > 0) {
     updatePlayerScore.run(player[0]?.score + question[0]?.score_value, player[0]?.uuid)
     updateCorrectnessForPlayer.run(1, req.params?.roomCode, question[0]?.id, player[0]?.uuid)

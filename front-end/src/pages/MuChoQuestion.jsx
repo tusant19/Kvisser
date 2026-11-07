@@ -17,6 +17,7 @@ function MuChoQuestion() {
     const [isHost, setIsHost] = useState(null)
     const [question, setQuestion] = useState(null)
     const [answerOptions, setAnswerOptions] = useState([])
+    const [answerCount, setAnswerCount] = useState(0)
     let roomCodeLoStor = localStorage.getItem("roomCode") 
     
     let answerOptionRefs = useRef([]);
@@ -69,20 +70,22 @@ function MuChoQuestion() {
         if (!uuid) return
         const socket = io(apiBaseUrl)
         if (isHost) {
+            console.log("joining room as host: " + roomCodeLoStor)
             socket.emit("joinRoomAsHost", roomCodeLoStor, uuid)
         } else {
+            console.log("joining room as player: " + roomCodeLoStor)
             socket.emit("joinRoom", roomCodeLoStor, uuid)
         } 
+        socket.on("answerCount", (count) => {
+            console.log("answerCount: " + count)
+            if (count > 1) {
+                setAnswerCount(count + " answers")
+            } else {
+                setAnswerCount(count + " answer")
+            }
+        })
         return () => socket.disconnect()
     }, [isHost, roomCodeLoStor])
-
-    useEffect(() => {
-        const socket = io(apiBaseUrl)
-        socket.on("leaderBoardRedirect", () => {
-            window.location.replace(`${siteBaseUrl}/leaderboard`);
-        });
-        return () => socket.disconnect();
-    }, []);
 
     function handleAnswerOptions() {   
         console.log(answerOptionRefs?.current[1]?.style)
@@ -186,6 +189,10 @@ function MuChoQuestion() {
             <div className='aargh'>
                 <div className='muChoQuestionImgDiv'>
                     <img onLoad={() => handleAnswerOptions()} className='muChoQuestionImg' src={question?.img_link} alt="Question" />
+                </div>
+
+                <div className='muChoQuestionAnswerCountDiv'>
+                    <p>{answerCount}</p>
                 </div>
                     
                 

@@ -17,7 +17,6 @@ function AnswerStatus() {
     const [placeMsg, setPlaceMsg] = useState(null);
     const playerDetails = useRef(null);
     const [symbol, setSymbol] = useState(null);
-
     useEffect(() => {
         axios.get(`${apiBaseUrl}/v1/playerDetails`, {
             withCredentials: true
