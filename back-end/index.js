@@ -65,6 +65,8 @@ function sendPlayersToHost(room) {
 io.on("connection", (socket) => {
   //console.log("connect");
   socket.on("joinRoom", (room, uuid) => {
+    if (!room) return;
+    if (!uuid) return;
     //console.log("joinRoom: " + room)
     socket.join(room);
     updateSocket.run(socket.id, 1, uuid)
@@ -73,12 +75,15 @@ io.on("connection", (socket) => {
     //console.log("room joined " +  room)
   });
   socket.on("joinRoomAsHost", (roomCode, uuid) => {
+    if (!roomCode) return;
+    if (!uuid) return;
     socket.join(roomCode + "host")
     updateSocket.run(socket.id, 1, uuid)
     sendPlayersToHost(roomCode);
     
   })
   socket.on("nextQuestion", (roomCode, uuid) => {
+    console.log("nextQuestion: " + roomCode)
     setInactivePlayers(roomCode)
     //console.log("nextQuestion: " + roomCode)
     let host = getHostUuid.get(roomCode);
@@ -209,6 +214,7 @@ db.exec(`
     question_id INTEGER,
     player_uuid TEXT,
     answer TEXT,
+    answer_time INTEGER,
     is_correct INTEGER
   );
 `);
@@ -239,6 +245,8 @@ const getHostUuid = db.prepare('SELECT * FROM game_players WHERE game_code = ? A
 const setAsPlayerByUuid = db.prepare('UPDATE game_players SET role = ? WHERE uuid = ?')
 const setAsPlayerByName = db.prepare('UPDATE game_players SET role = ? WHERE name = ?')
 const updatePlayerScore = db.prepare('UPDATE game_players SET score = ? WHERE uuid = ?')
+const getPlayersSortedScore = db.prepare('SELECT * FROM game_players WHERE game_code = ? AND connected = 1 AND role != \'host\' ORDER BY score DESC, time_joined ASC')
+const getPlayersPlace = db.prepare('SELECT COUNT(*) FROM game_players WHERE game_code = ? AND connected = 1 AND role != \'host\' AND score > (SELECT score FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1)')
 
 const markPlayerInactive = db.prepare('UPDATE game_players SET connected = 0 WHERE socket_id = ?')
 const updateSocket = db.prepare('UPDATE game_players SET socket_id = ?, connected = ? WHERE id = (SELECT id FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1)')
@@ -268,8 +276,10 @@ const answerOptionDeleteByQuestionId = db.prepare('DELETE FROM answer_options WH
 const getCorrectAnswerByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? AND is_correct = 1 LIMIT 1');
 const getAnswerOptionsByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? ORDER BY order_number ASC');
 
-const insertAnswerForPlayer = db.prepare('INSERT INTO game_answers (game_code, question_id, player_uuid, answer, is_correct) VALUES (?, ?, ?, ?, ?)');
+const insertAnswerForPlayer = db.prepare('INSERT INTO game_answers (game_code, question_id, player_uuid, answer, is_correct, answer_time) VALUES (?, ?, ?, ?, ?, ?)');
 const hasAnswered = db.prepare('SELECT * FROM game_answers WHERE game_code = ? AND question_id = ? AND player_uuid = ? LIMIT 1');
+const updateCorrectnessForPlayer = db.prepare('UPDATE game_answers SET is_correct = ? WHERE game_code = ? AND question_id = ? AND player_uuid = ?');
+const isCorrectAnswer = db.prepare('SELECT is_correct FROM game_answers WHERE game_code = ? AND player_uuid = ? ORDER BY answer_time DESC LIMIT 1');
 
 //debug   v
 const getAllQuizzes = db.prepare('SELECT * FROM quizzes')
@@ -755,10 +765,11 @@ app.put('/v1/answer/:roomCode', (req, res) => {
   if (hasAlreadyAnswered != undefined) {
     return res.sendStatus(409)
   }
-  insertAnswerForPlayer.run(req.params?.roomCode, question[0]?.id, player[0]?.uuid, req.body?.answer, 0)
+  insertAnswerForPlayer.run(req.params?.roomCode, question[0]?.id, player[0]?.uuid, orderNumber, 0, Date.now())
   let correctAnswer = getCorrectAnswerByQuestionId.get(question[0]?.id)
   if (correctAnswer && correctAnswer.order_number === orderNumber && player[0]?.role !== "host" && question[0]?.type === "multipleChoice" && question[0]?.score_value != undefined && question[0]?.score_value != null && question[0]?.score_value > 0) {
     updatePlayerScore.run(player[0]?.score + question[0]?.score_value, player[0]?.uuid)
+    updateCorrectnessForPlayer.run(1, req.params?.roomCode, question[0]?.id, player[0]?.uuid)
     res.status(200)
     return res.json(
       {
@@ -773,5 +784,48 @@ app.put('/v1/answer/:roomCode', (req, res) => {
       correct: false
     }
   )
+});
 
+app.get('/v1/answerstatus/:roomCode', (req, res) => {
+  let player = getPlayer.all(req.cookies.playerUuid)
+  if (player[0] == undefined) {
+    return res.sendStatus(404)
+  }
+  if (player[0]?.role === "host") {
+    return res.sendStatus(403)
+  }
+  let answer = isCorrectAnswer.all(req.params?.roomCode, player[0]?.uuid)
+  if (answer == undefined) {
+    return res.sendStatus(404)
+  }
+  let correctTrueFalse = answer[0]?.is_correct
+  if (correctTrueFalse == 1) {
+    correctTrueFalse = true
+  } else {
+    correctTrueFalse = false
+  }
+  let placeOnLeaderboard = getPlayersPlace.get(req.params?.roomCode, player[0]?.uuid)
+  placeOnLeaderboard = placeOnLeaderboard['COUNT(*)'] + 1
+  if (placeOnLeaderboard == undefined && placeOnLeaderboard == null) {
+    return res.sendStatus(404)
+  }
+  let leaderboard = getPlayersSortedScore.all(req.params?.roomCode)
+  let pointsToPersonAhead = leaderboard[placeOnLeaderboard - 2]?.score - leaderboard[placeOnLeaderboard - 1]?.score
+  let personAheadName = leaderboard[placeOnLeaderboard - 2]?.name
+  if (pointsToPersonAhead == undefined && pointsToPersonAhead == null) {
+    pointsToPersonAhead = 0
+  }
+  let placeMsg = ""
+  if (placeOnLeaderboard <= 5) {
+    placeMsg = "You're on the leaderboard!"
+  } else {
+    placeMsg = `You're in ${placeOnLeaderboard}th place. ${pointsToPersonAhead} points behind ${personAheadName}.`
+  }
+  console.log("correctTrueFalse: " + correctTrueFalse)
+  console.log("placeOnLeaderboard 3: " + placeOnLeaderboard)
+  console.log("placeMsg: " + placeMsg)
+  return res.json({
+    msg: placeMsg,
+    status: correctTrueFalse
+  })
 });

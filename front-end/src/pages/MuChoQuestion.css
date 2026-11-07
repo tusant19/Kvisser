@@ -90,7 +90,7 @@
     position: absolute;
     top: 9vh;
     right: 1vh;
-   
+    z-index: 1;
 }
 
 .leaderBoardBtn {

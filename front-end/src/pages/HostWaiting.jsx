@@ -15,11 +15,10 @@ function HostWaiting() {
     const [uuid, setUuid] = useState(null);
     const [players, setPlayers] = useState([]);
     
-    let roomCodeLoStor = localStorage.getItem("roomCode") 
     let roomCodeArray = [];
-    if (roomCodeLoStor !== null ) {
-        for (let i = 0; i < roomCodeLoStor.length; i++) {
-            roomCodeArray[i] = roomCodeLoStor[i];
+    if (roomCode !== null) {
+        for (let i = 0; i < roomCode.length; i++) {
+            roomCodeArray[i] = roomCode[i];
         } 
     }
     

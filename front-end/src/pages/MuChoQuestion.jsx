@@ -14,7 +14,7 @@ import '../Main.css'
 
 function MuChoQuestion() {
     const [playerDetails, setPlayerDetails] = useState(null)
-    const [isHost, setIsHost] = useState(false)
+    const [isHost, setIsHost] = useState(null)
     const [question, setQuestion] = useState(null)
     const [answerOptions, setAnswerOptions] = useState([])
     let roomCodeLoStor = localStorage.getItem("roomCode") 
@@ -50,12 +50,11 @@ function MuChoQuestion() {
     }, [])
         
     useEffect(() => {
-        axios.get('${apiBaseUrl}/v1/role', {
+        axios.get(`${apiBaseUrl}/v1/role`, {
             withCredentials: true
         })
         .then((response) => {
             setIsHost(response.data.role === "host");
-            hideForNonHosts();
         })
         .catch((error) => {
             console.error(error);
@@ -63,12 +62,18 @@ function MuChoQuestion() {
     }, [])
 
     useEffect(() => {
+        const uuid = localStorage.getItem("uuid")
+        const roomCodeLoStor = localStorage.getItem("roomCode")
+        if (isHost === null) return
+        if (!roomCodeLoStor) return
+        if (!uuid) return
         const socket = io(apiBaseUrl)
         if (isHost) {
-            socket.emit("joinRoomAsHost", roomCodeLoStor)
+            socket.emit("joinRoomAsHost", roomCodeLoStor, uuid)
         } else {
-            socket.emit("joinRoom", roomCodeLoStor)
+            socket.emit("joinRoom", roomCodeLoStor, uuid)
         } 
+        return () => socket.disconnect()
     }, [isHost, roomCodeLoStor])
 
     useEffect(() => {
@@ -76,6 +81,7 @@ function MuChoQuestion() {
         socket.on("leaderBoardRedirect", () => {
             window.location.replace(`${siteBaseUrl}/leaderboard`);
         });
+        return () => socket.disconnect();
     }, []);
 
     function handleAnswerOptions() {   
@@ -127,13 +133,6 @@ function MuChoQuestion() {
         }
     }
     
-    function hideForNonHosts() {
-        if (!isHost) {
-            const leaderBoardBtn = document.querySelector('.leaderBoardBtn');
-            leaderBoardBtn.style.display = 'none';
-        }
-    }
-
     function setupTimerBar(seconds) {
         const timeLeftBar = document.querySelector('.timeLeftBar');
         let timeLeft = seconds;
@@ -158,6 +157,18 @@ function MuChoQuestion() {
         })
         .then((response) => {
             console.log(response.data);
+            if (response.status === 200) {
+                if (response.data.correct) {
+                    //redirect to correct answer page
+                    window.location.replace(`${siteBaseUrl}/answer/correct`);
+                } else {
+                    //redirect to incorrect answer page
+                    window.location.replace(`${siteBaseUrl}/answer/incorrect`);
+                }
+            } else if (response.status === 409) {
+                //redirect to already answered page
+                window.location.replace(`${siteBaseUrl}/answer/conflict`);
+            }
         })
         .catch((error) => {
             console.error(error);
@@ -188,7 +199,7 @@ function MuChoQuestion() {
                     <p>{playerDetails?.score} points</p>
                 </div>
                 <div className='leaderBoardBtnDiv'>
-                    <button className='leaderBoardBtn' on>Leaderboard</button>
+                    {isHost && <button className='leaderBoardBtn' on>Leaderboard</button>}
                 </div>
             </div>
             <BottomBar />
