@@ -834,3 +834,13 @@ app.get('/v1/answerstatus/:roomCode', (req, res) => {
     status: correctTrueFalse
   })
 });
+
+app.get('/v1/playercount/:roomCode', (req, res) => {
+  let playerCount = getPlayerCount.all(req.params?.roomCode);
+  if (playerCount[0] == undefined) {
+    return res.sendStatus(404)
+  }
+  return res.json({
+    count: playerCount[0]['COUNT(*)']
+  })
+});

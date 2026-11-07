@@ -22,8 +22,22 @@ function MuChoQuestion() {
     const [roomCode, setRoomCode] = useState(roomCodeLoStor)
     const timeLeftBar = useRef(null);
     const hostTimeLeftBar = useRef(null);
+    const playerCount = useRef(0);
     
     let answerOptionRefs = useRef([]);
+
+    useEffect(() => {
+        axios.get(`${apiBaseUrl}/v1/playercount/${roomCodeLoStor}`, {
+            withCredentials: true
+        })
+        .then((response) => {
+            playerCount.current = response.data.count;
+            console.log("playerCount: ", playerCount.current);
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+    }, [])
 
     useEffect(() => {
         axios.get(`${apiBaseUrl}/v1/question/${roomCodeLoStor}`, {
