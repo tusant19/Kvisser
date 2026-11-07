@@ -99,6 +99,8 @@ io.on("connection", (socket) => {
         //console.log("gameState check pass")
         //console.log("emit " + roomCode)
         io.to(roomCode).to(roomCode + "host").emit("nextQuestionSwap", (questionType?.type));
+        updapteGameState.run(gameState?.state + 1, roomCode)
+        addGameStateChange.run(roomCode, gameState?.state + 1, Date.now());
 
       }
     }
@@ -207,6 +209,7 @@ db.exec(`
   );
 `);
 
+// is_correct 2 means late answer, 1 means correct, 0 means incorrect
 db.exec(`
   CREATE TABLE IF NOT EXISTS game_answers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -216,6 +219,15 @@ db.exec(`
     answer TEXT,
     answer_time INTEGER,
     is_correct INTEGER
+  );
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS game_state_changes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    game_code TEXT,
+    state INTEGER,
+    time_changed INTEGER
   );
 `);
 
@@ -279,8 +291,12 @@ const getAnswerOptionsByQuestionId = db.prepare('SELECT * FROM answer_options WH
 const insertAnswerForPlayer = db.prepare('INSERT INTO game_answers (game_code, question_id, player_uuid, answer, is_correct, answer_time) VALUES (?, ?, ?, ?, ?, ?)');
 const hasAnswered = db.prepare('SELECT * FROM game_answers WHERE game_code = ? AND question_id = ? AND player_uuid = ? LIMIT 1');
 const updateCorrectnessForPlayer = db.prepare('UPDATE game_answers SET is_correct = ? WHERE game_code = ? AND question_id = ? AND player_uuid = ?');
+const getCorrectnessForPlayer = db.prepare('SELECT is_correct FROM game_answers WHERE game_code = ? AND question_id = ? AND player_uuid = ? LIMIT 1');
 const isCorrectAnswer = db.prepare('SELECT is_correct FROM game_answers WHERE game_code = ? AND player_uuid = ? ORDER BY answer_time DESC LIMIT 1');
 const getAnswerCountForQuestion = db.prepare('SELECT COUNT(*) FROM game_answers WHERE game_code = ? AND question_id = ?');
+
+const addGameStateChange = db.prepare('INSERT INTO game_state_changes (game_code, state, time_changed) VALUES (?, ?, ?)');
+const getLatestGameStateChange = db.prepare('SELECT * FROM game_state_changes WHERE game_code = ? ORDER BY time_changed DESC LIMIT 1');
 
 //debug   v
 const getAllQuizzes = db.prepare('SELECT * FROM quizzes')
@@ -772,8 +788,26 @@ app.put('/v1/answer/:roomCode', (req, res) => {
   let answerCount = getAnswerCountForQuestion.get(req.params?.roomCode, question[0]?.id)['COUNT(*)']
   console.log("answerCount: " + answerCount)
   io.to(req.params?.roomCode + "host").emit("answerCount", answerCount)
+  let questionStartTime = getLatestGameStateChange.get(req.params?.roomCode)
+  questionStartTime = questionStartTime?.time_changed
+  let timeTaken = Date.now() - questionStartTime
+  console.log("timeTaken: " + timeTaken)
+  let didNotAnswerInTime = false
+  if (timeTaken > question[0]?.time_given * 1000) {
+    didNotAnswerInTime = true
+  }
+  if (didNotAnswerInTime) {
+    updateCorrectnessForPlayer.run(2, req.params?.roomCode, question[0]?.id, player[0]?.uuid)
+    res.status(200)
+    return res.json(
+      {
+        correct: false,
+        didNotAnswerInTime: true
+      }
+    )
+  }
   if (correctAnswer && correctAnswer.order_number === orderNumber && player[0]?.role !== "host" && question[0]?.type === "multipleChoice" && question[0]?.score_value != undefined && question[0]?.score_value != null && question[0]?.score_value > 0) {
-    updatePlayerScore.run(player[0]?.score + question[0]?.score_value, player[0]?.uuid)
+    updatePlayerScore.run(player[0]?.score + math.floor(question[0]?.score_value / question[0]?.time_given * timeTaken), player[0]?.uuid)
     updateCorrectnessForPlayer.run(1, req.params?.roomCode, question[0]?.id, player[0]?.uuid)
     res.status(200)
     return res.json(
@@ -826,11 +860,24 @@ app.get('/v1/answerstatus/:roomCode', (req, res) => {
   } else {
     placeMsg = `You're in ${placeOnLeaderboard}th place. ${pointsToPersonAhead} points behind ${personAheadName}.`
   }
+  let ranOutOfTime = false;
+  if (correctTrueFalse == false) {
+    let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, (getGameState.get(req.params?.roomCode)?.state / 2 + 1));
+    if (question[0]) {
+      let correctness = getCorrectnessForPlayer.get(req.params?.roomCode, question[0]?.id, player[0]?.uuid);
+      if (correctness?.is_correct == 2) {
+        ranOutOfTime = true;
+      }
+    }
+  }
+
   console.log("correctTrueFalse: " + correctTrueFalse)
   console.log("placeOnLeaderboard 3: " + placeOnLeaderboard)
   console.log("placeMsg: " + placeMsg)
+  console.log("ranOutOfTime: " + ranOutOfTime)
   return res.json({
     msg: placeMsg,
+    ranOutOfTime: ranOutOfTime,
     status: correctTrueFalse
   })
 });
