@@ -151,6 +151,11 @@ function MuChoQuestion() {
 
 
     function handleAnswerOptionClick(order_number) {
+        console.log("isHost: " + isHost)
+        if (!roomCodeLoStor || isHost) {
+            return;
+        }
+
         console.log("click option" + order_number)
         axios.put(`${apiBaseUrl}/v1/answer/${roomCodeLoStor}`, {
             order_number: order_number
