@@ -312,6 +312,10 @@ function MuChoQuestion() {
         setBarSizes();
     }, [results]);
 
+    function handleLeaderboardClick() {
+        window.location.replace(`${siteBaseUrl}/leaderboard`);
+    }
+
     return (
         <div className='muChoPage'>
             <TopBar />
@@ -357,7 +361,7 @@ function MuChoQuestion() {
                     {isHost.current && <p>{roomCode}</p>}
                 </div>}
                 <div className='leaderBoardBtnDiv'>
-                    {isHost.current && isFinalized && <button className='leaderBoardBtn' on>Leaderboard</button>}
+                    {isHost.current && isFinalized && <button className='leaderBoardBtn' onClick={handleLeaderboardClick()}>Leaderboard</button>}
                 </div>
             </div>
             
