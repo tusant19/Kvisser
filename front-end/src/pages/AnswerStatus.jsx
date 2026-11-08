@@ -23,6 +23,7 @@ function AnswerStatus() {
         })
         .then((response) => {
             playerDetails.current = response.data;
+            setPoints(playerDetails.current?.score);
             console.log("playerDetails: ", playerDetails.current);
         })
         .catch((error) => {

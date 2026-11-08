@@ -258,6 +258,7 @@ const setAsPlayerByUuid = db.prepare('UPDATE game_players SET role = ? WHERE uui
 const setAsPlayerByName = db.prepare('UPDATE game_players SET role = ? WHERE name = ?')
 const updatePlayerScore = db.prepare('UPDATE game_players SET score = ? WHERE uuid = ?')
 const getPlayersSortedScore = db.prepare('SELECT * FROM game_players WHERE game_code = ? AND connected = 1 AND role != \'host\' ORDER BY score DESC, time_joined ASC')
+const getPlayersSortedScoreNoConnect = db.prepare('SELECT * FROM game_players WHERE game_code = ? AND role != \'host\' ORDER BY score DESC, time_joined ASC')
 const getPlayersPlace = db.prepare('SELECT COUNT(*) FROM game_players WHERE game_code = ? AND connected = 1 AND role != \'host\' AND score > (SELECT score FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1)')
 
 const markPlayerInactive = db.prepare('UPDATE game_players SET connected = 0 WHERE socket_id = ?')
@@ -927,6 +928,10 @@ app.put('/v1/autolateanswer/:roomCode', (req, res) => {
 });
 
 app.get('/v1/multiplechoiceanswers/:roomCode', (req, res) => {
+  let player = getPlayer.all(req.cookies.playerUuid)
+  if (player[0]?.role != "host") {
+    return res.sendStatus(403)
+  }
   let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, Math.floor(getGameState.get(req.params?.roomCode)?.state / 2));
   if (question[0] == undefined) {
     console.log("question not found")
@@ -949,15 +954,33 @@ app.get('/v1/multiplechoiceanswers/:roomCode', (req, res) => {
       if (answers[j]?.answer == i) {
         count++;
       }
-      answerCounts.push({
-        answer_order: i,
-        answer_text: answerOptions[i - 1]?.answer,
-        count: count,
-        correct: answerOptions[i - 1]?.is_correct == 1 ? true : false
-      })
     }
+    answerCounts.push({
+      answer_order: i,
+      answer_text: answerOptions[i - 1]?.answer,
+      count: count,
+      correct: answerOptions[i - 1]?.is_correct == 1 ? true : false
+    })
   }
   return res.json({
     answerCounts: answerCounts
+  })
+});
+
+app.get('/v1/leaderboard/:roomCode', (req, res) => {
+  let players = getPlayersSortedScoreNoConnect.all(req.params?.roomCode)
+  if (players[0] == undefined) {
+    return res.sendStatus(404)
+  }
+  let sanitizedPlayers = []
+  for (let i = 0; i < players?.length; i++) {
+    sanitizedPlayers.push({
+      name: players[i]?.name,
+      score: players[i]?.score,
+      place: i + 1
+    })
+  }
+  return res.json({
+    players: sanitizedPlayers
   })
 });

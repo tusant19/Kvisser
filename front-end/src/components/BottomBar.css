@@ -16,6 +16,7 @@
     align-items: center;
     height: 6.25vh;
     width: 100dvw;
+    max-width: 100dvw;
 }
 
 .bottomBar {

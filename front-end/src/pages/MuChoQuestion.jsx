@@ -263,9 +263,9 @@ function MuChoQuestion() {
 
     function setTimerBarEmpty() {
         if (isHost.current) {
-            hostTimeLeftBar.current.style.background = 'linear-gradient(to right, var(--border2) 0%, #ffffff 0%)';
+            hostTimeLeftBar.current.style.display = 'none';
         } else {
-            timeLeftBar.current.style.background = 'linear-gradient(to right, var(--border2) 0%, #ffffff 0%)';
+            timeLeftBar.current.style.display = 'none';
         }
     }
 
@@ -276,7 +276,7 @@ function MuChoQuestion() {
         })
         .then((response) => {
             console.log(response.data);
-            setResults(response.data.answerCounts);
+            setResults(response.data.answerCounts);            
             setBarSizes();
         })
         .catch((error) => {
@@ -361,7 +361,7 @@ function MuChoQuestion() {
                     {isHost.current && <p>{roomCode}</p>}
                 </div>}
                 <div className='leaderBoardBtnDiv'>
-                    {isHost.current && isFinalized && <button className='leaderBoardBtn' onClick={handleLeaderboardClick()}>Leaderboard</button>}
+                    {isHost.current && isFinalized && <button className='leaderBoardBtn' onClick={handleLeaderboardClick}>Leaderboard</button>}
                 </div>
             </div>
             
