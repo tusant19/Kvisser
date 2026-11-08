@@ -80,9 +80,17 @@ function HostWaiting() {
     }
 
     function startRoom() {
-        console.log("startRoom")
-        const socket = io(apiBaseUrl)
-        socket.emit("nextQuestion", roomCode, uuid)
+        if (players.length > 0) {
+            console.log("startRoom")
+            const socket = io(apiBaseUrl)
+            socket.emit("nextQuestion", roomCode, uuid)
+        } else {
+            let hostWaitingTitle = document.querySelector(".hostWaitingTitle");
+            hostWaitingTitle.textContent = "You need at least 1 player to start the game!";
+            setTimeout(() => {
+                hostWaitingTitle.textContent = "Waiting for players...";
+            }, 3000);
+        }
     } 
 
     return (
