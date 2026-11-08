@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import apiBaseUrl from '../components/apiAdress';
 import axios from 'axios';
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
+import siteBaseUrl from '../components/baseAdress';
 
 function Leaderboard() {
     const [leaderboardData, setLeaderboardData] = useState([]);
@@ -26,7 +27,17 @@ function Leaderboard() {
 
     function handleLeaderboardContClick() {
         const socket = io(apiBaseUrl)
-        socket.emit("nextQuestion", roomCodeLoStor, uuid)
+        socket.on("nextQuestionSwap", (type) => {
+            console.log("NQS")
+            window.location.replace(`${siteBaseUrl}/${type}`);
+        });
+        socket.emit("nextQuestionFromLeaderboard", roomCodeLoStor, uuid)
+        
+
+        return () => {
+            socket.off("nextQuestionSwap")
+            socket.disconnect();
+        }
     }
 
     return (

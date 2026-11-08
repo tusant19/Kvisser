@@ -24,6 +24,8 @@ function MuChoQuestion() {
     const timeLeftBar = useRef(null);
     const hostTimeLeftBar = useRef(null);
     const playerCount = useRef(0);
+    const latestAnswerCount = useRef(0);
+    const [roleLoaded, setRoleLoaded] = useState(false);
     const [isFinalized, setIsFinalized] = useState(false);
     const [results, setResults] = useState(null);
     const answerResultBarRefs = useRef([]);
@@ -40,11 +42,15 @@ function MuChoQuestion() {
             playerCount.current = response.data.count;
             console.log("playerCount: ", playerCount.current);
             setAnswerCount("0/" + playerCount.current + " answers")
+            if (isHost.current && latestAnswerCount.current >= playerCount.current) {
+                getResults();
+                setIsFinalized(true);
+            }
         })
         .catch((error) => {
             console.error(error);
         });
-    }, [])
+    }, [isFinalized, roomCodeLoStor, playerCount.current]);
 
     useEffect(() => {
         axios.get(`${apiBaseUrl}/v1/question/${roomCodeLoStor}`, {
@@ -80,6 +86,11 @@ function MuChoQuestion() {
         })
         .then((response) => {
             isHost.current = response.data.role === "host";
+            setRoleLoaded(true);
+            if (isHost.current && latestAnswerCount.current >= playerCount.current) {
+                getResults();
+                setIsFinalized(true);
+            }
         })
         .catch((error) => {
             console.error(error);
@@ -89,11 +100,11 @@ function MuChoQuestion() {
     useEffect(() => {
         const uuid = localStorage.getItem("uuid")
         const roomCodeLoStor = localStorage.getItem("roomCode")
-        if (isHost === null) return
+        if (!roleLoaded) return
         if (!roomCodeLoStor) return
         if (!uuid) return
         const socket = io(apiBaseUrl)
-        if (isHost) {
+        if (isHost.current) {
             console.log("joining room as host: " + roomCodeLoStor)
             socket.emit("joinRoomAsHost", roomCodeLoStor, uuid)
         } else {
@@ -102,6 +113,7 @@ function MuChoQuestion() {
         } 
         socket.on("answerCount", (count) => {
             console.log("answerCount: " + count)
+            latestAnswerCount.current = count;
             if (playerCount.current > 1) {
                 setAnswerCount(count + "/" + playerCount.current + " answers")
             } else {
@@ -114,7 +126,7 @@ function MuChoQuestion() {
             
         })
         return () => socket.disconnect()
-    }, [isHost, roomCodeLoStor])
+    }, [roleLoaded, roomCodeLoStor])
 
     function handleAnswerOptions() {   
         console.log(answerOptionRefs?.current[1]?.style)

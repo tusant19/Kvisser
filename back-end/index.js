@@ -105,6 +105,22 @@ io.on("connection", (socket) => {
       }
     }
   });
+  socket.on("nextQuestionFromLeaderboard", (roomCode, uuid) => {
+    console.log("nextQuestionFromLeaderboard: " + roomCode)
+    socket.join(roomCode + "host");
+    updateSocket.run(socket.id, 1, uuid);
+    let host = getHostUuid.get(roomCode);
+    let questionCount = getQuestionCountByRoomCode.all((roomCode))[0]['COUNT(*)'] * 2
+    let gameState = getGameState.get(roomCode)
+    let questionType = getQuestionTypeByRoomCodeAndOrder.get(roomCode, (Math.floor(gameState?.state / 2) + 1))
+    if (host?.uuid == uuid) {
+      if (gameState?.state < questionCount) {
+        io.to(roomCode).to(roomCode + "host").emit("nextQuestionSwap", (questionType?.type));
+        updapteGameState.run(gameState?.state + 2, roomCode)
+        addGameStateChange.run(roomCode, gameState?.state + 2, Date.now());
+      }
+    }
+  });
   socket.on("disconnect", () => {
     //console.log("disconnect");
     let player = getPlayerBySocket.all(socket.id)
@@ -271,6 +287,7 @@ const getQuestions = db.prepare('SELECT * FROM quiz_questions WHERE quiz_id = ? 
 const getQuestion = db.prepare('SELECT * FROM quiz_questions WHERE quiz_id = ? AND order_number = ? LIMIT 1')
 const getQuestionById = db.prepare('SELECT * FROM quiz_questions WHERE id = ? LIMIT 1')
 const getQuestionCountByRoomCode = db.prepare('SELECT COUNT(*) FROM quiz_questions WHERE quiz_id = (SELECT quiz_id FROM games WHERE room_code = ? LIMIT 1)')
+const getQuestionTypeByRoomCodeAndOrder = db.prepare('SELECT type FROM quiz_questions WHERE quiz_id = (SELECT quiz_id FROM games WHERE room_code = ? LIMIT 1) AND order_number = ? LIMIT 1')
 const getQuestionType = db.prepare('SELECT type FROM quiz_questions WHERE quiz_id = ? AND order_number = ? LIMIT 1')
 const getQuestionByRoomCodeAndOrder = db.prepare('SELECT * FROM quiz_questions WHERE quiz_id = (SELECT quiz_id FROM games WHERE room_code = ? LIMIT 1) AND order_number = ? LIMIT 1')
 
