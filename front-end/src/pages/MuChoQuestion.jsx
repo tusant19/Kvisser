@@ -217,7 +217,7 @@ function MuChoQuestion() {
                     timeLeftBar.current.style.background = '#ffffff';
                 }
                 if (!hasSentLateAnswer && !isHost.current) {
-                    axios.put(`/v1/autolateanswer/${roomCodeLoStor}`, {
+                    axios.put(`${apiBaseUrl}/v1/autolateanswer/${roomCodeLoStor}`, {
                         withCredentials: true
                     })
                     .then((res) => {

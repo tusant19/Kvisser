@@ -313,6 +313,7 @@ const getCorrectnessForPlayer = db.prepare('SELECT is_correct FROM game_answers 
 const isCorrectAnswer = db.prepare('SELECT is_correct FROM game_answers WHERE game_code = ? AND player_uuid = ? ORDER BY answer_time DESC LIMIT 1');
 const getAnswerCountForQuestion = db.prepare('SELECT COUNT(*) FROM game_answers WHERE game_code = ? AND question_id = ?');
 const getAnswersForQuestion = db.prepare('SELECT * FROM game_answers WHERE game_code = ? AND question_id = ?');
+const getLatestCorrectnessForPlayer = db.prepare('SELECT is_correct FROM game_answers WHERE game_code = ? AND player_uuid = ? ORDER BY answer_time DESC LIMIT 1');
 
 const addGameStateChange = db.prepare('INSERT INTO game_state_changes (game_code, state, time_changed) VALUES (?, ?, ?)');
 const getLatestGameStateChange = db.prepare('SELECT * FROM game_state_changes WHERE game_code = ? ORDER BY time_changed DESC LIMIT 1');
@@ -850,6 +851,7 @@ app.put('/v1/answer/:roomCode', (req, res) => {
 });
 
 app.get('/v1/answerstatus/:roomCode', (req, res) => {
+  let roomCode = req.params?.roomCode
   let player = getPlayer.all(req.cookies.playerUuid)
   if (player[0] == undefined) {
     return res.sendStatus(404)
@@ -885,15 +887,11 @@ app.get('/v1/answerstatus/:roomCode', (req, res) => {
     placeMsg = `You're in ${placeOnLeaderboard}th place. ${pointsToPersonAhead} points behind ${personAheadName}.`
   }
   let ranOutOfTime = false;
-  let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, Math.floor(getGameState.get(req.params?.roomCode)?.state / 2));
-  if (question[0]) {
-    let correctness = getCorrectnessForPlayer.get(req.params?.roomCode, question[0]?.id, player[0]?.uuid);
-    console.log("correctness: " + correctness?.is_correct);
+    let correctness = getLatestCorrectnessForPlayer.get(roomCode, player[0]?.uuid)
+    console.log("correctness: " + correctness);
     if (correctness?.is_correct > 1) {
       ranOutOfTime = true;
     }
-  }
-
   console.log("correctTrueFalse: " + correctTrueFalse)
   console.log("placeOnLeaderboard 3: " + placeOnLeaderboard)
   console.log("placeMsg: " + placeMsg)
@@ -925,21 +923,27 @@ app.get('/v1/gameexists/:roomCode', (req, res) => {
 
 //route that clients automatically send to if time ran out
 app.put('/v1/autolateanswer/:roomCode', (req, res) => {
+  console.log("autolateanswer received")
   let player = getPlayer.all(req.cookies.playerUuid)
   if (player[0] == undefined) {
+    console.log("player not found")
     return res.sendStatus(404)
   }
   if (player[0]?.role === "host") {
+    console.log("host tried to send late answer")
     return res.sendStatus(403)
   }
   let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, Math.floor(getGameState.get(req.params?.roomCode)?.state / 2));
   if (question[0] == undefined) {
+    console.log("question not found")
     return res.sendStatus(404)
   }
   let hasAlreadyAnswered = hasAnswered.get(req.params?.roomCode, question[0]?.id, player[0]?.uuid)
   if (hasAlreadyAnswered != undefined) {
+    console.log("player already answered")
     return res.sendStatus(409)
   }
+  console.log("inserting late answer for player " + player[0]?.uuid + " for question " + question[0]?.id)
   insertAnswerForPlayer.run(req.params?.roomCode, question[0]?.id, player[0]?.uuid, null, 2, Date.now())
   return res.sendStatus(200)
 });
