@@ -19,7 +19,6 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-top: 2vh;
     width: 100dvw;
 }
 
@@ -81,5 +80,14 @@
     background-color: white;
     border: 2px solid var(--border1);
     border-radius: 4vh;
+} 
+
+@media (width <= 700px) {
+    .leaderboardContBtnDiv button {
+        font-size: 120%;
+        padding: 1vh;
+        padding-left: 3vw;
+        padding-right: 3vw;
+    }
 }
 

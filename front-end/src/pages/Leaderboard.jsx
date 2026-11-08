@@ -9,6 +9,7 @@ import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 function Leaderboard() {
     const [leaderboardData, setLeaderboardData] = useState([]);
     let roomCodeLoStor = localStorage.getItem("roomCode");
+    let uuid = localStorage.getItem("uuid");
 
     useEffect(() => {
         axios.get(`${apiBaseUrl}/v1/leaderboard/${roomCodeLoStor}`, {
@@ -24,7 +25,8 @@ function Leaderboard() {
     }, []);
 
     function handleLeaderboardContClick() {
-    
+        const socket = io(apiBaseUrl)
+        socket.emit("nextQuestion", roomCodeLoStor, uuid)
     }
 
     return (
