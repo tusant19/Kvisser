@@ -91,7 +91,7 @@ io.on("connection", (socket) => {
     let gameState = getGameState.get(roomCode)
     //console.log("gameState: " + gameState?.state)
     let game = gameCheck.all(roomCode)
-    let questionType = getQuestionType.get(game[0]?.quiz_id, (gameState?.state / 2 + 1))
+    let questionType = getQuestionType.get(game[0]?.quiz_id, (Math.floor(gameState?.state / 2) + 1))
     //console.log("questionType: " + questionType?.type)
     if (host?.uuid == uuid) {
       //console.log("host is correct")
@@ -294,6 +294,7 @@ const updateCorrectnessForPlayer = db.prepare('UPDATE game_answers SET is_correc
 const getCorrectnessForPlayer = db.prepare('SELECT is_correct FROM game_answers WHERE game_code = ? AND question_id = ? AND player_uuid = ? LIMIT 1');
 const isCorrectAnswer = db.prepare('SELECT is_correct FROM game_answers WHERE game_code = ? AND player_uuid = ? ORDER BY answer_time DESC LIMIT 1');
 const getAnswerCountForQuestion = db.prepare('SELECT COUNT(*) FROM game_answers WHERE game_code = ? AND question_id = ?');
+const getAnswersForQuestion = db.prepare('SELECT * FROM game_answers WHERE game_code = ? AND question_id = ?');
 
 const addGameStateChange = db.prepare('INSERT INTO game_state_changes (game_code, state, time_changed) VALUES (?, ?, ?)');
 const getLatestGameStateChange = db.prepare('SELECT * FROM game_state_changes WHERE game_code = ? ORDER BY time_changed DESC LIMIT 1');
@@ -721,7 +722,7 @@ app.get('/v1/question/:roomCode', (req, res) => {
   if (currentQuestionNumber?.state == undefined) {
     return res.sendStatus(404)
   }
-  let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, (currentQuestionNumber?.state / 2 + 1));
+  let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, Math.floor(currentQuestionNumber?.state / 2));
   let sanitizedQuestion = []
   if (question[0] != undefined) {
     sanitizedQuestion.push({
@@ -774,7 +775,7 @@ app.put('/v1/answer/:roomCode', (req, res) => {
     return res.sendStatus(404)
   }
   let orderNumber = req.body?.order_number
-  let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, (getGameState.get(req.params?.roomCode)?.state / 2 + 1));
+  let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, Math.floor(getGameState.get(req.params?.roomCode)?.state / 2));
   if (question[0] == undefined) {
     return res.sendStatus(404)
   }
@@ -866,13 +867,12 @@ app.get('/v1/answerstatus/:roomCode', (req, res) => {
     placeMsg = `You're in ${placeOnLeaderboard}th place. ${pointsToPersonAhead} points behind ${personAheadName}.`
   }
   let ranOutOfTime = false;
-  if (correctTrueFalse == false) {
-    let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, (getGameState.get(req.params?.roomCode)?.state / 2 + 1));
-    if (question[0]) {
-      let correctness = getCorrectnessForPlayer.get(req.params?.roomCode, question[0]?.id, player[0]?.uuid);
-      if (correctness?.is_correct == 2) {
-        ranOutOfTime = true;
-      }
+  let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, Math.floor(getGameState.get(req.params?.roomCode)?.state / 2));
+  if (question[0]) {
+    let correctness = getCorrectnessForPlayer.get(req.params?.roomCode, question[0]?.id, player[0]?.uuid);
+    console.log("correctness: " + correctness?.is_correct);
+    if (correctness?.is_correct > 1) {
+      ranOutOfTime = true;
     }
   }
 
@@ -914,7 +914,7 @@ app.put('/v1/autolateanswer/:roomCode', (req, res) => {
   if (player[0]?.role === "host") {
     return res.sendStatus(403)
   }
-  let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, (getGameState.get(req.params?.roomCode)?.state / 2 + 1));
+  let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, Math.floor(getGameState.get(req.params?.roomCode)?.state / 2));
   if (question[0] == undefined) {
     return res.sendStatus(404)
   }
@@ -924,4 +924,40 @@ app.put('/v1/autolateanswer/:roomCode', (req, res) => {
   }
   insertAnswerForPlayer.run(req.params?.roomCode, question[0]?.id, player[0]?.uuid, null, 2, Date.now())
   return res.sendStatus(200)
+});
+
+app.get('/v1/multiplechoiceanswers/:roomCode', (req, res) => {
+  let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, Math.floor(getGameState.get(req.params?.roomCode)?.state / 2));
+  if (question[0] == undefined) {
+    console.log("question not found")
+    return res.sendStatus(404)
+  }
+  let answerOptions = getAnswerOptionsByQuestionId.all(question[0]?.id)
+  if (answerOptions[0] == undefined) {
+    console.log("answer options not found")
+    return res.sendStatus(404)
+  }
+  let answers = getAnswersForQuestion.all(req.params?.roomCode, question[0]?.id)
+  if (answers[0] == undefined) {
+    console.log("answers not found")
+    return res.sendStatus(404)
+  }
+  let answerCounts = []
+  for (let i = 1; i <= answerOptions?.length; i++) {
+    let count = 0;
+    for (let j = 0; j < answers?.length; j++) {
+      if (answers[j]?.answer == i) {
+        count++;
+      }
+      answerCounts.push({
+        answer_order: i,
+        answer_text: answerOptions[i - 1]?.answer,
+        count: count,
+        correct: answerOptions[i - 1]?.is_correct == 1 ? true : false
+      })
+    }
+  }
+  return res.json({
+    answerCounts: answerCounts
+  })
 });

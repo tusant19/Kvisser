@@ -180,3 +180,56 @@
     background: linear-gradient(to right, var(--border2) 100%, #ffffff 0%);
 }
 
+.finalizedDiv {
+    grid-row: 3;
+    grid-column: 2 / span 4;
+    width: 100%;
+}
+
+.muChoAnswerResultBarsDiv {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-evenly;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    height: 100%;
+    width: 100%;
+    margin-top: 1vh;
+}
+
+.muChoAnswerResultBarDiv {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    flex: 0 0 10%;
+    box-sizing: border-box;
+    background-color: white;
+    padding: 1vh;
+    color: var(--text1);
+}
+
+.muChoAnswerResultBarDiv p {
+    margin: 0;
+}
+
+.answerResultCount {
+    order: 1;
+}
+
+.muChoAnswerResultBarDiv .answerResultCount {
+    order: 2;
+    margin-top: auto;
+}
+
+.muChoAnswerOptionColorSpot {
+    min-width: 2dvw;
+    height: 2dvw;
+    border-radius: 50%;
+    margin-left: 1vw;
+    margin-right: 1vw;
+    border: solid var(--border1) 2px;
+    position: relative;
+    top: -3vh;
+    left: -26vw;
+}

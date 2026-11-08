@@ -24,6 +24,9 @@ function MuChoQuestion() {
     const hostTimeLeftBar = useRef(null);
     const playerCount = useRef(0);
     const [isFinalized, setIsFinalized] = useState(false);
+    const [results, setResults] = useState(null);
+    const answerResultBarRefs = useRef([]);
+    const answerOptionColorSpotRefs = useRef([]);
     
     let answerOptionRefs = useRef([]);
 
@@ -102,6 +105,10 @@ function MuChoQuestion() {
             } else {
                 setAnswerCount(count + "/" + playerCount.current + " answer")
             }
+            if (isHost.current && count >= playerCount.current) {
+                getResults();
+                setIsFinalized(true);
+            }
             
         })
         return () => socket.disconnect()
@@ -154,6 +161,21 @@ function MuChoQuestion() {
                 }
             }
         }
+        //set bg colors
+        for (let i = 0; i < answerOptions?.length; i++) {
+            console.log("answerOptionColorSpotRefs.current[i + 1] color: ", answerOptionColorSpotRefs.current[i + 1].style.backgroundColor)
+            let color;
+            if (i == 0) {
+                color = "var(--answer1)"
+            } else if (i == 1) {
+                color = "var(--answer2)"
+            } else if (i == 2) {
+                color = "var(--answer3)"
+            } else if (i == 3) {
+                color = "var(--answer4)"
+            }
+            answerOptionColorSpotRefs.current[i + 1].style.backgroundColor = color;
+        }
     }
     
     function setupTimerBar(seconds) {
@@ -193,6 +215,7 @@ function MuChoQuestion() {
                         window.location.replace(`${siteBaseUrl}/answer/late`);
                     })
                 } else if (!hasSentLateAnswer && isHost.current) {
+                    getResults();
                     setIsFinalized(true);
                 }
             }
@@ -236,13 +259,67 @@ function MuChoQuestion() {
         })
     }
 
+    function setTimerBarEmpty() {
+        if (isHost.current) {
+            hostTimeLeftBar.current.style.background = 'linear-gradient(to right, var(--border2) 0%, #ffffff 0%)';
+        } else {
+            timeLeftBar.current.style.background = 'linear-gradient(to right, var(--border2) 0%, #ffffff 0%)';
+        }
+    }
+
+    function getResults() {
+        setTimerBarEmpty();
+        axios.get(`${apiBaseUrl}/v1/multiplechoiceanswers/${roomCodeLoStor}`, {
+            withCredentials: true
+        })
+        .then((response) => {
+            console.log(response.data);
+            setResults(response.data.answerCounts);
+            setBarSizes();
+        })
+        .catch((error) => {
+            console.error(error);
+        })
+    }
+
+    function setBarSizes() {
+        if (results) {
+            let maxheight = 0.35;
+            let totalCount = results.reduce((acc, result) => acc + result.count, 0);
+            let uniqueResults = [...new Set(results.map(result => result.count))];
+            results.forEach((result, index) => {
+                let percentage = (result.count / totalCount) * 100;
+                if (percentage < 20) {
+                    percentage = 20;
+                }
+                console.log("percentage: " + percentage)
+                answerResultBarRefs.current[index].style.height = percentage * maxheight + "vh";
+                answerResultBarRefs.current[index].style.width = 80 / uniqueResults.length + "vw";
+                
+            });
+        }
+    }
+
+    useEffect(() => {
+        setBarSizes();
+    }, [results]);
+
     return (
         <div className='muChoPage'>
             <TopBar />
-            {!isFinalized && <div className='aargh'>
-                <div className='muChoQuestionImgDiv'>
+            <div className='aargh'>
+                {!isFinalized && <div className='muChoQuestionImgDiv'>
                     <img onLoad={() => handleAnswerOptions()} className='muChoQuestionImg' src={question?.img_link} alt="Question" />
-                </div>
+                </div>}
+                {isHost.current && isFinalized && <div className='finalizedDiv'>
+                    <div className='muChoAnswerResultBarsDiv'>
+                        {results?.map((result, index) => (
+                            <div ref={el => answerResultBarRefs.current[index] = el} onLoad={() => console.log(result)} key={index} style={{ backgroundColor: `var(--answer${index + 1})`, border: `solid white 2px` }} className='muChoAnswerResultBarDiv'>
+                                <p className='answerResultCount'>{result?.count}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>}
 
                 <div className='muChoQuestionAnswerCountDiv'>
                     <p>{answerCount}</p>
@@ -256,6 +333,7 @@ function MuChoQuestion() {
                     {answerOptions?.map((answer, order_number) => (
                         <div key={order_number} ref={el => answerOptionRefs.current[order_number + 1] = el} onClick={() => handleAnswerOptionClick(order_number + 1)} className='answerOption'>
                             <p>{answer?.answer}</p>
+                            <div className='muChoAnswerOptionColorSpot' ref={el => answerOptionColorSpotRefs.current[order_number + 1] = el}></div>
                         </div>
                     ))}
 
@@ -272,7 +350,8 @@ function MuChoQuestion() {
                 <div className='leaderBoardBtnDiv'>
                     {isHost.current && isFinalized && <button className='leaderBoardBtn' on>Leaderboard</button>}
                 </div>
-            </div>}
+            </div>
+            
             <BottomBar />
         </div>
     )
