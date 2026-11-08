@@ -19,6 +19,14 @@
     color: var(--text1);
 }
 
+.answerStatusTexts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
 .answerStatusText {
     font-size: 200%;
     margin-top: 0vh;

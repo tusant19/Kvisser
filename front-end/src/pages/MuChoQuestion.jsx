@@ -23,6 +23,7 @@ function MuChoQuestion() {
     const timeLeftBar = useRef(null);
     const hostTimeLeftBar = useRef(null);
     const playerCount = useRef(0);
+    const [isFinalized, setIsFinalized] = useState(false);
     
     let answerOptionRefs = useRef([]);
 
@@ -33,6 +34,7 @@ function MuChoQuestion() {
         .then((response) => {
             playerCount.current = response.data.count;
             console.log("playerCount: ", playerCount.current);
+            setAnswerCount("0/" + playerCount.current + " answers")
         })
         .catch((error) => {
             console.error(error);
@@ -95,11 +97,12 @@ function MuChoQuestion() {
         } 
         socket.on("answerCount", (count) => {
             console.log("answerCount: " + count)
-            if (count > 1) {
-                setAnswerCount(count + " answers")
+            if (playerCount.current > 1) {
+                setAnswerCount(count + "/" + playerCount.current + " answers")
             } else {
-                setAnswerCount(count + " answer")
+                setAnswerCount(count + "/" + playerCount.current + " answer")
             }
+            
         })
         return () => socket.disconnect()
     }, [isHost, roomCodeLoStor])
@@ -154,6 +157,7 @@ function MuChoQuestion() {
     }
     
     function setupTimerBar(seconds) {
+        let hasSentLateAnswer = false;
         let timeLeft = seconds;
         const timer = setInterval(() => {
             timeLeft -= 1;
@@ -169,11 +173,27 @@ function MuChoQuestion() {
                 timeLeftBar.current.style.background = 'linear-gradient(to right, var(--border2) ' + wholeNumberPercentage + '%, #ffffff ' + wholeNumberPercentage + '%)';
             }
             if (timeLeft <= 0) {
+                
                 clearInterval(timer);
                 if (isHost.current) {
                     hostTimeLeftBar.current.style.background = '#ffffff';
                 } else {
                     timeLeftBar.current.style.background = '#ffffff';
+                }
+                if (!hasSentLateAnswer && !isHost.current) {
+                    axios.put(`/v1/autolateanswer/${roomCodeLoStor}`, {
+                        withCredentials: true
+                    })
+                    .then((res) => {
+                        hasSentLateAnswer = true;
+                        window.location.replace(`${siteBaseUrl}/answer/late`);
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                        window.location.replace(`${siteBaseUrl}/answer/late`);
+                    })
+                } else if (!hasSentLateAnswer && isHost.current) {
+                    setIsFinalized(true);
                 }
             }
         }, 1000);
@@ -190,22 +210,28 @@ function MuChoQuestion() {
         axios.put(`${apiBaseUrl}/v1/answer/${roomCodeLoStor}`, {
             order_number: order_number
         })
-        .then((response) => {
-            console.log(response.data);
-            if (response.status === 200) {
-                if (response.data.correct) {
+        .then((res) => {
+            console.log(res.data);
+            if (res.status === 200) {
+                if (res.data.correct) {
                     //redirect to correct answer page
                     window.location.replace(`${siteBaseUrl}/answer/correct`);
                 } else {
                     //redirect to incorrect answer page
                     window.location.replace(`${siteBaseUrl}/answer/incorrect`);
                 }
-            } else if (response.status === 409) {
+            } else if (res.status == 409) {
                 //redirect to already answered page
                 window.location.replace(`${siteBaseUrl}/answer/conflict`);
             }
         })
         .catch((error) => {
+            if (error.response && error.response.status === 409) {
+                //redirect to already answered page
+                window.location.replace(`${siteBaseUrl}/answer/conflict`);
+            } else {
+                window.location.replace(`${siteBaseUrl}/answer/error`);
+            }
             console.error(error);
         })
     }
@@ -213,7 +239,7 @@ function MuChoQuestion() {
     return (
         <div className='muChoPage'>
             <TopBar />
-            <div className='aargh'>
+            {!isFinalized && <div className='aargh'>
                 <div className='muChoQuestionImgDiv'>
                     <img onLoad={() => handleAnswerOptions()} className='muChoQuestionImg' src={question?.img_link} alt="Question" />
                 </div>
@@ -244,9 +270,9 @@ function MuChoQuestion() {
                     {isHost.current && <p>{roomCode}</p>}
                 </div>}
                 <div className='leaderBoardBtnDiv'>
-                    {isHost.current && <button className='leaderBoardBtn' on>Leaderboard</button>}
+                    {isHost.current && isFinalized && <button className='leaderBoardBtn' on>Leaderboard</button>}
                 </div>
-            </div>
+            </div>}
             <BottomBar />
         </div>
     )

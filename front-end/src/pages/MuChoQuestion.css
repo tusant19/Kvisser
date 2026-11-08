@@ -24,7 +24,7 @@
 
 @media (width <= 700px) {
     .answerOption {
-        font-size: 1.2vh;
+        font-size: max(1.2vh, 9px);
     }
 }
 

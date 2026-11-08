@@ -9,7 +9,7 @@ import "./AnswerStatus.css";
 import correctSymbol from "../assets/check_24dp_505050_FILL0_wght400_GRAD0_opsz24.svg";
 import incorrectSymbol from "../assets/close_24dp_505050_FILL0_wght400_GRAD0_opsz24.svg";
 
-function AnswerStatus() {
+function AnswerStatus() { 
     let roomCodeLoStor = localStorage.getItem("roomCode") 
     const { status } = useParams();
     const [answerStatus, setAnswerStatus] = useState("waiting");
@@ -35,6 +35,13 @@ function AnswerStatus() {
             withCredentials: true,
         })
         .then((response) => {
+            if (response.data.ranOutOfTime) {
+                setAnswerStatus("You ran out of time!");
+                setSymbol(incorrectSymbol);
+                setPoints(playerDetails.current?.score);
+                setPlaceMsg("Better luck next time!");
+                return;
+            }
             console.log(response.data);
             setPlaceMsg(response.data.msg);
             if (response.data.status) {
@@ -55,7 +62,7 @@ function AnswerStatus() {
     return (
         <div className="answerStatusPage">
             <TopBar />
-            <div className="answerStatusPageMain">
+            {status != "conflict" &&<div className="answerStatusPageMain">
                 <div className="answerStatusTexts">
                     <p className="answerStatusText">{answerStatus}</p>
                     <img className="answerStatusSymbol" src={symbol} alt="answer status symbol" />
@@ -63,7 +70,11 @@ function AnswerStatus() {
                     <p className="answerStatusPoints">{points} points</p>
                     <p className="answerStatusPlace">{placeMsg}</p>
                 </div>
-            </div>
+            </div>}
+            {status == "conflict" && <div className="answerStatusPageMain">
+                <p className="statusErrorText">The server considers you to have already answered this question. You will still be sent to the next question normally.</p>
+
+            </div>}
             <BottomBar />
         </div>
     )
