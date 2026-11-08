@@ -10,6 +10,7 @@ import apiBaseUrl from '../components/apiAdress';
 import siteBaseUrl from '../components/baseAdress';
 import { useEffect } from 'react';
 import '../Main.css'
+import correctSymbol from "../assets/check_24dp_505050_FILL0_wght400_GRAD0_opsz24.svg"
 
 
 function MuChoQuestion() {
@@ -315,6 +316,7 @@ function MuChoQuestion() {
                     <div className='muChoAnswerResultBarsDiv'>
                         {results?.map((result, index) => (
                             <div ref={el => answerResultBarRefs.current[index] = el} onLoad={() => console.log(result)} key={index} style={{ backgroundColor: `var(--answer${index + 1})`, border: `solid white 2px` }} className='muChoAnswerResultBarDiv'>
+                                {result?.correct && <img src={correctSymbol} alt="Correct" style={{ height: 'min(48px, 4vw)', width: 'min(48px, 4vw)' }} />}
                                 <p className='answerResultCount'>{result?.count}</p>
                             </div>
                         ))}
