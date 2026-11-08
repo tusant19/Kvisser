@@ -99,8 +99,8 @@ io.on("connection", (socket) => {
         //console.log("gameState check pass")
         //console.log("emit " + roomCode)
         io.to(roomCode).to(roomCode + "host").emit("nextQuestionSwap", (questionType?.type));
-        updapteGameState.run(gameState?.state + 1, roomCode)
-        addGameStateChange.run(roomCode, gameState?.state + 1, Date.now());
+        updapteGameState.run(gameState?.state + 2, roomCode)
+        addGameStateChange.run(roomCode, gameState?.state + 2, Date.now());
 
       }
     }
@@ -307,7 +307,7 @@ const getAllAnswerOptions = db.prepare('SELECT * FROM answer_options')
 //queries ^
 
 let doesExampleQuizExist = getAllQuizzes.all();
-if (doesExampleQuizExist.length === 0) {
+if (doesExampleQuizExist.length < 1) {
   console.log("ran");
   let exampleQuizUuid = uuidv4();
   quizInsert.run(-1, uuidv4(), 0, Date.now(), "Secret example quiz!", "https://placehold.co/800x400", "english", 1);
@@ -320,16 +320,16 @@ if (doesExampleQuizExist.length === 0) {
   quizInsert.run(-1, uuidv4(), 0, Date.now(), "Empty placeholder quiz 6", "https://placehold.co/600x400", "english", 0);
   quizInsert.run(-1, uuidv4(), 0, Date.now(), "Empty placeholder quiz 7", "https://placehold.co/600x400", "english", 0);
   let publicQuiz = quizGetByUuid.all(exampleQuizUuid);
-  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 1, "https://placehold.co/600x400", 10, 30, "Question 1");
-  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 2, "https://placehold.co/600x400", 10, 30, "Question 2");
-  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 3, "https://placehold.co/600x400", 10, 30, "Question 3");
-  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 4, "https://placehold.co/600x400", 10, 30, "Question 4");
-  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 5, "https://placehold.co/600x400", 10, 30, "Question 5");
-  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 6, "https://placehold.co/600x400", 10, 30, "Question 6");
-  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 7, "https://placehold.co/600x400", 10, 30, "Question 7");
-  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 8, "https://placehold.co/600x400", 10, 30, "Question 8");
-  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 9, "https://placehold.co/600x400", 10, 30, "Question 9");
-  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 10, "https://placehold.co/600x400", 10, 30, "Question 10");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 1, "https://placehold.co/600x400", 1000, 30, "Question 1");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 2, "https://placehold.co/600x400", 1000, 30, "Question 2");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 3, "https://placehold.co/600x400", 1000, 30, "Question 3");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 4, "https://placehold.co/600x400", 1000, 30, "Question 4");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 5, "https://placehold.co/600x400", 1000, 30, "Question 5");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 6, "https://placehold.co/600x400", 1000, 30, "Question 6");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 7, "https://placehold.co/600x400", 1000, 30, "Question 7");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 8, "https://placehold.co/600x400", 1000, 30, "Question 8");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 9, "https://placehold.co/600x400", 1000, 30, "Question 9");
+  questionInsert.run(publicQuiz[0]?.id, "multipleChoice", 10, "https://placehold.co/600x400", 1000, 30, "Question 10");
 
   for (let i = 1; i <= 10; i++) {
     answerOptionInsertByQuizIdAndOrder.run(publicQuiz[0]?.id, i, "Answer 1", 1, 1);
@@ -788,9 +788,13 @@ app.put('/v1/answer/:roomCode', (req, res) => {
   let answerCount = getAnswerCountForQuestion.get(req.params?.roomCode, question[0]?.id)['COUNT(*)']
   console.log("answerCount: " + answerCount)
   io.to(req.params?.roomCode + "host").emit("answerCount", answerCount)
+  io.to(req.params?.roomCode).emit("answerCount", answerCount)
   let questionStartTime = getLatestGameStateChange.get(req.params?.roomCode)
   questionStartTime = questionStartTime?.time_changed
   let timeTaken = Date.now() - questionStartTime
+  let leftOverTime = question[0]?.time_given * 1000 - timeTaken
+  let leftOverTimeSeconds = leftOverTime / 1000
+  console.log("leftOverTime: " + leftOverTime)
   console.log("timeTaken: " + timeTaken)
   let didNotAnswerInTime = false
   if (timeTaken > question[0]?.time_given * 1000) {
@@ -807,7 +811,8 @@ app.put('/v1/answer/:roomCode', (req, res) => {
     )
   }
   if (correctAnswer && correctAnswer.order_number === orderNumber && player[0]?.role !== "host" && question[0]?.type === "multipleChoice" && question[0]?.score_value != undefined && question[0]?.score_value != null && question[0]?.score_value > 0) {
-    updatePlayerScore.run(player[0]?.score + math.floor(question[0]?.score_value / question[0]?.time_given * timeTaken), player[0]?.uuid)
+    console.log("points to give: " + Math.floor(leftOverTimeSeconds * question[0]?.score_value / question[0]?.time_given))
+    updatePlayerScore.run(player[0]?.score + Math.floor(leftOverTimeSeconds * question[0]?.score_value / question[0]?.time_given), player[0]?.uuid)
     updateCorrectnessForPlayer.run(1, req.params?.roomCode, question[0]?.id, player[0]?.uuid)
     res.status(200)
     return res.json(
