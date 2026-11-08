@@ -143,14 +143,16 @@
     }
 }
 
-.leaderBoardBtnDiv {
+.leaderBoardBtnDiv,
+.skipButtonDiv {
     position: absolute;
     top: 9vh;
     right: 1vh;
     z-index: 1;
 }
 
-.leaderBoardBtn {
+.leaderBoardBtn,
+.skipButton {
     font-size: 120%;
     padding: 1vh;
     background-color: white;

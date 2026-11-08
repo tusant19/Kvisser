@@ -125,6 +125,10 @@ function MuChoQuestion() {
             }
             
         })
+        socket.on("skipQuestion", (type) => {
+            console.log("skipQuestion: " + type)
+            window.location.replace(`${siteBaseUrl}/${type}`);
+        })
         return () => socket.disconnect()
     }, [roleLoaded, roomCodeLoStor])
 
@@ -328,6 +332,14 @@ function MuChoQuestion() {
         window.location.replace(`${siteBaseUrl}/leaderboard`);
     }
 
+    function handleSkip() {
+        if (!isHost.current) {
+            return;
+        }
+        const socket = io(apiBaseUrl);
+        socket.emit("skipQuestion", roomCodeLoStor, localStorage.getItem("uuid"))
+    }
+
     return (
         <div className='muChoPage'>
             <TopBar />
@@ -372,6 +384,9 @@ function MuChoQuestion() {
                     {isHost.current && <div ref={hostTimeLeftBar} className='hostTimeLeftBar'></div>}
                     {isHost.current && <p>{roomCode}</p>}
                 </div>}
+                <div className='skipButtonDiv'>
+                    {isHost.current && !isFinalized && <button className='skipButton' onClick={handleSkip}>Skip</button>}
+                </div>
                 <div className='leaderBoardBtnDiv'>
                     {isHost.current && isFinalized && <button className='leaderBoardBtn' onClick={handleLeaderboardClick}>Leaderboard</button>}
                 </div>
