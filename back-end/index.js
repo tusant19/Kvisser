@@ -904,3 +904,24 @@ app.get('/v1/gameexists/:roomCode', (req, res) => {
   }
   return res.sendStatus(404)
 });
+
+//route that clients automatically send to if time ran out
+app.put('/v1/autolateanswer/:roomCode', (req, res) => {
+  let player = getPlayer.all(req.cookies.playerUuid)
+  if (player[0] == undefined) {
+    return res.sendStatus(404)
+  }
+  if (player[0]?.role === "host") {
+    return res.sendStatus(403)
+  }
+  let question = getQuestionByRoomCodeAndOrder.all(req.params?.roomCode, (getGameState.get(req.params?.roomCode)?.state / 2 + 1));
+  if (question[0] == undefined) {
+    return res.sendStatus(404)
+  }
+  let hasAlreadyAnswered = hasAnswered.get(req.params?.roomCode, question[0]?.id, player[0]?.uuid)
+  if (hasAlreadyAnswered != undefined) {
+    return res.sendStatus(409)
+  }
+  insertAnswerForPlayer.run(req.params?.roomCode, question[0]?.id, player[0]?.uuid, null, 2, Date.now())
+  return res.sendStatus(200)
+});
