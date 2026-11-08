@@ -1001,3 +1001,14 @@ app.get('/v1/leaderboard/:roomCode', (req, res) => {
     players: sanitizedPlayers
   })
 });
+
+app.get('/v1/nomorequestions/:roomCode', (req, res) => {
+  let currentQuestionNumber = getGameState.get(req.params?.roomCode)
+  let questionCount = getQuestionCountByRoomCode.get(req.params?.roomCode)['COUNT(*)']
+  if (currentQuestionNumber == undefined) {
+    return res.sendStatus(404)
+  }
+  return res.json({
+    noMoreQuestions: currentQuestionNumber?.state / 2 >= questionCount
+  })
+});

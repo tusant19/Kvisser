@@ -40,6 +40,27 @@ function Leaderboard() {
         }
     }
 
+    useEffect(() => {
+        axios.get(`${apiBaseUrl}/v1/nomorequestions/${roomCodeLoStor}`, {
+            withCredentials: true,
+        })
+        .then((response) => {
+            console.log(response.data);
+            if (response.data.noMoreQuestions) {
+                let title = document.querySelector(".leaderboardTitle");
+                let button = document.querySelector(".leaderboardContBtn");
+                title.textContent = "Thanks for playing!";
+                button.textContent = "Return to Home";
+                button.addEventListener("click", () => {
+                    window.location.replace(`${siteBaseUrl}/`);
+                });
+            }
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+    }, []);
+
     return (
         <div className="leaderboardPage">
             <TopBar />
