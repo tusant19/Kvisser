@@ -224,11 +224,11 @@
 }
 
 .muChoAnswerOptionColorSpot {
-    min-width: 2dvw;
-    height: 2dvw;
+    min-width: 1.5dvw;
+    height: 1.5dvw;
     border-radius: 50%;
     margin-left: 1vw;
-    margin-right: 1vw;
+    margin-right: 1.3vw;
     border: solid var(--border1) 2px;
     position: absolute;
     top: 21%;
