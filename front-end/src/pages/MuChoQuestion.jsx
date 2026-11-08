@@ -321,9 +321,9 @@ function MuChoQuestion() {
                     </div>
                 </div>}
 
-                <div className='muChoQuestionAnswerCountDiv'>
+                {!isFinalized && <div className='muChoQuestionAnswerCountDiv'>
                     <p>{answerCount}</p>
-                </div>
+                </div>}
                     
                 
                 <div className='muChoQuestionTitleDiv'>
