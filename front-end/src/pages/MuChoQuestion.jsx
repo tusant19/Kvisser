@@ -28,6 +28,7 @@ function MuChoQuestion() {
     const [results, setResults] = useState(null);
     const answerResultBarRefs = useRef([]);
     const answerOptionColorSpotRefs = useRef([]);
+    const answerResultBarDivRef = useRef(null);
     
     let answerOptionRefs = useRef([]);
 
@@ -284,6 +285,12 @@ function MuChoQuestion() {
     }
 
     function setBarSizes() {
+        let barElements = answerResultBarRefs.current;
+        if (barElements.length === 0 && isFinalized) {
+            answerResultBarDivRef.current.setHTML("<p class='noAnswersText'>No answers were submitted.</p>");
+            return;
+        }
+
         if (results) {
             let maxheight = 0.35;
             let totalCount = results.reduce((acc, result) => acc + result.count, 0);
@@ -313,7 +320,7 @@ function MuChoQuestion() {
                     <img onLoad={() => handleAnswerOptions()} className='muChoQuestionImg' src={question?.img_link} alt="Question" />
                 </div>}
                 {isHost.current && isFinalized && <div className='finalizedDiv'>
-                    <div className='muChoAnswerResultBarsDiv'>
+                    <div className='muChoAnswerResultBarsDiv' ref={answerResultBarDivRef}>
                         {results?.map((result, index) => (
                             <div ref={el => answerResultBarRefs.current[index] = el} onLoad={() => console.log(result)} key={index} style={{ backgroundColor: `var(--answer${index + 1})`, border: `solid white 2px` }} className='muChoAnswerResultBarDiv'>
                                 {result?.correct && <img src={correctSymbol} alt="Correct" style={{ height: 'min(48px, 4vw)', width: 'min(48px, 4vw)' }} />}
