@@ -1,17 +1,17 @@
-Kvisser: A self hosted quiz platform. 
+<h2> Kvisser: A self hosted quiz platform. </h2>
 The goal of this project is to build a locally hosted service to replace services like kahoot. 
 Built with react as the frontend framework and expressJS as the backend.
 Currently in very early development.
 
 Try it: https://kvisser.santtu.uk
 
-<div>
-<p>IMPORTANT</p>
- <p>- Due to this using cookies to identify players if you want to host and play you have to make sure the two windows cookies are sepperate (for example a private and normal browsing window or two different browsers)</p>
- <p>- There is currently an occasional bug that will either not create the room given by the code or will open it but when the user joins the game their name will not show up in the player list. If this happens just refresh the host page to generate a new code.</p>
-</div>
+IMPORTANT
+   - Due to this using cookies to identify players if you want to host and play you have to make sure the two windows cookies are sepperate (for example a private and normal browsing window or two different browsers)
+   - There is currently an occasional bug that will either not create the room given by the code or will open it but when the user joins the game their name will not show up in the player list. If this happens just refresh the host page to generate a new code.
+ <p></p>
 
-How to access the available features:
+<h3>How to access the available features: </h3>
+
  - Both the quiz page and the ability to host lobbies are viewable when clicking on the hostable example quiz on the carousel on the first carousel in the home screen
  - To host the example quiz click the host button in the example quizzes page and then continue or login and try again. 
  - You can join a room by clicking on the play button and then typing in the 6 letter code visible on the hosts screen and then your chosen username.
@@ -21,7 +21,7 @@ How to access the available features:
  - To access the leaderboard press the leaderboard button as the host after the time is up or everyone has answered
  - You'll see the status page after answering a question as the player
 
-Note: the page for changing your password exists but there is currently no ui element to access it. To change password go to: https://kvisser.santtu.uk/changepassword.
+<p>Note: the page for changing your password exists but there is currently no ui element to access it. To change password go to: https://kvisser.santtu.uk/changepassword.</p>
 
 To test locally:
 run "npm i" and "npm run dev" in both the front-end and backend directiories.
