@@ -27,28 +27,36 @@ To test locally:
 run "npm i" and "npm run dev" in both the front-end and backend directiories.
 
 Current features that exist:
-- The home page
+  <p>The home page</p>
 <img alt="image of home page" src="./readme/image.png" height="200"/>
-- Quiz pages
+
+  <p>Quiz pages</p>
 <img alt="image of quiz specific page" src="./readme/image-1.png" height="200"/>
-- Hosting a lobby
+
+<p>Hosting a lobby</p>
 <img alt="Image of hosting screen" src="./readme/image-2.png" height="200"/>
-- Joining a lobby
+
+<p>Joining a lobby</p>
 <img alt="Image of room joining screen" src="./readme/image-3.png" height="200"/>
 <img alt="Image of waiting screen" src="./readme/image-4.png" height="200"/>
-- The front page
+
+<p>The front page</p>
 <img alt="Image of the front page" src="./readme/image-5.png" height="200"/>
-- Auth pages
+
+<p>Auth pages</p>
 <img alt="Image of login page" src="./readme/image-6.png" height="200"/>
 <img alt="Image of logout page" src="./readme/image-7.png" height="200"/>
 <img alt="Image of account creation page" src="./readme/image-8.png" height="200"/>
 <img alt="Image of password changing page" src="./readme/image-9.png" height="200"/>
-- The multiple choice question page
+
+<p>The multiple choice question page</p>
 <img alt="image of the multiple choice question page with the question active" src="./readme/image-10.png" height="200">
 <img alt="image of the multiple choice question page with the results shown" src="./readme/image-11.png" height="200">
-- The leaderboard page
+
+<p>The leaderboard page</p>
 <img alt="image of the leaderboard page" src="./readme/image-15.png" height="200">
-- The status page
+
+<p>The status page</p>
 <img alt="image of the status page with a correct answer" src="./readme/image-12.png" height="200">
 <img alt="image of the status page with an incrorrect answer" src="./readme/image-13.png" height="200">
 <img alt="image of the status page with a late answer" src="./readme/image-14.png" height="200">
