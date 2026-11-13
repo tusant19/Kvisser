@@ -269,6 +269,8 @@ const realQuizDelete = db.prepare('DELETE FROM quizzes WHERE id = ?');
 const quizDelete = db.prepare('DELETE FROM quizzes WHERE user_id = -1')
 const quizGet = db.prepare('SELECT * FROM quizzes WHERE id = ? LIMIT 1');
 const quizGetByUuid = db.prepare('SELECT * FROM quizzes WHERE public_uuid = ? LIMIT 1');
+const getQuizByWordInTitle = db.prepare('SELECT * FROM quizzes WHERE title LIKE ? AND private = 0 LIMIT 50');
+
 const gameInsert = db.prepare('INSERT INTO games (user_id, room_code, capacity, active, state) VALUES (?, ?, ?, ?, ?)');
 const gameDelete = db.prepare('DELETE FROM games WHERE user_id = -1');
 const gameCheck = db.prepare('SELECT * FROM games WHERE room_code = ? AND active = 1 LIMIT 1');
@@ -1029,5 +1031,43 @@ app.get('/v1/nomorequestions/:roomCode', (req, res) => {
   }
   return res.json({
     noMoreQuestions: currentQuestionNumber?.state / 2 >= questionCount
+  })
+});
+
+app.get('/v1/search/:query', (req, res) => {
+  let query = req.params?.query
+  console.log("search query: " + query)
+  if (query == undefined || query == null || query == "") {
+    return res.sendStatus(422)
+  }
+  let words = query.split(" ")
+  let searchResults = []
+  for (let i = 0; i < words.length; i++) {
+    let results = getQuizByWordInTitle.all(`%${words[i]}%`)
+    for (let j = 0; j < results.length; j++) {
+      //get search term count in title
+      let count = 0;
+      for (let k = 0; k < words.length; k++) {
+        if (results[j]?.title?.toLowerCase().includes(words[k]?.toLowerCase())) {
+          count++;
+        }
+      }
+      if (!searchResults.some(e => e.id === results[j].id)) {
+        searchResults.push(
+          {
+            title: results[j]?.title,
+            img_link: results[j]?.img_link,
+            uuid: results[j]?.public_uuid,
+            count: count
+          }
+        )
+      }
+    }
+  }
+  let resultsByAppearanceCount = searchResults.sort((a, b) => b.count - a.count)
+  console.log("search results: " + JSON.stringify(resultsByAppearanceCount))
+  
+  return res.json({
+    searchResults: resultsByAppearanceCount
   })
 });

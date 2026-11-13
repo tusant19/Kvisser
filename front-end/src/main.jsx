@@ -14,6 +14,7 @@ import HostWaiting from "./pages/HostWaiting.jsx";
 import MuChoQuestion from "./pages/MuChoQuestion.jsx";
 import AnswerStatus from "./pages/AnswerStatus.jsx";
 import Leaderboard from "./pages/Leaderboard.jsx";
+import Search from "./pages/Search.jsx";
 
 const root = document.getElementById("root");
 
@@ -32,6 +33,7 @@ ReactDOM.createRoot(root).render(
       <Route path="multipleChoice" element={<MuChoQuestion/>}/>
       <Route path="/answer/:status" element={<AnswerStatus/>}/>
       <Route path="/leaderboard" element={<Leaderboard/>}/>
+      <Route path="/search" element={<Search/>}/>
     </Routes>
   </BrowserRouter>,
 );

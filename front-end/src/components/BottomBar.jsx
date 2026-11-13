@@ -13,9 +13,9 @@ function BottomBar() {
                         <img src={homeSymbol} alt="Home" />
                     </button>
                 </a>
-                <a href="../find">
+                <a href="../search">
                     <button className='bottomBarBtn'>
-                        <img src={findSymbol} alt="Find" />
+                        <img src={findSymbol} alt="Search" />
                     </button>
                 </a>
                 <a href="../play">
