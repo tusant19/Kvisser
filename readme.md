@@ -5,6 +5,10 @@ Currently in very early development.
 
 Try it: https://kvisser.santtu.uk
 
+<h1>IMPORTANT</h1>
+ - Due to this using cookies to identify players if you want to host and play you have to make sure the two windows cookies are sepperate (for example a private and normal browsing window or two different browsers)
+ - There is currently an occasional bug that will either not create the room given by the code or will open it but when the user joins the game their name will not show up in the player list. If this happens just refresh the host page to generate a new code.
+
 How to access the available features:
  - Both the quiz page and the ability to host lobbies are viewable when clicking on the hostable example quiz on the carousel on the first carousel in the home screen
  - To host the example quiz click the host button in the example quizzes page and then continue or login and try again. 
