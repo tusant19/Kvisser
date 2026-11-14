@@ -2,7 +2,7 @@ import './Waiting.css'
 import TopBar from '../components/TopBar.jsx'
 import BottomBar from '../components/BottomBar.jsx'
 import axios from "axios";
-import { use, useState } from 'react';
+import { useState } from 'react';
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 import { useEffect } from 'react';
 import apiBaseUrl from '../components/apiAdress.js';
@@ -17,6 +17,7 @@ function Waiting() {
     const [room, setRoom] = useState(null)
     const [singularPlayer, setSingularPlayer] = useState("player")
     const [isAre, setIsAre] = useState("is")
+    const [isHost, setIsHost] = useState(false)
     
     useEffect(() => {
         axios.get(`${apiBaseUrl}/v1/playerDetails`, {},
@@ -28,6 +29,10 @@ function Waiting() {
             })
             .then((res) => {
                 setName(res?.data?.name)
+                if (res?.data?.name == "host") {
+                    setIsHost(true)
+                }
+
                 setRoom(res?.data?.room)
                 localStorage.setItem("roomCode", res?.data?.room)
                 console.log(res)
@@ -75,13 +80,20 @@ function Waiting() {
     return (
         <div className='waitingPage'>
             <TopBar />
-            <div className='waitingPageMain'>
+            {!isHost && <div className='waitingPageMain'>
                 <div className='playerGreet'>
                     <p>Welcome {name}</p>
                     <p>the game will be starting soon</p>
                     <p>There {isAre} currently {count} {singularPlayer}</p>
+                    <p>If you do not see your name on the host page, please refresh the host page to generate a new code and rejoin with the new code.</p>
                 </div>
-            </div>
+            </div>}
+            {isHost && <div className='waitingPageMain'>
+                <div className='playerGreet'>
+                    <p>You're browser cookies have marked you as the host of the lobby</p>
+                    <p>If you are testing the project please ensure that all the cookies of the browser windows you are using have seperate cookies (for example using two different browsers or a private and public browsing mode).</p>
+                </div>
+            </div>}
             <BottomBar />
         </div>
     )
