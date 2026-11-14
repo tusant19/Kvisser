@@ -60,7 +60,7 @@ function Account() {
             <TopBar />
             <div className="accountPageMain">
                 <div className="accountTitleDiv">
-                    <p>Account Details</p>
+                    <p>Account details</p>
                 </div>
                 {loggedIn.current ? (
                     <div className="accountDetailsDiv">
