@@ -331,6 +331,7 @@ const getUserIdByToken = db.prepare('SELECT * FROM sessions WHERE token = ? LIMI
 const updateUserPassword = db.prepare('UPDATE users SET password = ? WHERE id = ?');
 const deleteSessionByToken = db.prepare('DELETE FROM sessions WHERE token = ?');
 const getuserById = db.prepare('SELECT * FROM users WHERE id = ? LIMIT 1')
+const getuserByPublicUuid = db.prepare('SELECT * FROM users WHERE public_uuid = ? LIMIT 1')
 
 const answerOptionInsert = db.prepare('INSERT INTO answer_options (question_id, answer, order_number, is_correct) VALUES (?, ?, ?, ?)');
 const answerOptionInsertByQuizIdAndOrder = db.prepare('INSERT INTO answer_options (question_id, answer, order_number, is_correct) VALUES ((SELECT id FROM quiz_questions WHERE quiz_id = ? AND order_number = ? LIMIT 1), ?, ?, ?)');
@@ -434,19 +435,25 @@ function checkQuizAccess(req, res, next) {
 function checkAccountAccess(req, res, next) {
   let token = req?.cookies?.sessionToken
   if (token === null  || token === undefined) {
+    console.log("no token")
     return res.sendStatus(401);
   }
   let userThatRequested = getUserIdByToken.all(token);
+  console.log("userThatRequested: " + JSON.stringify(userThatRequested[0].user_id))
   if (userThatRequested.expiry < Date.now()) {
+    console.log("token expired")
     return res.sendStatus(401);
   }
   let userIdOfRequester = userThatRequested[0]?.user_id
   if (userIdOfRequester === null || userIdOfRequester === undefined) {
+    console.log("no userIdOfRequester")
     return res.sendStatus(401);
   }
   let requestedAccountUuid = req.params?.uuid
   let requestersAccount = getuserById.get(userIdOfRequester);
-  if (requestersAccount?.uuid !== requestedAccountUuid) {
+  console.log("requestersAccount uuid: " + requestersAccount?.public_uuid)
+  console.log("requestedAccountUuid: " + requestedAccountUuid)
+  if (requestersAccount?.public_uuid !== requestedAccountUuid) {
     return res.sendStatus(401);
   }
   return next();
@@ -1147,7 +1154,7 @@ app.get('/v1/search/:query', (req, res) => {
 });
 
 app.get('/v1/account/:uuid', checkAccountAccess, (req, res) => {
-  let user = getuserByUuid.all(req.params?.uuid)
+  let user = getuserByPublicUuid.all(req.params?.uuid)
   if (user[0] == undefined) {
     return res.sendStatus(404)
   }
