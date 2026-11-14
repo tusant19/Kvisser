@@ -9,39 +9,43 @@ import siteBaseUrl from '../components/baseAdress.js';
 function Account() {
     const [loggedIn, setLoggedIn] = useState(false);
     const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
     const [uuid, setUuid] = useState("");
 
 
-    function init() {
-        axios.get(`${apiBaseUrl}/v1/loginstatus`, {
-            withCredentials: true,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then((res) => {
-            if (res.data.loggedIn) {
-                setLoggedIn(true);
-            }
-            axios.get(`${apiBaseUrl}/v1/account/${res.data.uuid}`, {
+    async function init() {
+        try {
+            const res = await axios.get(`${apiBaseUrl}/v1/loginstatus`, {
                 withCredentials: true,
                 headers: {
                     'Content-Type': 'application/json'
                 }
-            })
-            .then((res) => {
-                setName(res.data.name);
-                setEmail(res.data.email);
+            });
+            if (res.data.msg === "Log out") {
+                console.log("User is logged in");
+                console.log("UUID: " + res.data.uuid);
+                setLoggedIn(true);
                 setUuid(res.data.uuid);
-            })
-            .catch((error) => {
-                console.error(error);
-            })
-        })
-        .catch((error) => {
+            } else {
+                console.log("User is not logged in");
+                setLoggedIn(false);
+            }
+            
+        } catch (error) {
             console.error(error);
-        })
+        }
+        if (loggedIn) {
+            try {
+                const res = await axios.get(`${apiBaseUrl}/v1/account/${uuid}`, {
+                    withCredentials: true,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                setName(res.data.name);
+            } catch (error) {
+                console.error(error);
+            }
+        }
     }
 
     useEffect(() => {
@@ -58,7 +62,6 @@ function Account() {
                 {loggedIn ? (
                     <div className="accountDetailsDiv">
                         <p className="accountDetail">Name: {name}</p>
-                        <p className="accountDetail">Email: {email}</p>
                         <p className="accountDetail">UUID: {uuid}</p>
                     </div>
                 ) : (

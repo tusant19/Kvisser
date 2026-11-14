@@ -469,10 +469,11 @@ app.put('/v1/register', async (req, res) => {
       res.sendStatus(500)
     } else {
       userInsert.run(name, uuidv4(), hash);
+      let newUser = getUserByName.get(name);
       let token = uuidv4();
       //console.log(token)
       let expiry = Date.now() + 3600000 * 24 * 7; // 1 week
-      tokenInsert.run(user?.id, token, expiry);
+      tokenInsert.run(newUser?.id, token, expiry);
       res.cookie('sessionToken', token, { maxAge: (3600000 * 24 * 7), httpOnly: true })
       res.sendStatus(200)
     }
@@ -592,16 +593,21 @@ app.get('/v1/loginstatus', (req, res) => {
   let exists = getUserIdByToken.all(token)
   if (exists[0]?.id != undefined && exists[0]?.expiry > Date.now()) {
     res.status(200)
+    //console.log("User is logged in")
+    let uuid = getuserById.get(exists[0]?.user_id)?.public_uuid
+    console.log("User is logged in: " + uuid)
     return res.json(
       {
-        msg: "Log out"
+        msg: "Log out",
+        uuid: uuid
       }
     )
   } else {
     res.status(401)
     return res.json(
       {
-        msg: "Log in"
+        msg: "Log in",
+       
       }
     )
   }
@@ -1147,7 +1153,6 @@ app.get('/v1/account/:uuid', checkAccountAccess, (req, res) => {
   }
   return res.json({
     name: user[0]?.name,
-    email: user[0]?.email,
     uuid: user[0]?.public_uuid
   })
 })
