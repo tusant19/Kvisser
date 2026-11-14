@@ -27,6 +27,12 @@ function Search() {
             console.error(error);
         });
     }
+    
+    document.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            handleSearch();
+        }
+    });
 
     return (
         <div className="searchPage">
