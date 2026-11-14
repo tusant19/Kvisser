@@ -431,6 +431,27 @@ function checkQuizAccess(req, res, next) {
 
 }
 
+function checkAccountAccess(req, res, next) {
+  let token = req?.cookies?.sessionToken
+  if (token === null  || token === undefined) {
+    return res.sendStatus(401);
+  }
+  let userThatRequested = getUserIdByToken.all(token);
+  if (userThatRequested.expiry < Date.now()) {
+    return res.sendStatus(401);
+  }
+  let userIdOfRequester = userThatRequested[0]?.user_id
+  if (userIdOfRequester === null || userIdOfRequester === undefined) {
+    return res.sendStatus(401);
+  }
+  let requestedAccountUuid = req.params?.uuid
+  let requestersAccount = getuserById.get(userIdOfRequester);
+  if (requestersAccount?.uuid !== requestedAccountUuid) {
+    return res.sendStatus(401);
+  }
+  return next();
+}
+
 app.put('/v1/register', async (req, res) => {
   let user = getUserByName.get(req.body?.name);
   if (user?.id != undefined) {
@@ -1118,3 +1139,15 @@ app.get('/v1/search/:query', (req, res) => {
     nextPageAvailable: wasLeftOverResults
   })
 });
+
+app.get('/v1/account/:uuid', checkAccountAccess, (req, res) => {
+  let user = getuserByUuid.all(req.params?.uuid)
+  if (user[0] == undefined) {
+    return res.sendStatus(404)
+  }
+  return res.json({
+    name: user[0]?.name,
+    email: user[0]?.email,
+    uuid: user[0]?.public_uuid
+  })
+})

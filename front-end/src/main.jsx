@@ -15,6 +15,7 @@ import MuChoQuestion from "./pages/MuChoQuestion.jsx";
 import AnswerStatus from "./pages/AnswerStatus.jsx";
 import Leaderboard from "./pages/Leaderboard.jsx";
 import Search from "./pages/Search.jsx";
+import Account from "./pages/Account.jsx";
 
 const root = document.getElementById("root");
 
@@ -34,6 +35,7 @@ ReactDOM.createRoot(root).render(
       <Route path="/answer/:status" element={<AnswerStatus/>}/>
       <Route path="/leaderboard" element={<Leaderboard/>}/>
       <Route path="/search" element={<Search/>}/>
+      <Route path="/account" element={<Account/>}/>
     </Routes>
   </BrowserRouter>,
 );
