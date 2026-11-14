@@ -1102,7 +1102,7 @@ app.get('/v1/search/:query', (req, res) => {
   }
 
   //testing
-  let exampleSearchResults = []
+  /*let exampleSearchResults = []
   for (let i = 0; i < 30; i++) {
     exampleSearchResults.push(
       {
@@ -1112,9 +1112,9 @@ app.get('/v1/search/:query', (req, res) => {
         count: 1
       }
     )
-  }
+  }*/
   return res.json({
-    searchResults: exampleSearchResults,
+    searchResults: resultsByAppearanceCount,
     nextPageAvailable: wasLeftOverResults
   })
 });

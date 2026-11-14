@@ -9,6 +9,7 @@ import siteBaseUrl from '../components/baseAdress.js';
 function Search() {
     const searchInputRef = useRef(null);
     const [searchResults, setSearchResults] = useState([]);
+    const [hasTried, setHasTried] = useState(false);
 
     function handleSearch() {
         const query = searchInputRef.current.value;
@@ -19,6 +20,7 @@ function Search() {
             }
         })
         .then((res) => {
+            setHasTried(true);
             setSearchResults(res.data.searchResults);
         })
         .catch((error) => {
@@ -47,7 +49,13 @@ function Search() {
                             ))}
                         </div>
                     ) : (
-                        <p className="searchResultsEmpty">No results found.</p>
+                        <div className="noResultsMessageDiv">
+                            {hasTried ? (
+                                <p className="noResultsMessage">No results found.</p>
+                            ) : (
+                                <p className="noResultsMessage">Type something in the search box.</p>
+                            )}
+                        </div>
                     )}
                 </div>
             </div>
