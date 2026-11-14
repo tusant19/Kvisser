@@ -19,7 +19,7 @@ function Search() {
             }
         })
         .then((res) => {
-            setSearchResults(res.data);
+            setSearchResults(res.data.searchResults);
         })
         .catch((error) => {
             console.error(error);
@@ -30,8 +30,26 @@ function Search() {
         <div className="searchPage">
             <TopBar />
             <div className="searchPageMain">
-                <input type="text" placeholder="Search..." ref={searchInputRef} className="searchPageInput" />
-                <button className="searchPageButton" onClick={handleSearch}>Search</button>
+                <div className="searchControlsDiv">
+                    <input type="text" placeholder="Search..." ref={searchInputRef} className="searchPageInput" />
+                    <button className="searchPageButton" onClick={handleSearch}>Search</button>
+                </div>
+                <div className="searchResultsDiv">
+                    {searchResults.length > 0 ? (
+                        <div className="searchResultsList">
+                            {searchResults.map((result, index) => (
+                                <a href={`${siteBaseUrl}/quiz/${result.uuid}`} key={index} className="searchResultItemLink">
+                                    <div key={index} className="searchResultItem">
+                                        <img src={result.img_link} alt={result.title} className="searchResultImage" />
+                                        <p className="searchResultTitle">{result.title}</p>
+                                    </div>
+                                </a>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="searchResultsEmpty">No results found.</p>
+                    )}
+                </div>
             </div>
             <BottomBar />
         </div>

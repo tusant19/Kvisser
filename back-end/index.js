@@ -1100,8 +1100,21 @@ app.get('/v1/search/:query', (req, res) => {
   if (uniqueResults.length > 30) {
     wasLeftOverResults = true;
   }
+
+  //testing
+  let exampleSearchResults = []
+  for (let i = 0; i < 30; i++) {
+    exampleSearchResults.push(
+      {
+        title: "Example Quiz " + (i + 1),
+        img_link: "https://placehold.co/600x400",
+        uuid: uuidv4(),
+        count: 1
+      }
+    )
+  }
   return res.json({
-    searchResults: resultsByAppearanceCount,
+    searchResults: exampleSearchResults,
     nextPageAvailable: wasLeftOverResults
   })
 });
