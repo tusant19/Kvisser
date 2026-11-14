@@ -1076,7 +1076,7 @@ app.get('/v1/search/:query', (req, res) => {
           count++;
         }
       }
-      if (!searchResults.some(e => e.id === results[j].id)) {
+      if (!searchResults.some(e => e.title === results[j].title)) {
         searchResults.push(
           {
             title: results[j]?.title,
@@ -1090,7 +1090,7 @@ app.get('/v1/search/:query', (req, res) => {
   }
   let uniqueResults = []
   for (let i = 0; i < searchResults.length; i++) {
-    if (!uniqueResults.some(e => e.id === searchResults[i].id)) {
+    if (!uniqueResults.some(e => e.title === searchResults[i].title)) {
       uniqueResults.push(searchResults[i])
     }
   }
