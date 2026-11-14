@@ -1064,10 +1064,20 @@ app.get('/v1/search/:query', (req, res) => {
       }
     }
   }
-  let resultsByAppearanceCount = searchResults.sort((a, b) => b.count - a.count)
+  let uniqueResults = []
+  for (let i = 0; i < searchResults.length; i++) {
+    if (!uniqueResults.some(e => e.id === searchResults[i].id)) {
+      uniqueResults.push(searchResults[i])
+    }
+  }
+  let resultsByAppearanceCount = uniqueResults.sort((a, b) => b.count - a.count).slice(0, 30)
   console.log("search results: " + JSON.stringify(resultsByAppearanceCount))
-  
+  let wasLeftOverResults = false;
+  if (uniqueResults.length > 30) {
+    wasLeftOverResults = true;
+  }
   return res.json({
-    searchResults: resultsByAppearanceCount
+    searchResults: resultsByAppearanceCount,
+    nextPageAvailable: wasLeftOverResults
   })
 });
