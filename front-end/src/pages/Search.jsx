@@ -28,11 +28,14 @@ function Search() {
         });
     }
     
-    document.addEventListener("keydown", function(event) {
-        if (event.key === "Enter") {
-            handleSearch();
-        }
-    });
+    useEffect(() => {
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                handleSearch();
+            }
+        });
+    }, []);
+
 
     return (
         <div className="searchPage">
