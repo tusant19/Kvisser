@@ -39,8 +39,24 @@ function setInactivePlayers(room) {
   //console.log(playerCount)
 
   let host = getHostUuid.get(room);
+  let hostInactive = false;
   if (host == undefined || host.socket_id == undefined || !io.sockets.adapter.sids.has(host.socket_id)) {
-    gameInactive.run(room);
+    hostInactive = true;
+  }
+  if (hostInactive) {
+    //wait 5 seconds to see if host reconnects
+    setTimeout(() => {
+      let host = getHostUuid.get(room);
+      let hostInactive = false;
+      if (host == undefined || host.socket_id == undefined || !io.sockets.adapter.sids.has(host.socket_id)) {
+        hostInactive = true;
+      }
+      if (hostInactive) {
+        // If the host is still inactive, mark the room as inactive
+        console.log("host inactive, marking room as inactive: " + room)
+        gameInactive.run(room);
+      }
+    }, 5000);
   }
 
   io.to(room).emit("playerCount", playerCount[0]['COUNT(*)'])
@@ -340,6 +356,8 @@ const getAllQuizzes = db.prepare('SELECT * FROM quizzes')
 const getAllSessions = db.prepare('SELECT * FROM sessions')
 const getAllPlayers = db.prepare('SELECT * FROM game_players')
 const getAllAnswerOptions = db.prepare('SELECT * FROM answer_options')
+const getAllGames = db.prepare('SELECT * FROM games')
+const getMostRecentGame = db.prepare('SELECT * FROM games ORDER BY time_started DESC LIMIT 1')
 
 //queries ^
 
@@ -606,6 +624,7 @@ app.get('/v1/mostPlayed', (req, res) => {
 
 app.put('/v1/joinRoom', async (req, res) => {
   let caseUpperCode = req?.body?.code?.toLowerCase();
+  console.log("joinRoom " + caseUpperCode + " " + req?.body?.name)
   let alrInRoom = false;
   if (caseUpperCode != null && req.body.name != null && caseUpperCode != "" && req.body.name != "") {
     if (req?.body?.name?.length > 30) {
@@ -656,6 +675,10 @@ app.put('/v1/joinRoom', async (req, res) => {
       )
     }
     else {
+      console.log("game not found")
+      console.log(gameExists)
+      let mostRecentGame = getMostRecentGame.all();
+      console.log(mostRecentGame)
       res.sendStatus(404)
     }
   } 
@@ -720,11 +743,12 @@ function generateCode(len) {
 }
 
 app.put('/v1/host/:uuid', checkQuizAccess, (req, res) => {
+  console.log("host request received" + req.params?.uuid + " " + req?.cookies?.sessionToken)
   //console.log("host request received")
   let sessionToken = req?.cookies?.sessionToken
-  let tokenUser = getUserIdByToken.all(sessionToken)
+  let tokenUser = sessionToken ? getUserIdByToken.all(sessionToken) : []
   let uuidGivenToClient;
-  if (tokenUser[0]?.user_id != undefined) {
+  if (tokenUser[0]?.user_id !== undefined) {
     let userUser = getuserById.all(tokenUser[0]?.user_id)
     uuidGivenToClient = userUser[0]?.public_uuid
   } else {

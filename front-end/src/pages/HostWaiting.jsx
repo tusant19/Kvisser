@@ -37,7 +37,6 @@ function HostWaiting() {
 
         const socket = io(apiBaseUrl)
         console.log("ran")
-        socket.emit("joinRoomAsHost", roomCode, uuid)
         socket.on("updatePlayers", (players) => {
             console.log(players);
             setPlayers(players)
@@ -46,6 +45,7 @@ function HostWaiting() {
             console.log("NQS")
             window.location.replace(`${siteBaseUrl}/${type}`);
         })
+        socket.emit("joinRoomAsHost", roomCode, uuid)
 
         return () => {
             socket.off("updatePlayers")

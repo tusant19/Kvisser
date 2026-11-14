@@ -85,7 +85,6 @@ function Waiting() {
                     <p>Welcome {name}</p>
                     <p>the game will be starting soon</p>
                     <p>There {isAre} currently {count} {singularPlayer}</p>
-                    <p>If you do not see your name on the host page, please refresh the host page to generate a new code and rejoin with the new code.</p>
                 </div>
             </div>}
             {isHost && <div className='waitingPageMain'>
