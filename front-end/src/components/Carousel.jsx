@@ -14,6 +14,11 @@ function Carousel({ path, title }) {
     const totalWidth = useRef(0);
     let offset = useRef(0);
     let baseUrl = "";
+    const touchStartX = useRef(0);
+    const touchStartScrollY = useRef(0);
+    const additionalOffset = useRef(0);
+    const touchStartOffset = useRef(0);
+    let pageWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
 
     if (import.meta.env.DEV) {
         if (import.meta.env.VITE_API_DEV_BASE_URL != null) {
@@ -26,14 +31,17 @@ function Carousel({ path, title }) {
         }
     }
 
-    addEventListener("resize", (event) => {
+    window.addEventListener("resize", (event) => {
         console.log("resize")
-        carouselDivRef.current.style.transform = `translateX(-${
-            0
-        }px)`;
-        setCurrentItem(0);
-        offset.current = 0;
-        getItemSizes();
+        if (pageWidth !== window.innerWidth) {
+            pageWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            carouselDivRef.current.style.transform = `translateX(-${
+                0
+            }px)`;
+            setCurrentItem(0);
+            offset.current = 0;
+            getItemSizes();
+        }
     })
 
     useEffect(() => {
@@ -114,6 +122,59 @@ function Carousel({ path, title }) {
             offset.current
             }px)`;
         } 
+    }
+
+    useEffect(() => {
+        carouselDivRef.current?.addEventListener('touchstart', touchStart, { passive: true });
+        carouselDivRef.current?.addEventListener('touchmove', touchMove, { passive: true });
+        carouselDivRef.current?.addEventListener('touchend', touchEnd, { passive: true });
+        return () => {
+            carouselDivRef.current?.removeEventListener('touchstart', touchStart);
+            carouselDivRef.current?.removeEventListener('touchmove', touchMove);
+            carouselDivRef.current?.removeEventListener('touchend', touchEnd);
+        };
+    }, [currentItem]);
+
+    function touchStart(e) {
+        touchStartX.current = e.touches[0].clientX;
+        touchStartScrollY.current = window.scrollY;
+        additionalOffset.current = 0;
+        touchStartOffset.current = offset.current;
+        carouselDivRef.current.style.transition = "none";
+    }
+
+    function touchMove(e) {
+        additionalOffset.current = touchStartX.current - e.touches[0].clientX;
+        let newOffset = touchStartOffset.current + additionalOffset.current;
+        let maxOffset = totalWidth.current - carouselDivRef.current.getBoundingClientRect().width;
+        if (newOffset < -22) newOffset = -22;
+        if (newOffset > maxOffset + 22) newOffset = maxOffset + 22;
+        carouselDivRef.current.style.transform = `translateX(-${newOffset}px)`;
+    }
+
+    function touchEnd(e) {
+        offset.current = touchStartOffset.current;
+        carouselDivRef.current.style.transition = "transform 0.3s ease-out";
+        let carouselHeight = carouselDivRef.current.getBoundingClientRect().height;
+        if (Math.abs(window.scrollY - touchStartScrollY.current) > carouselHeight / 2) {
+            carouselDivRef.current.style.transform = `translateX(-${offset.current}px)`;
+            additionalOffset.current = 0;
+            return;
+        }
+
+        let slideWidth = carouselItemWidths.current[currentItem];
+        if (additionalOffset.current < 0 && currentItem > 0) {
+            slideWidth = carouselItemWidths.current[currentItem - 1];
+        }
+        if (additionalOffset.current > slideWidth / 15) {
+            nextSlide();
+        } else if (additionalOffset.current < -slideWidth / 15) {
+            previousSlide();
+        } else {
+            carouselDivRef.current.style.transform = `translateX(-${offset.current}px)`;
+        }
+        touchStartX.current = 0;
+        additionalOffset.current = 0;
     }
 
     return (

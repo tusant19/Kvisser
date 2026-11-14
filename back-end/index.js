@@ -1094,7 +1094,7 @@ app.get('/v1/search/:query', (req, res) => {
       uniqueResults.push(searchResults[i])
     }
   }
-  let resultsByAppearanceCount = uniqueResults.sort((a, b) => b.count - a.count).slice(0, 30)
+  let resultsByAppearanceCount = uniqueResults.sort((a, b) => b.count - a.count).slice(0, 50)
   console.log("search results: " + JSON.stringify(resultsByAppearanceCount))
   let wasLeftOverResults = false;
   if (uniqueResults.length > 30) {
