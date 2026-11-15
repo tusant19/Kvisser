@@ -78,6 +78,11 @@ function Account() {
                                 <button className="accountActionButton">My Quizzes</button>
                             </a>
                         </div>
+                        <div className='createQuizDiv'>
+                            <a href={`${siteBaseUrl}/createquiz`}>
+                                <button className="accountActionButton">Create Quiz</button>
+                            </a>
+                        </div>
                     </div>
                 ) : (
                     <div className="accountNotLoggedInDiv">

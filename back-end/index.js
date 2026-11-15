@@ -182,7 +182,8 @@ db.exec(`
     title TEXT,
     img_link TEXT,
     language TEXT,
-    private INTEGER
+    private INTEGER,
+    last_edited INTEGER
   );
 `);
 
@@ -296,7 +297,7 @@ const quizDelete = db.prepare('DELETE FROM quizzes WHERE user_id = -1')
 const quizGet = db.prepare('SELECT * FROM quizzes WHERE id = ? LIMIT 1');
 const quizGetByUuid = db.prepare('SELECT * FROM quizzes WHERE public_uuid = ? LIMIT 1');
 const getQuizByWordInTitle = db.prepare('SELECT * FROM quizzes WHERE title LIKE ? AND private = 0 LIMIT 50');
-const getQuizzesByUserId = db.prepare('SELECT * FROM quizzes WHERE user_id = ?');
+const getQuizzesByUserId = db.prepare('SELECT * FROM quizzes WHERE user_id = ? ORDER BY last_edited DESC, time_created DESC');
 const getPublicQuizzesByUserId = db.prepare('SELECT * FROM quizzes WHERE user_id = ? AND private = 0');
 const getPublicQuizCountByUserId = db.prepare('SELECT COUNT(*) FROM quizzes WHERE user_id = ? AND private = 0');
 
