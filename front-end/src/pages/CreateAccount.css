@@ -1,0 +1,79 @@
+.createAccountPageMain {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 85.5dvh;
+    background-color: var(--bg1);
+}
+
+.createAccountContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border-radius: 1vh;
+    font-size: min(120%, 10vw);
+    padding-left: 4vw;
+    padding-right: 4vw;
+    text-align: center;
+    color: var(--text1);
+}
+
+.createAccountForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1vh;
+    margin-bottom: 1.5vh;
+}
+
+.createAccountInput {
+    padding: 0.5vh 2vw;
+    font-size: 100%;
+    border: 1px solid var(--border3);
+    background-color: white;
+    border-radius: 1vh;
+    text-align: center;
+}
+
+.createAccountBtn {
+    padding: 0.4vh 2vw;
+    font-size: 100%;
+    border: 1px solid var(--border3);
+    background-color: white;
+    border-radius: 1vh;
+    cursor: pointer;
+    margin-bottom: 1.5vh;
+}
+
+@media (width <= 700px) {
+    .createAccountContainer {
+        width: 70dvw;
+        padding-left: 0vw;
+        padding-right: 0vw;
+    }
+}
+
+@media (width <= 700px) {
+    .createAccountBtn {
+        width: 64.5dvw;
+    }
+}
+
+@media (width <= 700px) {
+    .createAccountInput {
+        width: 60dvw;
+    }
+
+    .createAccountForm {
+        gap: 1.5vh;
+    }
+}
+
+.alreadyHaveAccountDiv p {
+    text-decoration: none;
+    color: var(--text1);
+}

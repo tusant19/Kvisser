@@ -37,13 +37,15 @@ function CreateAccount() {
         <div className='createAccountPage'>
             <TopBar />
             <div className='createAccountPageMain'>
-                <div className='createAccountTitleDiv'>
-                    <p className='createAccountTitle'>Create account</p>
-                </div>
-                <div className='createAccountForm'>
-                    <input className='createAccountInput' type="text" placeholder='name' ref={nameRef}/>
-                    <input className='createAccountInput' type="text" placeholder='password' ref={passwordRef}/>
-                    <button className='createAccountBtn' onClick={createAccount}>Create Account</button>
+                <div className='createAccountContainer'>
+                    <div className='createAccountTitleDiv'>
+                        <p className='createAccountTitle'>Create account</p>
+                    </div>
+                    <div className='createAccountForm'>
+                        <input className='createAccountInput' type="text" placeholder='name' ref={nameRef}/>
+                        <input className='createAccountInput' type="text" placeholder='password' ref={passwordRef}/>
+                        <button className='createAccountBtn' onClick={createAccount}>Create Account</button>
+                    </div>
                 </div>
                 <div className='alreadyHaveAccountDiv'>
                     <a href="../login"> 
