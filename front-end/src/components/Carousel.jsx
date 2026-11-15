@@ -5,7 +5,7 @@ import chevronR from '../assets/chevron60R.svg';
 import './Carousel.css'
 import siteBaseUrl from "./baseAdress";
 
-function Carousel({ path, title }) {
+function Carousel({ path, title, manualData }) {
     const [carouselData, setCarouselData] = useState([])
     const [currentItem, setCurrentItem] = useState(0)
     const carouselDivRef = useRef();
@@ -45,6 +45,10 @@ function Carousel({ path, title }) {
     })
 
     useEffect(() => {
+        if (manualData !== undefined) {
+            setCarouselData(manualData);
+            return;
+        }
         axios.get(`${baseUrl}${path}`).then((res) => {
             setCarouselData(res.data)
         })
@@ -188,7 +192,7 @@ function Carousel({ path, title }) {
                 <p className="carouselTitle">{title}</p>
                 <div className='carousel' ref={carouselDivRef}>
 
-                    {carouselData?.map((carouselItem, id) => (
+                    {(manualData !== undefined ? manualData : carouselData)?.map((carouselItem, id) => (
                         <div className="carouselItem" key={id} ref={el => (carouselItemRefs.current[id] = el)}>
                                 <a href={siteBaseUrl + "/quiz/" + carouselItem.uuid}>
                                     <img className="carouselImg" src={carouselItem.img_link} onLoad={getItemSizes} alt="quiz image" />

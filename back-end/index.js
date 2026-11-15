@@ -297,6 +297,8 @@ const quizGet = db.prepare('SELECT * FROM quizzes WHERE id = ? LIMIT 1');
 const quizGetByUuid = db.prepare('SELECT * FROM quizzes WHERE public_uuid = ? LIMIT 1');
 const getQuizByWordInTitle = db.prepare('SELECT * FROM quizzes WHERE title LIKE ? AND private = 0 LIMIT 50');
 const getQuizzesByUserId = db.prepare('SELECT * FROM quizzes WHERE user_id = ?');
+const getPublicQuizzesByUserId = db.prepare('SELECT * FROM quizzes WHERE user_id = ? AND private = 0');
+const getPublicQuizCountByUserId = db.prepare('SELECT COUNT(*) FROM quizzes WHERE user_id = ? AND private = 0');
 
 const gameInsert = db.prepare('INSERT INTO games (user_id, room_code, capacity, active, state) VALUES (?, ?, ?, ?, ?)');
 const gameDelete = db.prepare('DELETE FROM games WHERE user_id = -1');
@@ -366,6 +368,7 @@ const getLatestGameStateChange = db.prepare('SELECT * FROM game_state_changes WH
 const insertPlayForQuiz = db.prepare('INSERT INTO quiz_plays (quiz_id, user_id, room_code, time_played) VALUES (?, ?, ?, ?)');
 const getPlaysForQuiz = db.prepare('SELECT * FROM quiz_plays WHERE quiz_id = ? ORDER BY time_played DESC');
 const getPlayCountForQuiz = db.prepare('SELECT COUNT(*) FROM quiz_plays WHERE quiz_id = ?');
+const getPlayCountOfTheUsersQuizzes = db.prepare('SELECT COUNT(*) FROM quiz_plays WHERE quiz_id IN (SELECT id FROM quizzes WHERE user_id = ? AND private = 0)');
 
 //debug   v
 const getAllQuizzes = db.prepare('SELECT * FROM quizzes')
@@ -1239,5 +1242,47 @@ app.get('/v1/quiz/:uuid/playcount', checkQuizAccess, (req, res) => {
   }
   return res.json({
     playCount: playCount['COUNT(*)']
+  })
+})
+
+app.get('/v1/profile/:uuid', (req, res) => {
+  let user = getuserByPublicUuid.all(req.params?.uuid)
+  if (user[0] == undefined) {
+    return res.sendStatus(404)
+  }
+  let quizzes = getQuizzesByUserId.all(user[0]?.id)
+  if (quizzes[0] == undefined || quizzes[0] == null) {
+    quizzes = []
+  }
+  let sanitizedQuizzes = []
+  for (let i = 0; i < quizzes?.length; i++) {
+    sanitizedQuizzes.push({
+      title: quizzes[i]?.title,
+      img_link: quizzes[i]?.img_link,
+      uuid: quizzes[i]?.public_uuid
+    })
+  }
+  let quizCount = getPublicQuizzesByUserId.all(user[0]?.id)['COUNT(*)']
+  if (quizCount == undefined || quizCount == null) {
+    quizCount = 0
+  }
+  let totalPlayCount = getPlayCountOfTheUsersQuizzes.all(user[0]?.id)['COUNT(*)']
+  if (totalPlayCount == undefined || totalPlayCount == null) {
+    totalPlayCount = 0
+  }
+  //testing
+  for (let i = 0; i < 30; i++) {
+    sanitizedQuizzes.push({
+      title: "Profile quizzes placeholder " + (i + 1),
+      img_link: "https://placehold.co/600x400",
+      uuid: uuidv4()
+    })
+  }
+  return res.json({
+    name: user[0]?.name,
+    uuid: user[0]?.public_uuid,
+    quizcount: quizCount,
+    playcount: totalPlayCount,
+    quizzes: sanitizedQuizzes
   })
 })

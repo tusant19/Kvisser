@@ -17,6 +17,7 @@ import Leaderboard from "./pages/Leaderboard.jsx";
 import Search from "./pages/Search.jsx";
 import Account from "./pages/Account.jsx";
 import MyQuizzes from "./pages/MyQuizzes.jsx";
+import User from './pages/User.jsx'
 
 const root = document.getElementById("root");
 
@@ -38,6 +39,7 @@ ReactDOM.createRoot(root).render(
       <Route path="/search" element={<Search/>}/>
       <Route path="/account" element={<Account/>}/>
       <Route path="/account/quizzes" element={<MyQuizzes/>}/>
+      <Route path="/user/:userid" element={<User/>}/>
     </Routes>
   </BrowserRouter>,
 );
