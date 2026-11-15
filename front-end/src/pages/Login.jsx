@@ -35,19 +35,23 @@ function Login() {
         <div className='loginPage'>
             <TopBar />
             <div className='loginPageMain'>
-                <div className='loginTitleDiv'>
-                    <p className='loginTitle'>Login</p>
+                <div className='loginContainer'>
+                    <div className='loginTitleDiv'>
+                        <p className='loginTitle'>Login</p>
+                    </div>
+                    <div className='loginForm'>
+                        <input className='loginInput' type="text" placeholder='name' ref={nameRef}/>
+                        <input className='loginInput' type="text" placeholder='password' ref={passwordRef}/>
+                        <button className='loginPageBtn' onClick={logIn}>Login</button>
+                    </div>
+                    
                 </div>
-                <div className='loginForm'>
-                    <input className='loginInput' type="text" placeholder='name' ref={nameRef}/>
-                    <input className='loginInput' type="text" placeholder='password' ref={passwordRef}/>
-                    <button className='loginPageBtn' onClick={logIn}>Login</button>
-                </div>
-                <div className='noAccountDiv'>
-                    <a href="../register">
-                        <p>Don't have an account yet?</p>
-                    </a>
-                </div>
+                    <div className='noAccountDiv'>
+                        <a href="../register">
+                            <p>Don't have an account yet?</p>
+                        </a>
+                    </div>
+               
                 {errorState && (
                     <div className='errorDiv'>
                         <p className='errorText'>{errorState}</p>
