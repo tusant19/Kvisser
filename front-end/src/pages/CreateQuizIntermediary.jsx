@@ -27,7 +27,7 @@ function CreateQuizIntermediary() {
         })
         .then((res) => {
             let quizId = res.data.quizId;
-            window.location.replace(`${siteBaseUrl}/create/quiz/details/${quizId}`);
+            window.location.replace(`${siteBaseUrl}/create/quiz/details/${res.data?.quizid}`);
         })
         .catch((error) => {
             console.error(error);

@@ -39,6 +39,14 @@ function CreateQuizDetails() {
         }
     }, [quizid]);
 
+    function handleLanguageChange(event) {
+        //toBeImplemented
+    }
+
+    function handlePrivateChange(event) {
+        //toBeImplemented
+    }
+
     return (
         <div className="createQuizDetailsPage">
             <TopBar />
@@ -49,7 +57,8 @@ function CreateQuizDetails() {
                             <img src={imgLink} alt={title} className="createQuizDetailsImage" />
                             <h1 className="createQuizDetailsTitle">{title}</h1>
                             <div className="createQuizDetailsExtraInfo">
-                                <p className="createQuizDetailsLanguage">Language: {language}</p>
+                                <p className="createQuizDetailsLanguage">Language: <input type="text" value={language} onChange={handleLanguageChange} /></p>
+                                <p className="createQuizDetailsPrivate">Private: <input type="checkbox" checked={privateQuiz} onChange={handlePrivateChange} /></p>
                                 <p className="createQuizDetailsPlayCount">Play Count: {playCount}</p>
                                 <p className="createQuizDetailsTimeCreated">Time Created: {timeCreated}</p>
                             </div>

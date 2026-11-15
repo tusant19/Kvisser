@@ -300,6 +300,7 @@ const getQuizByWordInTitle = db.prepare('SELECT * FROM quizzes WHERE title LIKE 
 const getQuizzesByUserId = db.prepare('SELECT * FROM quizzes WHERE user_id = ? ORDER BY last_edited DESC, time_created DESC');
 const getPublicQuizzesByUserId = db.prepare('SELECT * FROM quizzes WHERE user_id = ? AND private = 0');
 const getPublicQuizCountByUserId = db.prepare('SELECT COUNT(*) FROM quizzes WHERE user_id = ? AND private = 0');
+const getUserQuizCountIncludingPrivate = db.prepare('SELECT COUNT(*) FROM quizzes WHERE user_id = ?');
 
 const gameInsert = db.prepare('INSERT INTO games (user_id, room_code, capacity, active, state) VALUES (?, ?, ?, ?, ?)');
 const gameDelete = db.prepare('DELETE FROM games WHERE user_id = -1');
@@ -477,6 +478,30 @@ function checkAccountAccess(req, res, next) {
   console.log("requestersAccount uuid: " + requestersAccount?.public_uuid)
   console.log("requestedAccountUuid: " + requestedAccountUuid)
   if (requestersAccount?.public_uuid !== requestedAccountUuid) {
+    return res.sendStatus(401);
+  }
+  return next();
+}
+
+function checkAccountAccessForCreation(req, res, next) {
+  let token = req?.cookies?.sessionToken
+  if (token === null  || token === undefined) {
+    console.log("no token")
+    return res.sendStatus(401);
+  }
+  let userThatRequested = getUserIdByToken.all(token);
+  if (userThatRequested[0] === undefined) {
+    console.log("invalid token")
+    return res.sendStatus(401);
+  }
+  console.log("userThatRequested: " + JSON.stringify(userThatRequested[0].user_id))
+  if (userThatRequested[0].expiry < Date.now()) {
+    console.log("token expired")
+    return res.sendStatus(401);
+  }
+  let userIdOfRequester = userThatRequested[0]?.user_id
+  if (userIdOfRequester === null || userIdOfRequester === undefined) {
+    console.log("no userIdOfRequester")
     return res.sendStatus(401);
   }
   return next();
@@ -1287,3 +1312,75 @@ app.get('/v1/profile/:uuid', (req, res) => {
     quizzes: sanitizedQuizzes
   })
 })
+
+app.get('/v1/quiz/edit/details/:uuid', checkQuizAccess, (req, res) => {
+  let quiz = quizGetByUuid.all(req.params?.uuid);
+  if (quiz[0] == undefined || quiz[0] == null) {
+    return res.sendStatus(404);
+  }
+  let questions = getQuestions.all(quiz[0]?.id);
+  let sanitizedQuestions = [];
+  for (let i = 0; i < questions?.length; i++) {
+    sanitizedQuestions.push({
+      title: questions[i]?.title,
+      img_link: questions[i]?.img_link,
+      type: questions[i]?.type,
+    });
+  }
+  return res.json({
+    title: quiz[0]?.title,
+    img_link: quiz[0]?.img_link,
+    language: quiz[0]?.language,
+    private: quiz[0]?.private === 1,
+    questions: sanitizedQuestions,
+    playCount: quiz[0]?.playCount,
+    timeCreated: quiz[0]?.time_created
+  });
+});
+
+app.put('/v1/create/quiz', checkAccountAccessForCreation, (req, res) => {
+  let title = req.body?.title;
+  let img_link = req.body?.img_link;
+  let language = req.body?.language;
+  let token = req?.cookies?.sessionToken;
+  let userId = getUserIdByToken.all(token)[0]?.user_id;
+  let uuid = getuserById.get(userId)?.public_uuid;
+  let privateStatus = req.body?.private;
+
+  if (uuid == undefined || uuid == null) {
+    return res.status(401).json({ error: "Invalid session token" });
+  }
+
+  if (title == undefined || img_link == undefined || language == undefined || uuid == undefined || privateStatus == undefined || title == "" || img_link == "" || language == "" || uuid == "" || privateStatus == null) {
+    return res.status(422).json({ error: "Missing required fields" });
+    
+  }
+
+  let user = getuserById.all(userId);
+  console.log("user: " + JSON.stringify(user))
+  if (user[0] == undefined || user[0] == null) {
+    return res.status(404).json({ error: "Please log in again as a valid user" });
+  }
+  if (title.length > 100 || img_link.length > 500 || language.length > 50) {
+    return res.status(422).json({ error: "Input exceeds maximum length" });
+  }
+  let userQuizCount = getUserQuizCountIncludingPrivate.all(user[0]?.id)['COUNT(*)'];
+  if (userQuizCount >= 500) {
+    return res.status(403).json({ error: "You have reached the maximum number of quizzes allowed" });
+  }
+  // play_count, time_created, title, img_link, language, private
+  let newQuizUuid = uuidv4();
+  quizInsert.run(user[0]?.id, newQuizUuid, 0, Date.now(), title, img_link, language, privateStatus ? 1 : 0);
+  let newQuiz = quizGetByUuid.all(newQuizUuid);
+  console.log("newQuiz: " + JSON.stringify(newQuiz))
+  let newQuizId = newQuiz[0]?.id;
+  let newQuizPublicUuid = newQuiz[0]?.public_uuid;
+  console.log("newQuizId: " + newQuizId)
+  if (newQuizId == undefined) {
+    return res.status(500).json({ error: "Failed to create quiz" });
+  } else {
+    return res.status(200).json({ quizid: newQuizPublicUuid });
+  }
+});
+
+
