@@ -1,0 +1,35 @@
+.createQuizIntermediaryPageMain {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    background-color: var(--bg1);
+    gap: 1vh;
+}
+
+.quizCreateIntermediaryInput {
+    width: 90dvw;
+    max-width: 600px;
+    padding: 1vh 2vw;
+    border: 1px solid var(--border1);
+    border-radius: 1vh;
+}
+
+.privateCheckboxContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: white;
+    padding: 0.5vh 2vw;
+    border: 1px solid var(--border1);
+    border-radius: 1vh;
+}
+
+.createQuizIntermediaryButton {
+    padding: 0.5vh 2vw;
+    font-size: 100%;
+    border: 1px solid var(--border3);
+    background-color: white;
+    border-radius: 1vh;
+    cursor: pointer;
+}
