@@ -5,10 +5,27 @@ import axios from "axios";
 import { useRef } from 'react';
 import apiBaseUrl from '../components/apiAdress.js';
 import siteBaseUrl from '../components/baseAdress.js';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function Logout() {
     const [errorState, setErrorState] = useState(null);
+
+    useEffect(() => {
+        axios.get(`${apiBaseUrl}/v1/loginstatus`, {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then((res) => {
+            if (res.data.msg === "Log in") {
+                window.history.back()
+            }
+        })
+        .catch((error) => {
+            window.history.back()
+        });
+    }, []);
 
     function logout() {
         axios.put(`${apiBaseUrl}/v1/logout`, {}, {
