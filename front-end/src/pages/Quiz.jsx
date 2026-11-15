@@ -13,6 +13,9 @@ function Quiz(props) {
     const [title, setTitle] = useState(quizid)
     const [questions, setQuestions] = useState([]);
     const [notFound, setNotFound] = useState(false);
+    const [playCount, setPlayCount] = useState(0);
+    const [madeBy, setMadeBy] = useState("unknown");
+    const [timeCreated, setTimeCreated] = useState("unknown");
     const popupRef = useRef(null);
     
     useEffect(() => {
@@ -27,6 +30,11 @@ function Quiz(props) {
                 setTitle(res.data.title)
                 setImgLink(res.data.img_link)
                 setQuestions(res.data.questions)
+                setPlayCount(res.data.playCount)
+                setMadeBy(res.data.madeby)
+                //get day of creation from timestamp
+                let date = new Date(Number(res.data.created))
+                setTimeCreated(date.toLocaleDateString())
                 console.log(res)
                 setNotFound(false);
             })
@@ -79,10 +87,18 @@ function Quiz(props) {
         <div className='quizPage'>
             <TopBar />
             <div className='quizPageMain'>
+                <div className='quizDetailsInfoDiv'>
+                        
+                            <p>Made by: <a href={`../user/${madeBy}`} className='madeByLink'>{madeBy}</a></p>
+                        
+                            <p>Created on: {timeCreated}</p>
+                            <p>Played: {playCount} times</p>
+                    </div>
                 <div className='quizDetailsDiv'>
                     <div className='quizImgDiv'>
                         <img className='quizImg' src={imgLink} alt="quizImg" />
                     </div>
+                    
                     <div className='quizTitleDiv'>
                         <p>{title}</p>
                     </div>
@@ -120,6 +136,7 @@ function Quiz(props) {
                         <button className='popUpBtn'>Continue</button>
                     </a>
                 </div>
+                <p className='popupClose' onClick={host}>X</p>
             </div>
             <BottomBar />
         </div>

@@ -278,6 +278,16 @@ db.exec(`
   );
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS quiz_plays (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    quiz_id INTEGER,
+    user_id INTEGER,
+    room_code TEXT,
+    time_played INTEGER
+  );
+`);
+
 
 
 const quizInsert = db.prepare('INSERT INTO quizzes (user_id, public_uuid, play_count, time_created, title, img_link, language, private) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
@@ -352,6 +362,10 @@ const getLatestCorrectnessForPlayer = db.prepare('SELECT is_correct FROM game_an
 
 const addGameStateChange = db.prepare('INSERT INTO game_state_changes (game_code, state, time_changed) VALUES (?, ?, ?)');
 const getLatestGameStateChange = db.prepare('SELECT * FROM game_state_changes WHERE game_code = ? ORDER BY time_changed DESC LIMIT 1');
+
+const insertPlayForQuiz = db.prepare('INSERT INTO quiz_plays (quiz_id, user_id, room_code, time_played) VALUES (?, ?, ?, ?)');
+const getPlaysForQuiz = db.prepare('SELECT * FROM quiz_plays WHERE quiz_id = ? ORDER BY time_played DESC');
+const getPlayCountForQuiz = db.prepare('SELECT COUNT(*) FROM quiz_plays WHERE quiz_id = ?');
 
 //debug   v
 const getAllQuizzes = db.prepare('SELECT * FROM quizzes')
@@ -747,27 +761,39 @@ app.get('/v1/playerDetails', (req, res) => {
 app.get('/v1/quiz/:uuid', checkQuizAccess, (req, res) => {
   let testUuid = "abcd";
   //console.log(testUuid)
-  
+
   let quiz = quizGetByUuid.all(req.params.uuid);
-  
+
   let questions = getQuestions.all(quiz[0]?.id)
   let sanitizedQuestions = []
   for (let question of questions) {
     //console.log("loop")
-    sanitizedQuestions.push({"title": question.title, "question": question.img_link})
+    sanitizedQuestions.push({ "title": question.title, "question": question.img_link })
   }
   if (quiz[0] == undefined) {
-    res.status(404).send("quiz not found")
-  } else {
-    res.json(
-      {
-        title: quiz[0]?.title,
-        img_link: quiz[0]?.img_link,
-        questions: sanitizedQuestions
-      }
-    )
+    return res.status(404).send("quiz not found")
+  }
+  let playCount = getPlayCountForQuiz.get(quiz[0]?.id)['COUNT(*)']
+  if (playCount == undefined || playCount == null) {
+    playCount = 0
+  }
+  let Maker = getuserById.get(quiz[0]?.user_id)
+  let userNameOfMaker = Maker?.name
+  let userUuidOfMaker = Maker?.public_uuid
+  if (userNameOfMaker == undefined || userNameOfMaker == null) {
+    userNameOfMaker = "An unknown user"
+  }
+  return res.json(
+    {
+      title: quiz[0]?.title,
+      img_link: quiz[0]?.img_link,
+      questions: sanitizedQuestions,
+      playCount: playCount,
+      madeby: userNameOfMaker,
+      madebyuuid: userUuidOfMaker,
+      created: quiz[0]?.time_created
     }
-
+  )
 });
 
 function generateCode(len) {
@@ -814,6 +840,7 @@ app.put('/v1/host/:uuid', checkQuizAccess, (req, res) => {
       uuid: uuidGivenToClient
     }
   )
+  insertPlayForQuiz.run(quiz[0]?.id, uuidGivenToClient, gamecode, Date.now());
 });
 
 app.get('/v1/question/:roomCode', (req, res) => {
@@ -1198,5 +1225,19 @@ app.get('/v1/account/:uuid/quizzes', checkAccountAccess, (req, res) => {
   console.log("sanitizedQuizzes: " + JSON.stringify(sanitizedQuizzes))
   return res.json({
     quizzes: sanitizedQuizzes
+  })
+})
+
+app.get('/v1/quiz/:uuid/playcount', checkQuizAccess, (req, res) => {
+  let quiz = quizGetByUuid.all(req.params?.uuid);
+  if (quiz[0] == undefined || quiz[0] == null) {
+    return res.sendStatus(404);
+  }
+  let playCount = getPlayCountForQuiz.get(quiz[0]?.id);
+  if (playCount['COUNT(*)'] == undefined || playCount['COUNT(*)'] == null) {
+    return res.sendStatus(404);
+  }
+  return res.json({
+    playCount: playCount['COUNT(*)']
   })
 })
