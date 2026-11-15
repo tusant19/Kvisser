@@ -16,6 +16,7 @@ function Quiz(props) {
     const [playCount, setPlayCount] = useState(0);
     const [madeBy, setMadeBy] = useState("unknown");
     const [timeCreated, setTimeCreated] = useState("unknown");
+    const madeByUUID = useRef(null);
     const popupRef = useRef(null);
     
     useEffect(() => {
@@ -32,6 +33,7 @@ function Quiz(props) {
                 setQuestions(res.data.questions)
                 setPlayCount(res.data.playCount)
                 setMadeBy(res.data.madeby)
+                madeByUUID.current = res.data.madebyuuid
                 //get day of creation from timestamp
                 let date = new Date(Number(res.data.created))
                 setTimeCreated(date.toLocaleDateString())
@@ -89,7 +91,7 @@ function Quiz(props) {
             <div className='quizPageMain'>
                 <div className='quizDetailsInfoDiv'>
                         
-                            <p>Made by: <a href={`../user/${madeBy}`} className='madeByLink'>{madeBy}</a></p>
+                            <p>Made by: <a href={`../user/${madeByUUID.current}`} className='madeByLink'>{madeBy}</a></p>
                         
                             <p>Created on: {timeCreated}</p>
                             <p>Played: {playCount} times</p>
