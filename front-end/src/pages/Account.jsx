@@ -79,7 +79,7 @@ function Account() {
                             </a>
                         </div>
                         <div className='createQuizDiv'>
-                            <a href={`${siteBaseUrl}/createquiz`}>
+                            <a href={`${siteBaseUrl}/create/quiz/details`}>
                                 <button className="accountActionButton">Create Quiz</button>
                             </a>
                         </div>
