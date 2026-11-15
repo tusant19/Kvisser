@@ -286,6 +286,7 @@ const quizDelete = db.prepare('DELETE FROM quizzes WHERE user_id = -1')
 const quizGet = db.prepare('SELECT * FROM quizzes WHERE id = ? LIMIT 1');
 const quizGetByUuid = db.prepare('SELECT * FROM quizzes WHERE public_uuid = ? LIMIT 1');
 const getQuizByWordInTitle = db.prepare('SELECT * FROM quizzes WHERE title LIKE ? AND private = 0 LIMIT 50');
+const getQuizzesByUserId = db.prepare('SELECT * FROM quizzes WHERE user_id = ?');
 
 const gameInsert = db.prepare('INSERT INTO games (user_id, room_code, capacity, active, state) VALUES (?, ?, ?, ?, ?)');
 const gameDelete = db.prepare('DELETE FROM games WHERE user_id = -1');
@@ -1161,5 +1162,27 @@ app.get('/v1/account/:uuid', checkAccountAccess, (req, res) => {
   return res.json({
     name: user[0]?.name,
     uuid: user[0]?.public_uuid
+  })
+})
+
+app.get('/v1/account/:uuid/quizzes', checkAccountAccess, (req, res) => {
+  let user = getuserByPublicUuid.all(req.params?.uuid)
+  if (user[0] == undefined) {
+    return res.sendStatus(404)
+  }
+  let quizzes = getQuizzesByUserId.all(user[0]?.id)
+  if (quizzes[0] == undefined) {
+    return res.sendStatus(404)
+  }
+  let sanitizedQuizzes = []
+  for (let i = 0; i < quizzes?.length; i++) {
+    sanitizedQuizzes.push({
+      title: quizzes[i]?.title,
+      img_link: quizzes[i]?.img_link,
+      uuid: quizzes[i]?.public_uuid
+    })
+  }
+  return res.json({
+    quizzes: sanitizedQuizzes
   })
 })

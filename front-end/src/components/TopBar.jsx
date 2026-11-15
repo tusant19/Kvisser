@@ -17,6 +17,7 @@ function TopBar() {
                 console.log("logged in")
                 setLoggedIn(res?.data?.msg)
                 setLoggedInLink("../logout")
+                localStorage.setItem("uuid", res.data.uuid)
             } else {
                 console.log("not logged in")
                 setLoggedIn(res?.data?.msg)
