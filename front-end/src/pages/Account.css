@@ -25,3 +25,34 @@
     padding: 0.6vh 2vw;
     border-radius: 4vh;
 }
+
+@media (width <= 700px) {
+    .accountDetailsDiv {
+        flex-direction: column;
+        gap: 1vh;
+    }
+}
+
+.accountActionsDiv {
+    width: 90dvw;
+    max-width: 700px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2vh;
+    margin-bottom: 2vh;
+    gap: 2vw;
+    background-color: white;
+    padding: 1vh 2vw;
+    border-radius: 4vh;
+}
+
+.accountActionButton {
+    padding: 0.5vh 2vw;
+    font-size: 100%;
+    border: 1px solid var(--border3);
+    background-color: white;
+    border-radius: 4vh;
+    cursor: pointer;
+}

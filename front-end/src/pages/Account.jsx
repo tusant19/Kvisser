@@ -63,9 +63,16 @@ function Account() {
                     <p>Account details</p>
                 </div>
                 {loggedIn.current ? (
-                    <div className="accountDetailsDiv">
-                        <p className="accountDetail">Name: {name}</p>
-                        <p className="accountDetail">UUID: {uuid}</p>
+                    <div className="accountContainerDiv">
+                        <div className="accountDetailsDiv">
+                            <p className="accountDetail">Name: {name}</p>
+                            <p className="accountDetail">UUID: {uuid}</p>
+                        </div>
+                        <div className="accountActionsDiv">
+                            <a href={`${siteBaseUrl}/changepassword`} className="accountActionLink">
+                                <button className="accountActionButton">Change Password</button>
+                            </a>
+                        </div>
                     </div>
                 ) : (
                     <div className="accountNotLoggedInDiv">
