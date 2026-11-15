@@ -20,8 +20,13 @@ IMPORTANT
  - The correct answer for the demo quiz is always answer 1
  - To access the leaderboard press the leaderboard button as the host after the time is up or everyone has answered
  - You'll see the status page after answering a question as the player
+ - To access the search page click on the search icon in the bottom bar
+ - To access your account page login or create an account and then click the icon in the bottom bar
+ - To see your public profile copy the uuid from your profile and go to https://kvisser.santtu.uk/user/YourUUID
+ - You can access the (in progress) quiz creation from your personal account page 
 
-<p>Note: the page for changing your password exists but there is currently no ui element to access it. To change password go to: https://kvisser.santtu.uk/changepassword.</p>
+
+<p>Note: the page for changing your password is in your account page.</p>
 
 To test locally:
 run "npm i" and "npm run dev" in both the front-end and backend directiories.
