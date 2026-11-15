@@ -41,14 +41,16 @@ function ChangePassword() {
         <div className='changePasswordPage'>
             <TopBar />
             <div className='changePasswordPageMain'>
-                <div className='changePasswordTitleDiv'>
-                    <p className='changePasswordTitle'>Change password</p>
-                </div>
-                <div className='changePasswordForm'>
-                    <input className='changePasswordInput' type="text" placeholder='name' ref={nameRef}/>
-                    <input className='changePasswordInput' type="text" placeholder='password' ref={passwordRef}/>
-                    <input className='changePasswordInput' type="text" placeholder='new password' ref={newPasswordRef}/>
-                    <button className='changePasswordBtn' onClick={changePassword}>Change Password</button>
+                <div className='changePasswordContainer'>
+                    <div className='changePasswordTitleDiv'>
+                        <p className='changePasswordTitle'>Change password</p>
+                    </div>
+                    <div className='changePasswordForm'>
+                        <input className='changePasswordInput' type="text" placeholder='name' ref={nameRef}/>
+                        <input className='changePasswordInput' type="text" placeholder='password' ref={passwordRef}/>
+                        <input className='changePasswordInput' type="text" placeholder='new password' ref={newPasswordRef}/>
+                        <button className='changePasswordBtn' onClick={changePassword}>Change Password</button>
+                    </div>
                 </div>
                 {errorState && (
                     <div className='errorDiv'>
