@@ -1,10 +1,10 @@
 .playPageMain {
-    min-height: 85.4dvh;
+    min-height: 85.5dvh;
     
 }
 
 .joinForm {
-    min-height: 85.4dvh;
+    min-height: 85.5dvh;
     display: flex;
     flex-direction: column;
     justify-content: center;

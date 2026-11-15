@@ -1,5 +1,5 @@
 .myQuizzesPageMain {
-    min-height: 85.4dvh;
+    min-height: 85.5dvh;
     background-color: var(--bg1);
     padding: 0;
     margin: 0;
@@ -10,7 +10,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 85.4dvh;
+    height: 85.5dvh;
     font-size: min(120%, 10vw);
 }
 

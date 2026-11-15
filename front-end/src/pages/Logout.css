@@ -1,0 +1,62 @@
+.logOutPageMain {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 85.5dvh;
+    text-align: center;
+    background-color: var(--bg1);
+}
+
+.logOutContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border-radius: 1vh;
+    font-size: min(120%, 10vw);
+    padding-left: 4vw;
+    padding-right: 4vw;
+}
+
+@media (width <= 700px) {
+    .logOutContainer {
+        width: 70dvw;
+        padding-left: 0vw;
+        padding-right: 0vw;
+    }
+}
+
+.logOutBtn {
+    padding: 0.5vh 2vw;
+    font-size: 100%;
+    border: 1px solid var(--border3);
+    background-color: white;
+    border-radius: 1vh;
+    cursor: pointer;
+    margin-bottom: 3vh;
+}
+
+@media (width <= 700px) {
+    .logOutBtn {
+        width: 60dvw;
+        padding-top: 1vh;
+        padding-bottom: 1vh;
+    }
+}
+
+.logOutTitle {
+    padding: 0;
+    margin: 0;
+    margin-bottom: 2vh;
+    margin-top: 3vh;
+    font-size: min(150%, 2.5rem);
+}
+
+.logOutForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}

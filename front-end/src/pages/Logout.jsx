@@ -49,13 +49,18 @@ function Logout() {
         <div className='logOutPage'>
             <TopBar />
             <div className='logOutPageMain'>
-                <div className='logOutTitleDiv'>
-                    <p className='logOutTitle'>Log out?</p>
-                </div>
-                <div className='logOutForm'>
-                    <button onClick={logout} className='logOutBtn'>
-                        Log out
-                    </button>
+                <div className='logOutContainer'>
+                    <div className='logOutTitleDiv'>
+                        <p className='logOutTitle'>Sign out?</p>
+                    </div>
+                    <div className='logOutForm'>
+                        <button onClick={logout} className='logOutBtn'>
+                            Sign out
+                        </button>
+                        <button onClick={() => window.location.replace(document.referrer || `${siteBaseUrl}/`)} className='logOutBtn cancelBtn'>
+                            Cancel
+                        </button>
+                    </div>
                 </div>
                 {errorState && (
                     <div className='errorDiv'>
