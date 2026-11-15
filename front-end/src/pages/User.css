@@ -1,0 +1,32 @@
+.userPageMain {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 85.5dvh;
+    background-color: var(--bg1);
+}
+
+.userInfo {
+    width: 90dvw;
+    max-width: 700px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2vh;
+    margin-bottom: 2vh;
+    gap: 1vh;
+    background-color: white;
+    padding: 1vh 2vw;
+    border-radius: 1vh;
+}
+
+.userInfo p {
+    font-size: min(120%, 2rem);
+    margin: 0;
+}
+
+.userInfo h2 {
+    font-size: min(150%, 2.5rem);
+    margin: 0;
+}

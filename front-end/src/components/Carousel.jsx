@@ -5,7 +5,7 @@ import chevronR from '../assets/chevron60R.svg';
 import './Carousel.css'
 import siteBaseUrl from "./baseAdress";
 
-function Carousel({ path, title, manualData }) {
+function Carousel({ path, title, manualData, fontSize }) {
     const [carouselData, setCarouselData] = useState([])
     const [currentItem, setCurrentItem] = useState(0)
     const carouselDivRef = useRef();
@@ -181,6 +181,13 @@ function Carousel({ path, title, manualData }) {
         additionalOffset.current = 0;
     }
 
+    function fontSizeForTitle(fontSize) {
+        if (fontSize) {
+            return fontSize;
+        }
+        return "min(2.5vh, 170%)";
+    }
+
     return (
         <div className="carouselContainer">
             <div className='navL'>
@@ -189,7 +196,7 @@ function Carousel({ path, title, manualData }) {
                 </button>
             </div>
             <div className="carouselWrapper">
-                <p className="carouselTitle">{title}</p>
+                <p className="carouselTitle" style={{"fontSize": fontSizeForTitle(fontSize)}}>{title}</p>
                 <div className='carousel' ref={carouselDivRef}>
 
                     {(manualData !== undefined ? manualData : carouselData)?.map((carouselItem, id) => (

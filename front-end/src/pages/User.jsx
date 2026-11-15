@@ -30,7 +30,7 @@ function User() {
             setName(res.data.name);
             setTotalQuizzes(res.data.quizcount)
             setTotalPlays(res.data.playcount)
-            
+            setQuizzes(res.data.quizzes)
             setHasTried(true);
         })
         .catch((error) => {
@@ -47,13 +47,13 @@ function User() {
                 {name && hasTried && (
                     <div className="userInfo">
                         <h2 className="userName">{name}</h2>
-                        <p className="userStats">Total Quizzes: {totalQuizzes}</p>
-                        <p className="userStats">Total Plays: {totalPlays}</p>
+                        <p className="userStats">Public quizzes created: {totalQuizzes}</p>
+                        <p className="userStats">Total plays of their quizzes: {totalPlays}</p>
                     </div>
                 )}
                 <div className="userQuizzes">
                     {quizzes.length > 0 ? (
-                        <Carousel path={'/blablaunnesecary'} title={"The user's quizzes"} manualData={quizzes} />
+                        <Carousel title={"Quizzes made by the user"} manualData={quizzes} fontSize="min(2vh, 130%)" />
                     ) : (
                         <div className="userQuizzesEmpty">
                             {hasTried ? (
