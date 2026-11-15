@@ -13,3 +13,38 @@
     height: 85.4dvh;
     font-size: min(120%, 10vw);
 }
+
+.myQuizzesList {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    max-width: 95dvw;
+    margin-bottom: 7vh;
+}
+
+.myQuizzesListItem {
+    width: 25dvw;
+    background-color: var(--bg2);
+    margin: 1vh;
+    border-radius: 1vh;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text1);
+    text-decoration: none;
+}
+
+.myQuizzesListItemImage {
+    width: 100%;
+    height: auto;
+    border-top-left-radius: 1vh;
+    border-top-right-radius: 1vh;
+}
+
+.myQuizzesListItemTitle {
+    
+}
