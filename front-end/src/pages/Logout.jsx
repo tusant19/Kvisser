@@ -33,7 +33,7 @@ function Logout() {
         })
         .then((res) => {
             if (res.status === 200) {
-                window.history.back()
+                window.location.replace(document.referrer || `${siteBaseUrl}/`)
             }
             else if (res.status === 401) {
                 setErrorState(res?.data?.error);

@@ -29,6 +29,7 @@ function TopBar() {
         });
     }, [])
 
+
     return (
         <div className='topBar'>
             <div className='topBarContent'>

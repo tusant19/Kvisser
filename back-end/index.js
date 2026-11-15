@@ -440,8 +440,12 @@ function checkAccountAccess(req, res, next) {
     return res.sendStatus(401);
   }
   let userThatRequested = getUserIdByToken.all(token);
+  if (userThatRequested[0] === undefined) {
+    console.log("invalid token")
+    return res.sendStatus(401);
+  }
   console.log("userThatRequested: " + JSON.stringify(userThatRequested[0].user_id))
-  if (userThatRequested.expiry < Date.now()) {
+  if (userThatRequested[0].expiry < Date.now()) {
     console.log("token expired")
     return res.sendStatus(401);
   }
@@ -1172,7 +1176,8 @@ app.get('/v1/account/:uuid/quizzes', checkAccountAccess, (req, res) => {
   }
   let quizzes = getQuizzesByUserId.all(user[0]?.id)
   if (quizzes[0] == undefined) {
-    return res.sendStatus(404)
+    // testing
+    // return res.sendStatus(404)
   }
   let sanitizedQuizzes = []
   for (let i = 0; i < quizzes?.length; i++) {
@@ -1182,6 +1187,15 @@ app.get('/v1/account/:uuid/quizzes', checkAccountAccess, (req, res) => {
       uuid: quizzes[i]?.public_uuid
     })
   }
+  //testing
+  for (let i = 0; i < 30; i++) {
+    sanitizedQuizzes.push({
+      title: "Account quizzes placeholder " + (i + 1),
+      img_link: "https://placehold.co/600x400",
+      uuid: uuidv4()
+    })
+  }
+  console.log("sanitizedQuizzes: " + JSON.stringify(sanitizedQuizzes))
   return res.json({
     quizzes: sanitizedQuizzes
   })

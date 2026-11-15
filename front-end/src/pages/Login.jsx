@@ -21,8 +21,7 @@ function Login() {
         })
         .then((res) => {
             if (res.status === 200) {
-                
-                window.history.back()
+                window.location.replace(document.referrer || `${siteBaseUrl}/`)
             }
             console.log(res.status)
         })
