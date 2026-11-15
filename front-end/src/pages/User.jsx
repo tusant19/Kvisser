@@ -51,6 +51,16 @@ function User() {
                         <p className="userStats">Total plays of their quizzes: {totalPlays}</p>
                     </div>
                 )}
+                {!name && hasTried && (
+                    <div className="userInfo" style={{"textAlign": "center", "minHeight": "85.5dvh", "display": "flex", "flexDirection": "column", "justifyContent": "center", "alignItems": "center", "backgroundColor": "var(--bg1)", "margin": "0"}}>
+                        <h2 className="userName">User not found</h2>
+                    </div>
+                )}
+                {!hasTried && (
+                    <div className="userInfo">
+                        <h2 className="userName">Loading profile...</h2>
+                    </div>
+                )}
                 <div className="userQuizzes">
                     {quizzes.length > 0 ? (
                         <Carousel title={"Quizzes made by the user"} manualData={quizzes} fontSize="min(2vh, 130%)" />

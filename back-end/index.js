@@ -1273,7 +1273,7 @@ app.get('/v1/profile/:uuid', (req, res) => {
   //testing
   for (let i = 0; i < 30; i++) {
     sanitizedQuizzes.push({
-      title: "Profile quizzes placeholder " + (i + 1),
+      title: "Non existing profile quizzes placeholder " + (i + 1),
       img_link: "https://placehold.co/600x400",
       uuid: uuidv4()
     })
