@@ -35,7 +35,7 @@ function MyQuizzes() {
                 <div className="myQuizzesList">
                     {quizzes.length > 0 ? (
                         quizzes.map((quiz, index) => (
-                            <a href={`${siteBaseUrl}/quiz/${quiz.uuid}`} key={index} className="myQuizzesListItemLink">
+                            <a href={`${siteBaseUrl}/create/quiz/details/${quiz.uuid}`} key={index} className="myQuizzesListItemLink">
                                 <div key={index} className="myQuizzesListItem">
                                     <img src={quiz.img_link} alt={quiz.title} className="myQuizzesListItemImage" />
                                     <p className="myQuizzesListItemTitle">{quiz.title}</p>
