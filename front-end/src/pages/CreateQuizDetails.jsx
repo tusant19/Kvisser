@@ -1,7 +1,7 @@
 import './CreateQuizDetails.css'
 import TopBar from '../components/TopBar'
 import BottomBar from '../components/BottomBar'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import apiBaseUrl from '../components/apiAdress.js'
 import { useParams } from 'react-router'
@@ -16,16 +16,23 @@ function CreateQuizDetails() {
     const [timeCreated, setTimeCreated] = useState("");
     const [questions, setQuestions] = useState([]);
     const [hasTried, setHasTried] = useState(false);
+    const privateCheckboxRef = useRef(null);
 
     useEffect(() => {
         if (quizid) {
-            axios.get(`${apiBaseUrl}/quiz/edit/details/${quizid}`)
+            axios.get(`${apiBaseUrl}/v1/quiz/edit/details/${quizid}`)
                 .then(response => {
                     const quiz = response.data;
                     setTitle(quiz.title);
                     setImgLink(quiz.img_link);
                     setLanguage(quiz.language);
-                    setPrivateQuiz(quiz.private === 1);
+                    let privateStatus = quiz.private
+                    setPrivateQuiz(privateStatus);
+                    let checkbox = privateCheckboxRef.current;
+                    if (checkbox) {
+                        console.log("Set checkbox checked status to: " + privateStatus);
+                        checkbox.checked = privateStatus;
+                    }
                     setPlayCount(quiz.playCount);
                     const date = new Date(quiz.time_created);
                     setTimeCreated(date.toLocaleDateString());
@@ -34,10 +41,9 @@ function CreateQuizDetails() {
                 })
                 .catch(error => {
                     console.error("Error fetching quiz details:", error);
-                    setErrorMessage("Error fetching quiz details");
                 });
         }
-    }, [quizid]);
+    }, [quizid, privateCheckboxRef]);
 
     function handleLanguageChange(event) {
         //toBeImplemented
@@ -58,7 +64,7 @@ function CreateQuizDetails() {
                             <h1 className="createQuizDetailsTitle">{title}</h1>
                             <div className="createQuizDetailsExtraInfo">
                                 <p className="createQuizDetailsLanguage">Language: <input type="text" value={language} onChange={handleLanguageChange} /></p>
-                                <p className="createQuizDetailsPrivate">Private: <input type="checkbox" checked={privateQuiz} onChange={handlePrivateChange} /></p>
+                                <p className="createQuizDetailsPrivate">Private: <input type="checkbox" checked={privateQuiz} ref={privateCheckboxRef} onChange={handlePrivateChange} /></p>
                                 <p className="createQuizDetailsPlayCount">Play Count: {playCount}</p>
                                 <p className="createQuizDetailsTimeCreated">Time Created: {timeCreated}</p>
                             </div>

@@ -507,6 +507,27 @@ function checkAccountAccessForCreation(req, res, next) {
   return next();
 }
 
+function checkQuizAccessForEdit(req, res, next) {
+  let token = req?.cookies?.sessionToken
+  if (token === null || token === undefined) {
+    console.log("no token")
+    return res.sendStatus(401);
+  }
+  let userThatRequested = getUserIdByToken.all(token);
+  if (userThatRequested[0] === undefined) {
+    console.log("invalid token")
+    return res.sendStatus(401);
+  }
+  let quiz = quizGetByUuid.all(req.params.uuid);
+  if (quiz.length === 0) {
+    return res.sendStatus(404);
+  }
+  if (quiz[0].user_id !== userThatRequested[0].user_id) {
+    return res.sendStatus(401);
+  }
+  return next();
+}
+
 app.put('/v1/register', async (req, res) => {
   let user = getUserByName.get(req.body?.name);
   if (user?.id != undefined) {
@@ -1313,9 +1334,11 @@ app.get('/v1/profile/:uuid', (req, res) => {
   })
 })
 
-app.get('/v1/quiz/edit/details/:uuid', checkQuizAccess, (req, res) => {
+app.get('/v1/quiz/edit/details/:uuid', checkQuizAccessForEdit, (req, res) => {
   let quiz = quizGetByUuid.all(req.params?.uuid);
+  console.log("quiz: " + JSON.stringify(quiz))
   if (quiz[0] == undefined || quiz[0] == null) {
+    console.log("quiz not found after creation")
     return res.sendStatus(404);
   }
   let questions = getQuestions.all(quiz[0]?.id);
