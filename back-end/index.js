@@ -301,6 +301,7 @@ const getQuizzesByUserId = db.prepare('SELECT * FROM quizzes WHERE user_id = ? O
 const getPublicQuizzesByUserId = db.prepare('SELECT * FROM quizzes WHERE user_id = ? AND private = 0');
 const getPublicQuizCountByUserId = db.prepare('SELECT COUNT(*) FROM quizzes WHERE user_id = ? AND private = 0');
 const getUserQuizCountIncludingPrivate = db.prepare('SELECT COUNT(*) FROM quizzes WHERE user_id = ?');
+const updateQuizPrivacy = db.prepare('UPDATE quizzes SET private = ? WHERE public_uuid = ?');
 
 const gameInsert = db.prepare('INSERT INTO games (user_id, room_code, capacity, active, state) VALUES (?, ?, ?, ?, ?)');
 const gameDelete = db.prepare('DELETE FROM games WHERE user_id = -1');
@@ -1406,4 +1407,23 @@ app.put('/v1/create/quiz', checkAccountAccessForCreation, (req, res) => {
   }
 });
 
-
+app.put('/v1/quiz/edit/private/:uuid', checkQuizAccessForEdit, (req, res) => {
+  console.log("edit private request received for quiz: " + req.params?.uuid)
+  let quiz = quizGetByUuid.all(req.params?.uuid);
+  let privateStatus = req.body?.private;
+  if (quiz.length === 0) {
+    return res.sendStatus(404);
+  }
+  if (privateStatus === undefined || privateStatus === null) {
+    return res.status(422).json({ error: "Missing required fields" });
+  }
+  if (privateStatus !== true && privateStatus !== false) {
+    return res.status(422).json({ error: "Invalid value for private field" });
+  }
+  if (privateStatus) {
+    updateQuizPrivacy.run(1, quiz[0]?.id);
+  } else {
+    updateQuizPrivacy.run(0, quiz[0]?.id);
+  }
+  return res.sendStatus(200);
+});

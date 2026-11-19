@@ -50,7 +50,20 @@ function CreateQuizDetails() {
     }
 
     function handlePrivateChange(event) {
-        //toBeImplemented
+        let checkbox = privateCheckboxRef.current;
+        if (checkbox) {
+            console.log("Private checkbox changed to: " + event.target.checked);
+            setPrivateQuiz(event.target.checked);
+        }
+        axios.put(`${apiBaseUrl}/v1/quiz/edit/private/${quizid}`, {
+            private: event.target.checked
+        })
+        .then(response => {
+            console.log("Private status updated successfully");
+        })
+        .catch(error => {
+            console.error("Error updating private status:", error);
+        });
     }
 
     return (
