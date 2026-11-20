@@ -152,10 +152,212 @@
 }
 
 .questionEditingMain {
+    position: relative;
+    overflow: hidden;
     display: grid;
-    place-items: center;
+    place-items: stretch;
     min-width: 0;
     color: var(--text2);
+}
+
+.multipleChoiceEditor {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+.questionEditorImageLink {
+    position: absolute;
+    top: 0;
+    left: 1%;
+    width: 98%;
+    height: 4vh;
+    box-sizing: border-box;
+    padding: 0.3vh 0.7vw;
+    border: 1px solid var(--border1);
+    border-radius: 4px;
+    background: var(--bg3);
+    color: var(--text1);
+    font-size: 100%;
+}
+
+.questionEditorImageDiv {
+    position: absolute;
+    top: 5vh;
+    left: 1%;
+    width: 98%;
+    height: 35vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.questionEditorImage {
+    height: 36vh;
+    max-height: 36vh;
+    max-width: 98dvw;
+    object-fit: cover;
+}
+
+.questionEditorTitle {
+    position: absolute;
+    top: 41vh;
+    left: 1%;
+    width: 98%;
+    height: 11vh;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0 1vw;
+    border: 0.2vh solid var(--border1);
+    border-radius: 1vh;
+    background: white;
+    color: var(--text1);
+    font-size: 120%;
+    text-align: center;
+}
+
+.questionEditorAnswer {
+    position: absolute;
+    width: 48.5%;
+    height: 11vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0.2vh solid var(--border1);
+    border-radius: 1vh;
+    background: white;
+    box-shadow: 1px 2px 0px 0px var(--border1);
+}
+
+.questionEditorAnswer.answer1 {
+    top: 53vh;
+    left: 1%;
+}
+
+.questionEditorAnswer.answer2 {
+    top: 53vh;
+    left: 50.5%;
+}
+
+.questionEditorAnswer.answer3 {
+    top: 65vh;
+    left: 1%;
+}
+
+.questionEditorAnswer.answer4 {
+    top: 65vh;
+    left: 50.5%;
+}
+
+.questionEditorAnswerInput {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 1vh;
+    background: white;
+    color: var(--text1);
+    font-size: 120%;
+    text-align: center;
+}
+
+.questionEditorCorrectAnswer {
+    position: absolute;
+    top: 20%;
+    left: 1.5%;
+    z-index: 1;
+}
+
+.questionEditorDeleteAnswer {
+    position: absolute;
+    top: 10%;
+    right: 1%;
+    border: 1px solid var(--border1);
+    border-radius: 4px;
+    background: var(--bg3);
+    color: var(--text1);
+    cursor: pointer;
+}
+
+.questionEditorAddAnswer {
+    position: absolute;
+    padding: 0.5vh 0.7vw;
+    border: 1px solid var(--border1);
+    border-radius: 4px;
+    background: white;
+    color: var(--text1);
+    cursor: pointer;
+}
+
+.questionEditorAddAnswer.answerSlot3 {
+    top: 65vh;
+    left: 1%;
+    margin-left: 24.25%;
+    margin-top: 5.5vh;
+    transform: translate(-50%, -50%);
+}
+
+.questionEditorAddAnswer.answerSlot4 {
+    top: 65vh;
+    left: 50.5%;
+    margin-left: 24.25%;
+    margin-top: 5.5vh;
+    transform: translate(-50%, -50%);
+}
+
+.questionEditorSettings {
+    position: absolute;
+    bottom: 1vh;
+    left: 1%;
+    display: flex;
+    gap: 0.5vw;
+}
+
+.questionEditorControls {
+    position: absolute;
+    bottom: 1vh;
+    right: 1%;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5vw;
+}
+
+.questionEditorSettings label {
+    display: flex;
+    align-items: center;
+    gap: 0.5vw;
+    color: var(--text1);
+}
+
+.questionEditorNumber {
+    width: 80px;
+    padding: 0.3vh;
+    border: 1px solid var(--border1);
+    border-radius: 4px;
+    background: var(--bg3);
+}
+
+.questionEditorButton,
+.questionEditorSmallButton {
+    padding: 0.4vh 0.7vw;
+    border: 1px solid var(--border1);
+    border-radius: 4px;
+    background: var(--bg3);
+    color: var(--text1);
+    cursor: pointer;
+}
+
+.questionEditorSmallButton {
+    width: 40px;
+}
+
+.questionEditorError {
+    position: absolute;
+    bottom: 5vh;
+    left: 1%;
+    margin: 0;
+    color: var(--text1);
 }
 
 @media (width <= 700px) {

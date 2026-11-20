@@ -357,6 +357,8 @@ const answerOptionDelete = db.prepare('DELETE FROM answer_options WHERE id = ?')
 const answerOptionDeleteByQuestionId = db.prepare('DELETE FROM answer_options WHERE question_id = ?');
 const getCorrectAnswerByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? AND is_correct = 1 LIMIT 1');
 const getAnswerOptionsByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? ORDER BY order_number ASC');
+const updateQuestion = db.prepare('UPDATE quiz_questions SET title = ?, img_link = ?, score_value = ?, time_given = ? WHERE id = ?');
+const updateQuestionOrder = db.prepare('UPDATE quiz_questions SET order_number = ? WHERE id = ?');
 
 const insertAnswerForPlayer = db.prepare('INSERT INTO game_answers (game_code, question_id, player_uuid, answer, is_correct, answer_time) VALUES (?, ?, ?, ?, ?, ?)');
 const hasAnswered = db.prepare('SELECT * FROM game_answers WHERE game_code = ? AND question_id = ? AND player_uuid = ? LIMIT 1');
@@ -422,7 +424,8 @@ const saltRounds = 10;
 
 //auth
 function checkQuizAccess(req, res, next) {
-  let quiz = quizGetByUuid.all(req.params.uuid);
+  let quizUuid = req.params.uuid || req.params.quizUuid;
+  let quiz = quizGetByUuid.all(quizUuid);
 
   if (quiz.length === 0) {
     return res.sendStatus(404);
@@ -521,7 +524,9 @@ function checkQuizAccessForEdit(req, res, next) {
     console.log("invalid token")
     return res.sendStatus(401);
   }
-  let quiz = quizGetByUuid.all(req.params.uuid);
+  let quizUuid = req.params.uuid;
+  if (quizUuid == undefined) quizUuid = req.params.quizUuid;
+  let quiz = quizGetByUuid.all(quizUuid);
   if (quiz.length === 0) {
     return res.sendStatus(404);
   }
@@ -1349,10 +1354,21 @@ app.get('/v1/quiz/edit/details/:uuid', checkQuizAccessForEdit, (req, res) => {
   let questions = getQuestions.all(quiz[0]?.id);
   let sanitizedQuestions = [];
   for (let i = 0; i < questions?.length; i++) {
+    let answerOptions = getAnswerOptionsByQuestionId.all(questions[i]?.id);
     sanitizedQuestions.push({
+      id: questions[i]?.id,
+      order_number: questions[i]?.order_number,
       title: questions[i]?.title,
       img_link: questions[i]?.img_link,
       type: questions[i]?.type,
+      score_value: questions[i]?.score_value,
+      time_given: questions[i]?.time_given,
+      answerOptions: answerOptions.map(answer => ({
+        id: answer.id,
+        answer: answer.answer,
+        order_number: answer.order_number,
+        is_correct: answer.is_correct === 1
+      }))
     });
   }
   return res.json({
@@ -1449,3 +1465,85 @@ app.put('/v1/quiz/edit/language/:uuid', checkQuizAccessForEdit, (req, res) => {
   updateQuizLanguage.run(language, quiz[0]?.id);
   return res.sendStatus(200);
 });
+
+app.put('/v1/create/question/multiplechoice/:quizUuid', checkQuizAccessForEdit, (req, res) => {
+  console.log("create multiple choice question request received for quiz: " + req.params?.quizUuid);
+  let quiz = quizGetByUuid.get(req.params?.quizUuid);
+  if (quiz == undefined) return res.sendStatus(404);
+
+  let questions = getQuestions.all(quiz.id);
+  let orderNumber = questions.length + 1;
+  questionInsert.run(quiz.id, "multipleChoice", orderNumber, "https://placehold.co/600x400", 1000, 30, "Question " + orderNumber);
+  let question = getQuestion.get(quiz.id, orderNumber);
+  if (question == undefined) return res.sendStatus(500);
+
+  answerOptionDeleteByQuestionId.run(question.id);
+  answerOptionInsert.run(question.id, "Answer 1", 1, 1);
+  answerOptionInsert.run(question.id, "Answer 2", 2, 0);
+  answerOptionInsert.run(question.id, "Answer 3", 3, 0);
+  answerOptionInsert.run(question.id, "Answer 4", 4, 0);
+  return res.status(200).json({ orderNumber: orderNumber - 1 });
+});
+
+app.put('/v1/quiz/edit/question/multiplechoice/:quizUuid/:orderNumber', checkQuizAccessForEdit, (req, res) => {
+  let quiz = quizGetByUuid.get(req.params?.quizUuid);
+  let orderNumber = Number(req.params?.orderNumber) + 1;
+  let question = getQuestion.get(quiz?.id, orderNumber);
+  if (question == undefined) return res.sendStatus(404);
+
+  let title = req.body?.title;
+  let imgLink = req.body?.img_link;
+  let scoreValue = req.body?.score_value;
+  let timeGiven = req.body?.time_given;
+  let answers = req.body?.answers;
+
+  if (title == undefined || title == "" || imgLink == undefined || imgLink == "" || scoreValue == undefined || timeGiven == undefined || !Array.isArray(answers) || answers.length < 2 || answers.length > 4) {
+    return res.status(422).json({ error: "Invalid multiple choice question" });
+  }
+
+  let correctAnswers = answers.filter(answer => answer.is_correct);
+  if (correctAnswers.length != 1) {
+    return res.status(422).json({ error: "A multiple choice question needs one correct answer" });
+  }
+
+  updateQuestion.run(title, imgLink, scoreValue, timeGiven, question.id);
+  answerOptionDeleteByQuestionId.run(question.id);
+  for (let i = 0; i < answers.length; i++) {
+    if (answers[i]?.answer == undefined) return res.status(422).json({ error: "Invalid answer option" });
+    answerOptionInsert.run(question.id, answers[i].answer, i + 1, answers[i].is_correct ? 1 : 0);
+  }
+  return res.sendStatus(200);
+});
+
+app.delete('/v1/quiz/edit/question/:quizUuid/:orderNumber', checkQuizAccessForEdit, (req, res) => {
+  let quiz = quizGetByUuid.get(req.params?.quizUuid);
+  let orderNumber = Number(req.params?.orderNumber) + 1;
+  let question = getQuestion.get(quiz?.id, orderNumber);
+  if (question == undefined) return res.sendStatus(404);
+
+  answerOptionDeleteByQuestionId.run(question.id);
+  questionDelete.run(question.id);
+
+  let questions = getQuestions.all(quiz.id);
+  for (let i = 0; i < questions.length; i++) {
+    updateQuestionOrder.run(i + 1, questions[i].id);
+  }
+  return res.sendStatus(200);
+});
+
+app.put('/v1/quiz/edit/question/order/:quizUuid/:orderNumber', checkQuizAccessForEdit, (req, res) => {
+  let quiz = quizGetByUuid.get(req.params?.quizUuid);
+  let orderNumber = Number(req.params?.orderNumber) + 1;
+  let direction = req.body?.direction;
+  if (direction != -1 && direction != 1) return res.status(422).json({ error: "Invalid direction" });
+
+  let questions = getQuestions.all(quiz?.id);
+  let questionIndex = orderNumber - 1;
+  let swapIndex = questionIndex + direction;
+  if (swapIndex < 0 || swapIndex >= questions.length) return res.sendStatus(200);
+
+  updateQuestionOrder.run(questionIndex + 1, questions[swapIndex].id);
+  updateQuestionOrder.run(swapIndex + 1, questions[questionIndex].id);
+  return res.sendStatus(200);
+});
+  
