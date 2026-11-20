@@ -301,7 +301,9 @@ const getQuizzesByUserId = db.prepare('SELECT * FROM quizzes WHERE user_id = ? O
 const getPublicQuizzesByUserId = db.prepare('SELECT * FROM quizzes WHERE user_id = ? AND private = 0');
 const getPublicQuizCountByUserId = db.prepare('SELECT COUNT(*) FROM quizzes WHERE user_id = ? AND private = 0');
 const getUserQuizCountIncludingPrivate = db.prepare('SELECT COUNT(*) FROM quizzes WHERE user_id = ?');
-const updateQuizPrivacy = db.prepare('UPDATE quizzes SET private = ? WHERE public_uuid = ?');
+const updateQuizPrivacy = db.prepare('UPDATE quizzes SET private = ? WHERE id = ?');
+const updateQuizLanguage = db.prepare('UPDATE quizzes SET language = ? WHERE id = ?');
+const updatePlayCount = db.prepare('UPDATE quizzes SET play_count = ? WHERE id = ?');
 
 const gameInsert = db.prepare('INSERT INTO games (user_id, room_code, capacity, active, state) VALUES (?, ?, ?, ?, ?)');
 const gameDelete = db.prepare('DELETE FROM games WHERE user_id = -1');
@@ -715,15 +717,16 @@ app.put('/v1/logout', (req, res) => {
 });
 
 //main
-app.get('/v1/mostPlayed', (req, res) => {
-  const getMostPlayed = db.prepare('SELECT * FROM quizzes WHERE private != 1 ORDER BY play_count DESC LIMIT 30');
+app.get('/v1/mostPlayed', (req, res) => { 
+  console.log("mostPlayed")
+  const getMostPlayed = db.prepare('SELECT * FROM quizzes WHERE private != 1 ORDER BY play_count DESC LIMIT 50');
+  let quizzes = getMostPlayed.all();
   let sanitizedMostPlayed = []
-  for (let quiz of getMostPlayed.all()) {
-    sanitizedMostPlayed.push({"title": quiz.title, "img_link": quiz.img_link, "uuid": quiz.public_uuid})
+  for (let i = 0; i < quizzes.length; i++) {
+    let quiz = quizzes[i];
+    sanitizedMostPlayed.push({"title": quiz.title, "img_link": quiz.img_link, "uuid": quiz.public_uuid, "play_count": quiz.play_count, "language": quiz.language})
   }
-
   res.send(sanitizedMostPlayed)
-
 });
 
 app.put('/v1/joinRoom', async (req, res) => {
@@ -892,6 +895,7 @@ app.put('/v1/host/:uuid', checkQuizAccess, (req, res) => {
     }
   )
   insertPlayForQuiz.run(quiz[0]?.id, uuidGivenToClient, gamecode, Date.now());
+  updatePlayCount.run(quiz[0]?.play_count + 1, quiz[0]?.id)
 });
 
 app.get('/v1/question/:roomCode', (req, res) => {
@@ -1420,10 +1424,28 @@ app.put('/v1/quiz/edit/private/:uuid', checkQuizAccessForEdit, (req, res) => {
   if (privateStatus !== true && privateStatus !== false) {
     return res.status(422).json({ error: "Invalid value for private field" });
   }
+  console.log("quiz: " + JSON.stringify(quiz));
   if (privateStatus) {
+    console.log("setting quiz to private")
     updateQuizPrivacy.run(1, quiz[0]?.id);
   } else {
+    console.log("setting quiz to public")
     updateQuizPrivacy.run(0, quiz[0]?.id);
   }
+  return res.sendStatus(200);
+});
+
+app.put('/v1/quiz/edit/language/:uuid', checkQuizAccessForEdit, (req, res) => {
+  console.log("edit language request received for quiz: " + req.params?.uuid)
+  let quiz = quizGetByUuid.all(req.params?.uuid);
+  let language = req.body?.language;
+
+  if (quiz.length === 0) {
+    return res.sendStatus(404);
+  }
+  if (language === undefined || language === null || language === "") {
+    return res.status(422).json({ error: "Missing required fields" });
+  }
+  updateQuizLanguage.run(language, quiz[0]?.id);
   return res.sendStatus(200);
 });

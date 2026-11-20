@@ -38,6 +38,7 @@ function CreateQuizDetails() {
                     setTimeCreated(date.toLocaleDateString());
                     setQuestions(quiz.questions);
                     setHasTried(true);
+                    console.log(quiz);
                 })
                 .catch(error => {
                     console.error("Error fetching quiz details:", error);
@@ -46,7 +47,16 @@ function CreateQuizDetails() {
     }, [quizid, privateCheckboxRef]);
 
     function handleLanguageChange(event) {
-        //toBeImplemented
+        setLanguage(event.target.value);
+        axios.put(`${apiBaseUrl}/v1/quiz/edit/language/${quizid}`, {
+            language: event.target.value
+        })
+        .then(response => {
+            console.log("Language updated successfully");
+        })
+        .catch(error => {
+            console.error("Error updating language:", error);
+        });
     }
 
     function handlePrivateChange(event) {
