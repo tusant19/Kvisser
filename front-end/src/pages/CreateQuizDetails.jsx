@@ -76,6 +76,19 @@ function CreateQuizDetails() {
         });
     }
 
+    function handleTitleChange(event) {
+        setTitle(event.target.value);
+        axios.put(`${apiBaseUrl}/v1/quiz/edit/title/${quizid}`, {
+            title: event.target.value
+        })
+        .then(response => {
+            console.log("Title updated successfully");
+        })
+        .catch(error => {
+            console.error("Error updating title:", error);
+        });
+    }
+
     return (
         <div className="createQuizDetailsPage">
             <TopBar />
@@ -84,7 +97,7 @@ function CreateQuizDetails() {
                     <>
                         <div className="createQuizDetailsContent">
                             <img src={imgLink} alt={title} className="createQuizDetailsImage" />
-                            <h1 className="createQuizDetailsTitle">{title}</h1>
+                            <h1 className="createQuizDetailsTitle"><input type="text" value={title} onChange={handleTitleChange} className="createQuizDetailsTitleInput" placeholder="Quiz Title" /></h1>
                             <div className="createQuizDetailsExtraInfo">
                                 <p className="createQuizDetailsLanguage">Language: <input type="text" value={language} onChange={handleLanguageChange} /></p>
                                 <p className="createQuizDetailsPrivate">Private: <input type="checkbox" checked={privateQuiz} ref={privateCheckboxRef} onChange={handlePrivateChange} /></p>

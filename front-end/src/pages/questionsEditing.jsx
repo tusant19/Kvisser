@@ -322,8 +322,8 @@ function QuestionsEditing() {
                     {draft.answers.length < 4 && <button type="button" onClick={addAnswerOption} className={'questionEditorAddAnswer answerSlot' + (draft.answers.length + 1)}>Add answer</button>}
 
                     <div className="questionEditorSettings">
-                        <label>Time <input type="number" min="1" value={draft.time_given} onChange={changeQuestionTime} className="questionEditorNumber" /></label>
-                        <label>Score <input type="number" min="0" value={draft.score_value} onChange={changeQuestionScore} className="questionEditorNumber" /></label>
+                        <label>Seconds to answer <input type="number" min="1" value={draft.time_given} onChange={changeQuestionTime} className="questionEditorNumber" /></label>
+                        <label>Maximum score <input type="number" min="0" value={draft.score_value} onChange={changeQuestionScore} className="questionEditorNumber" /></label>
                     </div>
 
                     {error && <p className="questionEditorError">{error}</p>}

@@ -304,6 +304,8 @@ const getUserQuizCountIncludingPrivate = db.prepare('SELECT COUNT(*) FROM quizze
 const updateQuizPrivacy = db.prepare('UPDATE quizzes SET private = ? WHERE id = ?');
 const updateQuizLanguage = db.prepare('UPDATE quizzes SET language = ? WHERE id = ?');
 const updatePlayCount = db.prepare('UPDATE quizzes SET play_count = ? WHERE id = ?');
+const updateQuizImgLink = db.prepare('UPDATE quizzes SET img_link = ? WHERE id = ?');
+const updateQuizTitle = db.prepare('UPDATE quizzes SET title = ? WHERE id = ?');
 
 const gameInsert = db.prepare('INSERT INTO games (user_id, room_code, capacity, active, state) VALUES (?, ?, ?, ?, ?)');
 const gameDelete = db.prepare('DELETE FROM games WHERE user_id = -1');
@@ -1468,6 +1470,20 @@ app.put('/v1/quiz/edit/language/:uuid', checkQuizAccessForEdit, (req, res) => {
     return res.status(422).json({ error: "Missing required fields" });
   }
   updateQuizLanguage.run(language, quiz[0]?.id);
+  return res.sendStatus(200);
+});
+
+app.put('/v1/quiz/edit/title/:uuid', checkQuizAccessForEdit, (req, res) => {
+  console.log("edit title request received for quiz: " + req.params?.uuid)
+  let quiz = quizGetByUuid.all(req.params?.uuid);
+  let title = req.body?.title;
+  if (quiz.length === 0) {
+    return res.sendStatus(404);
+  }
+  if (title === undefined || title === null || title === "") {
+    return res.status(422).json({ error: "Missing required fields" });
+  }
+  updateQuizTitle.run(title, quiz[0]?.id);
   return res.sendStatus(200);
 });
 
