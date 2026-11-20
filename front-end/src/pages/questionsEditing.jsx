@@ -4,11 +4,12 @@ import TopBar from '../components/TopBar';
 import BottomBar from '../components/BottomBar';
 import axios from 'axios';
 import apiBaseUrl from '../components/apiAdress.js';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import correctSymbol from '../assets/check_24dp_505050_FILL0_wght400_GRAD0_opsz24.svg';
 
 function QuestionsEditing() {
     const { quizid, questionid } = useParams();
+    const navigate = useNavigate();
     const [questions, setQuestions] = useState([]);
     const [hasTried, setHasTried] = useState(false);
     const [showQuestionTypes, setShowQuestionTypes] = useState(false);
@@ -109,7 +110,7 @@ function QuestionsEditing() {
     function deleteQuestion() {
         axios.delete(`${apiBaseUrl}/v1/quiz/edit/question/${quizid}/${questionid}`, { withCredentials: true })
         .then(function () {
-            window.location.href = `/quiz/edit/${quizid}`;
+            navigate(`/quiz/edit/${quizid}`);
         })
         .catch(function (error) {
             setError(error.response && error.response.data ? error.response.data.error : "Failed to delete question");
@@ -117,11 +118,13 @@ function QuestionsEditing() {
     }
 
     function moveQuestion(direction) {
+        if (direction === -1 && Number(questionid) <= 0) return;
+        if (direction === 1 && Number(questionid) >= questions.length - 1) return;
         axios.put(`${apiBaseUrl}/v1/quiz/edit/question/order/${quizid}/${questionid}`, {
             direction: direction
         }, { withCredentials: true })
         .then(function () {
-            window.location.href = `/quiz/edit/${quizid}/question/${Number(questionid) + direction}`;
+            navigate(`/quiz/edit/${quizid}/question/${Number(questionid) + direction}`);
         })
         .catch(function (error) {
             setError(error.response && error.response.data ? error.response.data.error : "Failed to move question");
@@ -131,7 +134,8 @@ function QuestionsEditing() {
     function createMultipleChoice() {
         axios.put(`${apiBaseUrl}/v1/create/question/multiplechoice/${quizid}`, {}, { withCredentials: true })
         .then(function (response) {
-            window.location.href = `/quiz/edit/${quizid}/question/${response.data.orderNumber}`;
+            fetchQuestions();
+            navigate(`/quiz/edit/${quizid}/question/${response.data.orderNumber}`);
         })
         .catch(function (error) {
             console.error("Error creating multiple choice question:", error);
@@ -323,9 +327,10 @@ function QuestionsEditing() {
                     <div className="questionsSidebarList">
                         {questions.map(function (question, index) {
                             return (
-                                <a
+                                <button
                                     key={question.id || index}
-                                    href={`/quiz/edit/${quizid}/question/${index}`}
+                                    type="button"
+                                    onClick={function () { navigate(`/quiz/edit/${quizid}/question/${index}`); }}
                                     className={`questionSidebarItem ${String(questionid) === String(index) ? 'active' : ''}`}
                                 >
                                     <span className="questionSidebarNumber">{index + 1}</span>
@@ -338,7 +343,7 @@ function QuestionsEditing() {
                                         )}
                                         <span className="questionSidebarType">{question.type || 'Multiple choice'}</span>
                                     </div>
-                                </a>
+                                </button>
                             );
                         })}
 

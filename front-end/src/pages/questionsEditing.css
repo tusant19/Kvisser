@@ -33,6 +33,10 @@
 .questionSidebarItem {
     position: relative;
     display: grid;
+    width: 100%;
+    border: 2px solid transparent;
+    text-align: left;
+    font-family: inherit;
     grid-template-columns: 26px minmax(0, 1fr);
     flex: 0 0 auto;
     min-height: 132px;
