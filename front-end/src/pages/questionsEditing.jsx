@@ -313,7 +313,7 @@ function QuestionsEditing() {
                                 <button type="button" onClick={function () { setCorrectAnswer(index); }} className={'questionEditorCorrectAnswer' + (answer.is_correct ? ' selected' : '')}>
                                     {answer.is_correct && <img src={correctSymbol} alt="" />}
                                 </button>
-                                <input type="text" value={answer.answer} onChange={function (event) { changeAnswer(index, event); }} className="questionEditorAnswerInput" />
+                                <input type="text" value={answer.answer} placeholder="Answer" onChange={function (event) { changeAnswer(index, event); }} className="questionEditorAnswerInput" />
                                 {draft.answers.length > 2 && <button type="button" onClick={function () { deleteAnswerOption(index); }} className="questionEditorDeleteAnswer">X</button>}
                             </div>
                         );
