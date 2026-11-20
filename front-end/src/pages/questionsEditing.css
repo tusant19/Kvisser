@@ -159,7 +159,7 @@
     position: relative;
     overflow: hidden;
     display: grid;
-    place-items: stretch;
+    place-items: center;
     min-width: 0;
     color: var(--text2);
 }
