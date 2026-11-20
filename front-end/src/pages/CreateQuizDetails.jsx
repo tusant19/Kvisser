@@ -117,6 +117,10 @@ function CreateQuizDetails() {
                                 <p className="createQuizDetailsNoQuestions">You'll see questions here after you add some.</p>
                             </div>
                         )}
+                        <div className="createQuizDetailsControls">
+                            <a href={`/quiz/edit/${quizid}`} className="createQuizDetailsAddQuestionButton">Add Question</a>
+                            <a href={`/quiz/${quizid}`} className="createQuizDetailsPlayButton">Go to Quiz</a>
+                        </div>
                     </>
                 ) : (
                     <p>Loading quiz details...</p>

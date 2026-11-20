@@ -20,6 +20,7 @@ import MyQuizzes from "./pages/MyQuizzes.jsx";
 import User from './pages/User.jsx'
 import CreateQuizDetails from './pages/CreateQuizDetails.jsx'
 import CreateQuizIntermediary from './pages/CreateQuizIntermediary.jsx'
+import QuestionsEditing from './pages/questionsEditing.jsx'
 
 const root = document.getElementById("root");
 
@@ -44,6 +45,8 @@ ReactDOM.createRoot(root).render(
       <Route path="/user/:userid" element={<User/>}/>
       <Route path="/create/quiz" element={<CreateQuizIntermediary/>}/>
       <Route path="/create/quiz/details/:quizid" element={<CreateQuizDetails/>}/>
+      <Route path="/quiz/edit/:quizid" element={<QuestionsEditing/>}/>
+      <Route path="/quiz/edit/:quizid/question/:questionid" element={<QuestionsEditing/>}/>
     </Routes>
   </BrowserRouter>,
 );
