@@ -1,6 +1,7 @@
 .topBar {
     max-width: 100dvw;
     border-bottom: 0.2vh solid rgb(232, 233, 234);
+    background-color: white;
 }
 
 .topBarContent{ 
