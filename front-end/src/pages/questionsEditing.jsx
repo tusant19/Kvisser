@@ -19,6 +19,15 @@ function QuestionsEditing() {
     ];
 
     useEffect(() => {
+        fetchQuestions();
+    }, [quizid]);
+
+    useEffect(() => {
+        window.addEventListener('keydown', closeQuestionTypes);
+        return () => window.removeEventListener('keydown', closeQuestionTypes);
+    }, []);
+
+    function fetchQuestions() {
         if (!quizid) return;
 
         axios.get(`${apiBaseUrl}/v1/quiz/edit/details/${quizid}`)
@@ -30,23 +39,66 @@ function QuestionsEditing() {
                 console.error("Error fetching quiz questions:", error);
                 setHasTried(true);
             });
-    }, [quizid]);
+    }
 
-    useEffect(() => {
-        function closeQuestionTypes(event) {
-            if (event.key === 'Escape') {
-                setShowQuestionTypes(false);
-            }
-        }
+    function closeQuestionTypes(event) {
+        if (event.key === 'Escape') setShowQuestionTypes(false);
+    }
 
-        window.addEventListener('keydown', closeQuestionTypes);
-        return () => window.removeEventListener('keydown', closeQuestionTypes);
-    }, []);
+    function toggleQuestionTypes() {
+        setShowQuestionTypes(current => !current);
+    }
 
     function selectQuestionType(questionType) {
-        setShowQuestionTypes(false);
-        // Question creation will be implemented here once the add-question endpoint is ready.
-        console.log(`Selected question type: ${questionType.id}`);
+        // TODO: Create a question of this type.
+    }
+
+    function openQuestion(question) {
+        // TODO: Open the selected question in the editor.
+    }
+
+    function saveQuestion() {
+        // TODO: Save the current question.
+    }
+
+    function deleteQuestion() {
+        // TODO: Delete the current question.
+    }
+
+    function moveQuestion(direction) {
+        // TODO: Move the current question up or down.
+    }
+
+    function changeQuestionTitle(event) {
+        // TODO: Update the question title.
+    }
+
+    function changeQuestionImage(event) {
+        // TODO: Update the question image.
+    }
+
+    function changeAnswer(index, event) {
+        // TODO: Update an answer option.
+    }
+
+    function setCorrectAnswer(index) {
+        // TODO: Set the correct answer option.
+    }
+
+    function addAnswerOption() {
+        // TODO: Add an answer option.
+    }
+
+    function deleteAnswerOption(index) {
+        // TODO: Delete an answer option.
+    }
+
+    function changeQuestionTime(event) {
+        // TODO: Update the time given for the question.
+    }
+
+    function changeQuestionScore(event) {
+        // TODO: Update the question score.
     }
 
     return (
@@ -83,28 +135,12 @@ function QuestionsEditing() {
                         {showQuestionTypes && (
                             <div className="questionTypesPopup" role="menu" aria-label="Choose a question type">
                                 {questionTypes.map(questionType => (
-                                    <button
-                                        key={questionType.id}
-                                        type="button"
-                                        role="menuitem"
-                                        className="questionTypeOption"
-                                        onClick={() => selectQuestionType(questionType)}
-                                    >
-                                        {questionType.label}
-                                    </button>
+                                    <button key={questionType.id} type="button" role="menuitem" className="questionTypeOption" onClick={() => selectQuestionType(questionType)}>{questionType.label}</button>
                                 ))}
                             </div>
                         )}
 
-                        <button
-                            type="button"
-                            className="questionsSidebarAdd"
-                            aria-haspopup="menu"
-                            aria-expanded={showQuestionTypes}
-                            onClick={() => setShowQuestionTypes(current => !current)}
-                        >
-                            Add
-                        </button>
+                        <button type="button" className="questionsSidebarAdd" aria-haspopup="menu" aria-expanded={showQuestionTypes} onClick={toggleQuestionTypes}>Add</button>
                     </div>
                 </aside>
 
