@@ -1446,7 +1446,7 @@ app.put('/v1/quiz/edit/private/:uuid', checkQuizAccessForEdit, (req, res) => {
     return res.status(422).json({ error: "Invalid value for private field" });
   }
   console.log("quiz: " + JSON.stringify(quiz));
-  if (privateStatus) {
+  if (privateStatus) { 
     console.log("setting quiz to private")
     updateQuizPrivacy.run(1, quiz[0]?.id);
   } else {

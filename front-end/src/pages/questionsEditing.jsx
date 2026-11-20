@@ -110,7 +110,26 @@ function QuestionsEditing() {
     function deleteQuestion() {
         axios.delete(`${apiBaseUrl}/v1/quiz/edit/question/${quizid}/${questionid}`, { withCredentials: true })
         .then(function () {
-            navigate(`/quiz/edit/${quizid}`);
+            axios.get(`${apiBaseUrl}/v1/quiz/edit/details/${quizid}`, { withCredentials: true })
+            .then(function (response) {
+                let remainingQuestions = response.data.questions || [];
+                setQuestions(remainingQuestions);
+                setDraft(null);
+
+                if (remainingQuestions.length === 0) {
+                    navigate(`/quiz/edit/${quizid}`);
+                    return;
+                }
+
+                let nextQuestionId = Number(questionid);
+                if (nextQuestionId >= remainingQuestions.length) {
+                    nextQuestionId = remainingQuestions.length - 1;
+                }
+                navigate(`/quiz/edit/${quizid}/question/${nextQuestionId}`);
+            })
+            .catch(function (error) {
+                console.error("Error refreshing questions:", error);
+            });
         })
         .catch(function (error) {
             setError(error.response && error.response.data ? error.response.data.error : "Failed to delete question");
