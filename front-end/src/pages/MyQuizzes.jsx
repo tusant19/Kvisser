@@ -45,7 +45,7 @@ function MyQuizzes() {
                     ) : (
                         <div className="myQuizzesListEmpty">
                             {hasTried ? (
-                                <p className="myQuizzesListEmptyText">No quizzes found.</p>
+                                <p className="myQuizzesListEmptyText">No quizzes found. You will see them here after you create some!</p>
                             ) : (
                                 <p className="myQuizzesListEmptyText">Loading your quizzes...</p>
                             )}

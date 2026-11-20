@@ -1280,13 +1280,13 @@ app.get('/v1/account/:uuid/quizzes', checkAccountAccess, (req, res) => {
     })
   }
   //testing
-  for (let i = 0; i < 30; i++) {
+  /* for (let i = 0; i < 30; i++) {
     sanitizedQuizzes.push({
       title: "Account quizzes placeholder " + (i + 1),
       img_link: "https://placehold.co/600x400",
       uuid: uuidv4()
     })
-  }
+  } */
   console.log("sanitizedQuizzes: " + JSON.stringify(sanitizedQuizzes))
   return res.json({
     quizzes: sanitizedQuizzes

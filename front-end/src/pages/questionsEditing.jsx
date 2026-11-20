@@ -70,6 +70,9 @@ function QuestionsEditing() {
             })
             .catch(function (error) {
                 console.error("Error fetching quiz questions:", error);
+                if (error.response && error.response.status === 401) {
+                    window.location.replace("/login");
+                }
                 setHasTried(true);
             });
     }
