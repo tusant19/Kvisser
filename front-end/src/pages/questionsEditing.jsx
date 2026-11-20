@@ -5,6 +5,7 @@ import BottomBar from '../components/BottomBar';
 import axios from 'axios';
 import apiBaseUrl from '../components/apiAdress.js';
 import { useParams } from 'react-router';
+import correctSymbol from '../assets/check_24dp_505050_FILL0_wght400_GRAD0_opsz24.svg';
 
 function QuestionsEditing() {
     const { quizid, questionid } = useParams();
@@ -190,9 +191,9 @@ function QuestionsEditing() {
         for (let i = 0; i < draft.answers.length; i++) {
             let answer = {
                 answer: draft.answers[i].answer,
-                is_correct: false
+                is_correct: draft.answers[i].is_correct
             };
-            answer.is_correct = i === index;
+            if (i === index) answer.is_correct = !answer.is_correct;
             newDraft.answers.push(answer);
         }
         setDraft(newDraft);
@@ -237,11 +238,6 @@ function QuestionsEditing() {
                 });
             }
         }
-        let hasCorrectAnswer = false;
-        for (let i = 0; i < newDraft.answers.length; i++) {
-            if (newDraft.answers[i].is_correct) hasCorrectAnswer = true;
-        }
-        if (!hasCorrectAnswer) newDraft.answers[0].is_correct = true;
         setDraft(newDraft);
     }
 
@@ -288,7 +284,9 @@ function QuestionsEditing() {
                     {draft.answers.map(function (answer, index) {
                         return (
                             <div key={index} className={'questionEditorAnswer answer' + (index + 1)}>
-                                <input type="radio" name="correctAnswer" checked={answer.is_correct} onChange={function () { setCorrectAnswer(index); }} className="questionEditorCorrectAnswer" />
+                                <button type="button" onClick={function () { setCorrectAnswer(index); }} className={'questionEditorCorrectAnswer' + (answer.is_correct ? ' selected' : '')}>
+                                    {answer.is_correct && <img src={correctSymbol} alt="" />}
+                                </button>
                                 <input type="text" value={answer.answer} onChange={function (event) { changeAnswer(index, event); }} className="questionEditorAnswerInput" />
                                 {draft.answers.length > 2 && <button type="button" onClick={function () { deleteAnswerOption(index); }} className="questionEditorDeleteAnswer">X</button>}
                             </div>

@@ -356,6 +356,7 @@ const answerOptionInsertByQuizIdAndOrder = db.prepare('INSERT INTO answer_option
 const answerOptionDelete = db.prepare('DELETE FROM answer_options WHERE id = ?');
 const answerOptionDeleteByQuestionId = db.prepare('DELETE FROM answer_options WHERE question_id = ?');
 const getCorrectAnswerByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? AND is_correct = 1 LIMIT 1');
+const getCorrectAnswersByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? AND is_correct = 1');
 const getAnswerOptionsByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? ORDER BY order_number ASC');
 const updateQuestion = db.prepare('UPDATE quiz_questions SET title = ?, img_link = ?, score_value = ?, time_given = ? WHERE id = ?');
 const updateQuestionOrder = db.prepare('UPDATE quiz_questions SET order_number = ? WHERE id = ?');
@@ -970,7 +971,11 @@ app.put('/v1/answer/:roomCode', (req, res) => {
     return res.sendStatus(409)
   }
   insertAnswerForPlayer.run(req.params?.roomCode, question[0]?.id, player[0]?.uuid, orderNumber, 0, Date.now())
-  let correctAnswer = getCorrectAnswerByQuestionId.get(question[0]?.id)
+  let correctAnswers = getCorrectAnswersByQuestionId.all(question[0]?.id)
+  let isCorrectAnswerSelected = false
+  for (let i = 0; i < correctAnswers.length; i++) {
+    if (correctAnswers[i].order_number === orderNumber) isCorrectAnswerSelected = true
+  }
   console.log("roomCode: " + req.params?.roomCode)
   let answerCount = getAnswerCountForQuestion.get(req.params?.roomCode, question[0]?.id)['COUNT(*)']
   console.log("answerCount: " + answerCount)
@@ -997,7 +1002,7 @@ app.put('/v1/answer/:roomCode', (req, res) => {
       }
     )
   }
-  if (correctAnswer && correctAnswer.order_number === orderNumber && player[0]?.role !== "host" && question[0]?.type === "multipleChoice" && question[0]?.score_value != undefined && question[0]?.score_value != null && question[0]?.score_value > 0) {
+  if (isCorrectAnswerSelected && player[0]?.role !== "host" && question[0]?.type === "multipleChoice" && question[0]?.score_value != undefined && question[0]?.score_value != null && question[0]?.score_value > 0) {
     console.log("points to give: " + Math.floor(leftOverTimeSeconds * question[0]?.score_value / question[0]?.time_given))
     updatePlayerScore.run(player[0]?.score + Math.floor(leftOverTimeSeconds * question[0]?.score_value / question[0]?.time_given), player[0]?.uuid)
     updateCorrectnessForPlayer.run(1, req.params?.roomCode, question[0]?.id, player[0]?.uuid)
@@ -1502,8 +1507,8 @@ app.put('/v1/quiz/edit/question/multiplechoice/:quizUuid/:orderNumber', checkQui
   }
 
   let correctAnswers = answers.filter(answer => answer.is_correct);
-  if (correctAnswers.length != 1) {
-    return res.status(422).json({ error: "A multiple choice question needs one correct answer" });
+  if (correctAnswers.length < 1) {
+    return res.status(422).json({ error: "A multiple choice question needs at least one correct answer" });
   }
 
   updateQuestion.run(title, imgLink, scoreValue, timeGiven, question.id);

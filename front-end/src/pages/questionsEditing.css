@@ -264,9 +264,26 @@
 
 .questionEditorCorrectAnswer {
     position: absolute;
-    top: 20%;
-    left: 1.5%;
+    top: 0.8dvw;
+    left: 0.8dvw;
     z-index: 1;
+    width: 1.5dvw;
+    height: 1.5dvw;
+    border: 0;
+    border-radius: 50%;
+    background: var(--bg1);
+    color: white;
+    font-size: 120%;
+    cursor: pointer;
+}
+
+.questionEditorCorrectAnswer.selected {
+    background: transparent;
+}
+
+.questionEditorCorrectAnswer img {
+    width: 100%;
+    height: 100%;
 }
 
 .questionEditorDeleteAnswer {
