@@ -1478,15 +1478,13 @@ app.put('/v1/create/question/multiplechoice/:quizUuid', checkQuizAccessForEdit, 
 
   let questions = getQuestions.all(quiz.id);
   let orderNumber = questions.length + 1;
-  questionInsert.run(quiz.id, "multipleChoice", orderNumber, "https://placehold.co/600x400", 1000, 30, "Question " + orderNumber);
+  questionInsert.run(quiz.id, "multipleChoice", orderNumber, "", 1000, 30, "");
   let question = getQuestion.get(quiz.id, orderNumber);
   if (question == undefined) return res.sendStatus(500);
 
   answerOptionDeleteByQuestionId.run(question.id);
-  answerOptionInsert.run(question.id, "Answer 1", 1, 1);
-  answerOptionInsert.run(question.id, "Answer 2", 2, 0);
-  answerOptionInsert.run(question.id, "Answer 3", 3, 0);
-  answerOptionInsert.run(question.id, "Answer 4", 4, 0);
+  answerOptionInsert.run(question.id, "", 1, 0);
+  answerOptionInsert.run(question.id, "", 2, 0);
   return res.status(200).json({ orderNumber: orderNumber - 1 });
 });
 
@@ -1502,7 +1500,7 @@ app.put('/v1/quiz/edit/question/multiplechoice/:quizUuid/:orderNumber', checkQui
   let timeGiven = req.body?.time_given;
   let answers = req.body?.answers;
 
-  if (title == undefined || title == "" || imgLink == undefined || imgLink == "" || scoreValue == undefined || timeGiven == undefined || !Array.isArray(answers) || answers.length < 2 || answers.length > 4) {
+  if (title == undefined || imgLink == undefined || scoreValue == undefined || timeGiven == undefined || !Array.isArray(answers) || answers.length < 2 || answers.length > 4) {
     return res.status(422).json({ error: "Invalid multiple choice question" });
   }
 
