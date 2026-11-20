@@ -89,6 +89,19 @@ function CreateQuizDetails() {
         });
     }
 
+    function handleImgLinkChange(event) {
+        setImgLink(event.target.value);
+        axios.put(`${apiBaseUrl}/v1/quiz/edit/imglink/${quizid}`, {
+            img_link: event.target.value
+        })
+        .then(response => {
+            console.log("Image link updated successfully");
+        })
+        .catch(error => {
+            console.error("Error updating image link:", error);
+        });
+    }
+
     return (
         <div className="createQuizDetailsPage">
             <TopBar />
@@ -99,10 +112,11 @@ function CreateQuizDetails() {
                             <img src={imgLink} alt={title} className="createQuizDetailsImage" />
                             <h1 className="createQuizDetailsTitle"><input type="text" value={title} onChange={handleTitleChange} className="createQuizDetailsTitleInput" placeholder="Quiz Title" /></h1>
                             <div className="createQuizDetailsExtraInfo">
+                                <p className="createQuizDetailsImageLink">Image link: <input type="text" value={imgLink} onChange={handleImgLinkChange} className="createQuizDetailsImageLinkInput" /></p>
                                 <p className="createQuizDetailsLanguage">Language: <input type="text" value={language} onChange={handleLanguageChange} /></p>
                                 <p className="createQuizDetailsPrivate">Private: <input type="checkbox" checked={privateQuiz} ref={privateCheckboxRef} onChange={handlePrivateChange} /></p>
-                                <p className="createQuizDetailsPlayCount">Play Count: {playCount}</p>
-                                <p className="createQuizDetailsTimeCreated">Time Created: {timeCreated}</p>
+                                <p className="createQuizDetailsPlayCount">Play count: {playCount}</p>
+                                <p className="createQuizDetailsTimeCreated">Time created: {timeCreated}</p>
                             </div>
                         </div>
 

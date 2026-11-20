@@ -1487,6 +1487,20 @@ app.put('/v1/quiz/edit/title/:uuid', checkQuizAccessForEdit, (req, res) => {
   return res.sendStatus(200);
 });
 
+app.put('/v1/quiz/edit/imglink/:uuid', checkQuizAccessForEdit, (req, res) => {
+  console.log("edit imglink request received for quiz: " + req.params?.uuid)
+  let quiz = quizGetByUuid.all(req.params?.uuid);
+  let imgLink = req.body?.img_link;
+  if (quiz.length === 0) {
+    return res.sendStatus(404);
+  }
+  if (imgLink === undefined || imgLink === null || imgLink === "") {
+    return res.status(422).json({ error: "Missing required fields" });
+  }
+  updateQuizImgLink.run(imgLink, quiz[0]?.id);
+  return res.sendStatus(200);
+});
+
 app.put('/v1/create/question/multiplechoice/:quizUuid', checkQuizAccessForEdit, (req, res) => {
   console.log("create multiple choice question request received for quiz: " + req.params?.quizUuid);
   let quiz = quizGetByUuid.get(req.params?.quizUuid);
