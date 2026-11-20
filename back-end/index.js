@@ -1385,7 +1385,8 @@ app.get('/v1/quiz/edit/details/:uuid', checkQuizAccessForEdit, (req, res) => {
     private: quiz[0]?.private === 1,
     questions: sanitizedQuestions,
     playCount: quiz[0]?.playCount,
-    timeCreated: quiz[0]?.time_created
+    timeCreated: quiz[0]?.time_created,
+    playCount: quiz[0]?.play_count
   });
 });
 

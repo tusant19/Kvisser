@@ -34,7 +34,7 @@ function CreateQuizDetails() {
                         checkbox.checked = privateStatus;
                     }
                     setPlayCount(quiz.playCount);
-                    const date = new Date(quiz.time_created);
+                    const date = new Date(quiz.timeCreated);
                     setTimeCreated(date.toLocaleDateString());
                     setQuestions(quiz.questions);
                     setHasTried(true);
@@ -110,13 +110,15 @@ function CreateQuizDetails() {
                     <>
                         <div className="createQuizDetailsContent">
                             <img src={imgLink} alt={title} className="createQuizDetailsImage" />
-                            <h1 className="createQuizDetailsTitle"><input type="text" value={title} onChange={handleTitleChange} className="createQuizDetailsTitleInput" placeholder="Quiz Title" /></h1>
+                            <div className="createQuizDetailsTitle"><input type="text" value={title} onChange={handleTitleChange} className="createQuizDetailsTitleInput" placeholder="Quiz Title" /></div>
                             <div className="createQuizDetailsExtraInfo">
                                 <p className="createQuizDetailsImageLink">Image link: <input type="text" value={imgLink} onChange={handleImgLinkChange} className="createQuizDetailsImageLinkInput" /></p>
                                 <p className="createQuizDetailsLanguage">Language: <input type="text" value={language} onChange={handleLanguageChange} /></p>
                                 <p className="createQuizDetailsPrivate">Private: <input type="checkbox" checked={privateQuiz} ref={privateCheckboxRef} onChange={handlePrivateChange} /></p>
-                                <p className="createQuizDetailsPlayCount">Play count: {playCount}</p>
-                                <p className="createQuizDetailsTimeCreated">Time created: {timeCreated}</p>
+                                <div className="createQuizDetailsStats">
+                                    <p className="createQuizDetailsPlayCount">Play count: {playCount}</p>
+                                    <p className="createQuizDetailsTimeCreated">Time created: {timeCreated}</p>
+                                </div>
                             </div>
                         </div>
 
