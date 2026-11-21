@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import apiBaseUrl from '../components/apiAdress.js'
 import { useParams } from 'react-router'
+import noImg from '../assets/noImg.png'
 
 function CreateQuizDetails() {
     const { quizid } = useParams();
@@ -112,9 +113,11 @@ function CreateQuizDetails() {
                             <img src={imgLink} alt={title} className="createQuizDetailsImage" />
                             <div className="createQuizDetailsTitle"><input type="text" value={title} onChange={handleTitleChange} className="createQuizDetailsTitleInput" placeholder="Quiz Title" /></div>
                             <div className="createQuizDetailsExtraInfo">
-                                <p className="createQuizDetailsImageLink">Image link: <input type="text" value={imgLink} onChange={handleImgLinkChange} className="createQuizDetailsImageLinkInput" /></p>
-                                <p className="createQuizDetailsLanguage">Language: <input type="text" value={language} onChange={handleLanguageChange} /></p>
-                                <p className="createQuizDetailsPrivate">Private: <input type="checkbox" checked={privateQuiz} ref={privateCheckboxRef} onChange={handlePrivateChange} /></p>
+                                <div className="createQuizDetailsExtraInfoMain">
+                                    <p className="createQuizDetailsImageLink">Image link: <input type="text" value={imgLink} onChange={handleImgLinkChange} className="createQuizDetailsImageLinkInput" /></p>
+                                    <p className="createQuizDetailsLanguage">Language: <input type="text" value={language} onChange={handleLanguageChange} /></p>
+                                    <p className="createQuizDetailsPrivate">Private: <input type="checkbox" checked={privateQuiz} ref={privateCheckboxRef} onChange={handlePrivateChange} /></p>
+                                </div>
                                 <div className="createQuizDetailsStats">
                                     <p className="createQuizDetailsPlayCount">Play count: {playCount}</p>
                                     <p className="createQuizDetailsTimeCreated">Time created: {timeCreated}</p>
@@ -125,19 +128,18 @@ function CreateQuizDetails() {
                         {questions.length > 0 && (
                             <div className="createQuizDetailsQuestions">
                                 <p className="createQuizDetailsQuestionsTitle">Questions</p>
-                                <p className="createQuizDetailsHint">Click on a question to edit it</p>
+                                <p className="createQuizDetailsHint">You can also click on a question to edit it</p>
                                 <div className="createQuizDetailsQuestionsList">
                                     {questions.map((question, index) => (
                                         <div key={index} className="createQuizDetailsQuestionItem">
                                             <a href={`/quiz/edit/${quizid}/question/${index}`} className="createQuizDetailsQuestionLink">
-                                                <img src={question.img_link} alt={`Question ${index + 1}`} className="createQuizDetailsQuestionImage" />
+                                                <img src={question.img_link || noImg} alt={`Question ${index + 1}`} className="createQuizDetailsQuestionImage" />
                                                 <div className="createQuizDetailsQuestionInfo">
-                                                    <p className="createQuizDetailsQuestionText">{question.question}</p>
-                                                    <p className="createQuizDetailsQuestionType">{question.type}</p>
+                                                    <p className="createQuizDetailsQuestionText">{question.question || "No question title"}</p>
                                                 </div>
                                             </a>
                                         </div>
-                                    ))}a
+                                    ))}
                                 </div>
                             </div>
                         )}
@@ -147,8 +149,8 @@ function CreateQuizDetails() {
                             </div>
                         )}
                         <div className="createQuizDetailsControls">
-                            <a href={`/quiz/edit/${quizid}`} className="createQuizDetailsAddQuestionButton">Add Question</a>
-                            <a href={`/quiz/${quizid}`} className="createQuizDetailsPlayButton">Go to Quiz</a>
+                            <a href={`/quiz/edit/${quizid}`} className="createQuizDetailsAddQuestionButton">Editing mode</a>
+                            <a href={`/quiz/${quizid}`} className="createQuizDetailsPlayButton">Go to quiz</a>
                         </div>
                     </>
                 ) : (
