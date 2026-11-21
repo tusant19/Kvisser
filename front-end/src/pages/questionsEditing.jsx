@@ -264,7 +264,7 @@ function QuestionsEditing() {
             });
         }
         newDraft.answers.push({
-            answer: "Answer " + (draft.answers.length + 1),
+            answer: "",
             is_correct: false
         });
         setDraft(newDraft);
@@ -431,7 +431,9 @@ function QuestionsEditing() {
             <TopBar />
             <div className="questionsEditingLayout">
                 <aside className="questionsSidebar" aria-label="Quiz questions">
+                    <button type="button" className="questionsSidebarBackToQuizEdit" onClick={function () { navigate(`/create/quiz/details/${quizid}`); }}>Back to quiz</button>
                     <div className="questionsSidebarList">
+                        
                         {questions.map(function (question, index) {
                             return (
                                 <div className="questionSidebarItemContainer" key={index}>
