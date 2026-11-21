@@ -294,6 +294,42 @@ function QuestionsEditing() {
         return questions[Number(questionid)] || null;
     }
 
+    function autoSaveDraft() {
+        if (!draft) return;
+        let question = getSelectedQuestion();
+        if (question == null || question.type !== 'multipleChoice') return;
+        if (draft.title == "") return;
+        if (draft.img_link == "") return;
+        if (draft.answers.length < 2) return;
+
+        let hasCorrectAnswer = false;
+        for (let i = 0; i < draft.answers.length; i++) {
+            if (draft.answers[i].answer == "") return;
+            if (draft.answers[i].is_correct) hasCorrectAnswer = true;
+        }
+        if (!hasCorrectAnswer) return;
+
+        axios.put(`${apiBaseUrl}/v1/quiz/edit/question/multiplechoice/${quizid}/${questionid}`, {
+            title: draft.title,
+            img_link: draft.img_link,
+            score_value: Number(draft.score_value),
+            time_given: Number(draft.time_given),
+            answers: draft.answers
+        }, { withCredentials: true })
+        .then((res) => {
+            console.log("Draft auto-saved successfully");
+        })
+        .catch((error) => {
+            console.error("Error auto-saving draft:", error);
+        });
+    }
+
+    function handleSwitch(quizId, index) {
+        autoSaveDraft();
+        navigate(`/quiz/edit/${quizId}/question/${index}`);
+    }
+
+
     function renderQuestionEditor(question) {
         if (question == null) return <p>Question not found</p>;
         if (draft == null) return <p>Loading question...</p>;
@@ -352,7 +388,7 @@ function QuestionsEditing() {
                                 <button
                                     key={question.id || index}
                                     type="button"
-                                    onClick={function () { navigate(`/quiz/edit/${quizid}/question/${index}`); }}
+                                    onClick={function () { handleSwitch(quizid, index); }}
                                     className={`questionSidebarItem ${String(questionid) === String(index) ? 'active' : ''}`}
                                 >
                                     <span className="questionSidebarNumber">{index + 1}</span>
