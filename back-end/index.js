@@ -1539,6 +1539,13 @@ app.put('/v1/quiz/edit/question/multiplechoice/:quizUuid/:orderNumber', checkQui
   if (correctAnswers.length < 1) {
     return res.status(422).json({ error: "A multiple choice question needs at least one correct answer" });
   }
+  if (title == "") return res.status(422).json({ error: "Question title is required" });
+  if (imgLink == "") return res.status(422).json({ error: "Question image is required" });
+  for (let i = 0; i < answers.length; i++) {
+    if (answers[i]?.answer == undefined || answers[i]?.answer == "") {
+      return res.status(422).json({ error: "Every answer needs text" });
+    }
+  }
 
   updateQuestion.run(title, imgLink, scoreValue, timeGiven, question.id);
   answerOptionDeleteByQuestionId.run(question.id);

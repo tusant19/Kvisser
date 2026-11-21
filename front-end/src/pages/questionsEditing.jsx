@@ -6,6 +6,7 @@ import axios from 'axios';
 import apiBaseUrl from '../components/apiAdress.js';
 import { useNavigate, useParams } from 'react-router';
 import correctSymbol from '../assets/check_24dp_505050_FILL0_wght400_GRAD0_opsz24.svg';
+import noImg from '../assets/noImg.png';
 
 function QuestionsEditing() {
     const { quizid, questionid } = useParams();
@@ -94,6 +95,26 @@ function QuestionsEditing() {
         if (!draft) return;
         let question = getSelectedQuestion();
         if (question == null || question.type !== 'multipleChoice') return;
+        if (draft.title == "" || draft.img_link == "") {
+            setError("Question title and image are required");
+            return;
+        }
+        if (draft.answers.length < 2) {
+            setError("At least two answers are required");
+            return;
+        }
+        let hasCorrectAnswer = false;
+        for (let i = 0; i < draft.answers.length; i++) {
+            if (draft.answers[i].answer == "") {
+                setError("Every answer needs text");
+                return;
+            }
+            if (draft.answers[i].is_correct) hasCorrectAnswer = true;
+        }
+        if (!hasCorrectAnswer) {
+            setError("Select at least one correct answer");
+            return;
+        }
         axios.put(`${apiBaseUrl}/v1/quiz/edit/question/multiplechoice/${quizid}/${questionid}`, {
             title: draft.title,
             img_link: draft.img_link,
@@ -110,8 +131,10 @@ function QuestionsEditing() {
         });
     }
 
-    function deleteQuestion() {
-        axios.delete(`${apiBaseUrl}/v1/quiz/edit/question/${quizid}/${questionid}`, { withCredentials: true })
+    function deleteQuestion(index) {
+        let questionIndex = index;
+        if (questionIndex == undefined) questionIndex = Number(questionid);
+        axios.delete(`${apiBaseUrl}/v1/quiz/edit/question/${quizid}/${questionIndex}`, { withCredentials: true })
         .then(function () {
             axios.get(`${apiBaseUrl}/v1/quiz/edit/details/${quizid}`, { withCredentials: true })
             .then(function (response) {
@@ -124,7 +147,7 @@ function QuestionsEditing() {
                     return;
                 }
 
-                let nextQuestionId = Number(questionid);
+                let nextQuestionId = questionIndex;
                 if (nextQuestionId >= remainingQuestions.length) {
                     nextQuestionId = remainingQuestions.length - 1;
                 }
@@ -294,6 +317,34 @@ function QuestionsEditing() {
         return questions[Number(questionid)] || null;
     }
 
+    function isIncompleteQuestion(question) {
+        if (question == null) return true;
+        if (question.title == "" || question.img_link == "") return true;
+        if (!question.answerOptions || question.answerOptions.length < 2) return true;
+
+        let hasCorrectAnswer = false;
+        for (let i = 0; i < question.answerOptions.length; i++) {
+            if (question.answerOptions[i].answer == "") return true;
+            if (question.answerOptions[i].is_correct) hasCorrectAnswer = true;
+        }
+        return !hasCorrectAnswer;
+    }
+
+    function getIncompleteReason(question) {
+        if (question == null) return "Question is incomplete";
+        if (question.title == "") return "Question title is missing";
+        if (question.img_link == "") return "Question image is missing";
+        if (!question.answerOptions || question.answerOptions.length < 2) return "At least two answers are required";
+
+        let hasCorrectAnswer = false;
+        for (let i = 0; i < question.answerOptions.length; i++) {
+            if (question.answerOptions[i].answer == "") return "An answer is missing text";
+            if (question.answerOptions[i].is_correct) hasCorrectAnswer = true;
+        }
+        if (!hasCorrectAnswer) return "No correct answer selected";
+        return "";
+    }
+
     function autoSaveDraft() {
         if (!draft) return;
         let question = getSelectedQuestion();
@@ -385,24 +436,32 @@ function QuestionsEditing() {
                     <div className="questionsSidebarList">
                         {questions.map(function (question, index) {
                             return (
-                                <button
-                                    key={question.id || index}
-                                    type="button"
-                                    onClick={function () { handleSwitch(quizid, index); }}
-                                    className={`questionSidebarItem ${String(questionid) === String(index) ? 'active' : ''}`}
-                                >
-                                    <span className="questionSidebarNumber">{index + 1}</span>
-                                    <div className="questionSidebarPreview">
-                                        <p className="questionSidebarTitle">{question.title || `Question ${index + 1}`}</p>
-                                        {question.img_link ? (
-                                            <img src={question.img_link} alt="" className="questionSidebarImage" />
-                                        ) : (
-                                            <div className="questionSidebarImagePlaceholder" aria-hidden="true" />
+                                <div className="questionSidebarItemContainer" key={index}>
+                                    <div className="questionSidebarItemControls">
+                                        <button type="button" className='questionDeleteBtn' onClick={function () { deleteQuestion(index); }}>X</button>
+                                        {isIncompleteQuestion(question) && (
+                                            <div className="warnOfIncompleteQuestion" title={getIncompleteReason(question)}>
+                                                <p className="warnOfIncompleteQuestionText">!</p>
+                                            </div>
                                         )}
-                                        <span className="questionSidebarType">{question.type || 'Multiple choice'}</span>
                                     </div>
-                                </button>
-                            );
+                                    <button
+                                        key={question.id || index}
+                                        type="button"
+                                        onClick={function () { handleSwitch(quizid, index); }}
+                                        className={`questionSidebarItem ${String(questionid) === String(index) ? 'active' : ''}`}
+                                    >   
+                                        <span className="questionSidebarNumber">{index + 1}</span>
+                                        <div className="questionSidebarPreview">
+                                            <p className="questionSidebarTitle">{question.title || 'No title given yet'}</p>
+                                            
+                                                <img src={question.img_link || noImg} alt="" className="questionSidebarImage" />
+                                            
+                                        </div>
+                                    </button>
+                                </div>
+                                
+                            )
                         })}
 
                         {hasTried && questions.length === 0 && (
