@@ -11,6 +11,7 @@ import siteBaseUrl from '../components/baseAdress';
 import { useEffect } from 'react';
 import '../Main.css'
 import correctSymbol from "../assets/check_24dp_505050_FILL0_wght400_GRAD0_opsz24.svg"
+import noImg from '../assets/noImg.png'
 
 
 function MuChoQuestion() {
@@ -345,7 +346,7 @@ function MuChoQuestion() {
             <TopBar />
             <div className='aargh'>
                 {!isFinalized && <div className='muChoQuestionImgDiv'>
-                    <img onLoad={() => handleAnswerOptions()} className='muChoQuestionImg' src={question?.img_link} alt="Question" />
+                    <img onLoad={() => handleAnswerOptions()} className='muChoQuestionImg' src={question?.img_link || noImg} alt="Question" />
                 </div>}
                 {isHost.current && isFinalized && <div className='finalizedDiv'>
                     <div className='muChoAnswerResultBarsDiv' ref={answerResultBarDivRef}>

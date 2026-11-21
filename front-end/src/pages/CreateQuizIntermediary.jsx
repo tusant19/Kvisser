@@ -5,6 +5,7 @@ import { useState, useRef } from 'react';
 import axios from 'axios';
 import apiBaseUrl from '../components/apiAdress.js';
 import siteBaseUrl from '../components/baseAdress.js';
+import noImg from '../assets/noImg.png';
 
 function CreateQuizIntermediary() {
     const quizIdRef = useRef(null);
@@ -40,7 +41,7 @@ function CreateQuizIntermediary() {
             <TopBar />
             <div className="createQuizIntermediaryPageMain">
                 <p>Create Quiz</p>
-                <img src={imgLink || 'https://via.placeholder.com/600x400'} alt="Quiz" className="quizCreateImage" />
+                <img src={imgLink || noImg} alt="Quiz" className="quizCreateImage" />
                 <input className="quizCreateIntermediaryInput" type="text" value={imgLink} onChange={(e) => setImgLink(e.target.value)} placeholder="Image Link" />
 
                 <input type="text" className="quizCreateIntermediaryInput" ref={nameRef} placeholder="Quiz Name" />

@@ -4,6 +4,7 @@ import chevronL from '../assets/chevron60L.svg';
 import chevronR from '../assets/chevron60R.svg';
 import './Carousel.css'
 import siteBaseUrl from "./baseAdress";
+import noImg from '../assets/noImg.png'
 
 function Carousel({ path, title, manualData, fontSize }) {
     const [carouselData, setCarouselData] = useState([])
@@ -202,7 +203,7 @@ function Carousel({ path, title, manualData, fontSize }) {
                     {(manualData !== undefined ? manualData : carouselData)?.map((carouselItem, id) => (
                         <div className="carouselItem" key={id} ref={el => (carouselItemRefs.current[id] = el)}>
                                 <a href={siteBaseUrl + "/quiz/" + carouselItem.uuid}>
-                                    <img className="carouselImg" src={carouselItem.img_link} onLoad={getItemSizes} alt="quiz image" />
+                                    <img className="carouselImg" src={carouselItem.img_link || noImg} onLoad={getItemSizes} alt="quiz image" />
                                 </a>
                             <p className="carouselItemTitle">{carouselItem.title}</p>
                         </div>

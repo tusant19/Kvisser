@@ -5,6 +5,7 @@ import axios from "axios";
 import { useState, useEffect } from 'react';
 import apiBaseUrl from '../components/apiAdress.js';
 import siteBaseUrl from '../components/baseAdress.js';
+import noImg from '../assets/noImg.png';
 
 function MyQuizzes() {
     const [quizzes, setQuizzes] = useState([]);
@@ -37,7 +38,7 @@ function MyQuizzes() {
                         quizzes.map((quiz, index) => (
                             <a href={`${siteBaseUrl}/create/quiz/details/${quiz.uuid}`} key={index} className="myQuizzesListItemLink">
                                 <div key={index} className="myQuizzesListItem">
-                                    <img src={quiz.img_link} alt={quiz.title} className="myQuizzesListItemImage" />
+                                    <img src={quiz.img_link || noImg} alt={quiz.title} className="myQuizzesListItemImage" />
                                     <p className="myQuizzesListItemTitle">{quiz.title}</p>
                                 </div>
                             </a>

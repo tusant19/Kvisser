@@ -432,7 +432,7 @@ function QuestionsEditing() {
                 <div className="multipleChoiceEditor">
                     <input type="text" value={draft.img_link} onChange={changeQuestionImage} className="questionEditorImageLink" placeholder="Image link" />
                     <div className="questionEditorImageDiv">
-                        {draft.img_link && <img src={draft.img_link} alt="" className="questionEditorImage" />}
+                        {draft.img_link && <img src={draft.img_link || noImg} alt="" className="questionEditorImage" />}
                     </div>
                     <input type="text" value={draft.title} onChange={changeQuestionTitle} className="questionEditorTitle" placeholder="Question" />
 

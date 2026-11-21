@@ -5,6 +5,7 @@ import axios from "axios";
 import { useState, useEffect, useRef } from 'react';
 import apiBaseUrl from '../components/apiAdress.js';
 import siteBaseUrl from '../components/baseAdress.js';
+import noImg from '../assets/noImg.png';
 
 function Search() {
     const searchInputRef = useRef(null);
@@ -51,7 +52,7 @@ function Search() {
                             {searchResults.map((result, index) => (
                                 <a href={`${siteBaseUrl}/quiz/${result.uuid}`} key={index} className="searchResultItemLink">
                                     <div key={index} className="searchResultItem">
-                                        <img src={result.img_link} alt={result.title} className="searchResultImage" />
+                                        <img src={result.img_link || noImg} alt={result.title} className="searchResultImage" />
                                         <p className="searchResultTitle">{result.title}</p>
                                     </div>
                                 </a>
