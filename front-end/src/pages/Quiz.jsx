@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import './Quiz.css'
 import { useParams } from 'react-router';
 import apiBaseUrl from '../components/apiAdress.js';
+import noImg from '../assets/noImg.png'
 
 function Quiz(props) {
     
@@ -98,7 +99,7 @@ function Quiz(props) {
                     </div>
                 <div className='quizDetailsDiv'>
                     <div className='quizImgDiv'>
-                        <img className='quizImg' src={imgLink} alt="quizImg" />
+                        <img className='quizImg' src={imgLink || noImg} alt="quizImg" />
                     </div>
                     
                     <div className='quizTitleDiv'>
@@ -111,7 +112,7 @@ function Quiz(props) {
                     {questions.map((question, index) => (
                         <div className='questionDiv' key={index}>
                             <div className='questionImgDiv'>
-                                <img className='questionImg' src={question.question} alt="questionImg" />
+                                <img className='questionImg' src={question.img_link || noImg} alt="questionImg" />
                             </div>
                             
                             <div className='questionTitleDiv'>

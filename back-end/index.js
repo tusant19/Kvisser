@@ -830,7 +830,7 @@ app.get('/v1/quiz/:uuid', checkQuizAccess, (req, res) => {
   let sanitizedQuestions = []
   for (let question of questions) {
     //console.log("loop")
-    sanitizedQuestions.push({ "title": question.title, "question": question.img_link })
+    sanitizedQuestions.push({ "title": question.title, "img_link": question.img_link })
   }
   if (quiz[0] == undefined) {
     return res.status(404).send("quiz not found")
