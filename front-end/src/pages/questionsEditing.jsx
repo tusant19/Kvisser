@@ -95,8 +95,8 @@ function QuestionsEditing() {
         if (!draft) return;
         let question = getSelectedQuestion();
         if (question == null || question.type !== 'multipleChoice') return;
-        if (draft.title == "" || draft.img_link == "") {
-            setError("Question title and image are required");
+        if (draft.title == "") {
+            setError("Question title is required");
             return;
         }
         if (draft.answers.length < 2) {
@@ -319,7 +319,7 @@ function QuestionsEditing() {
 
     function isIncompleteQuestion(question) {
         if (question == null) return true;
-        if (question.title == "" || question.img_link == "") return true;
+        if (question.title == "") return true;
         if (!question.answerOptions || question.answerOptions.length < 2) return true;
 
         let hasCorrectAnswer = false;
@@ -333,7 +333,6 @@ function QuestionsEditing() {
     function getIncompleteReason(question) {
         if (question == null) return "Question is incomplete";
         if (question.title == "") return "Question title is missing";
-        if (question.img_link == "") return "Question image is missing";
         if (!question.answerOptions || question.answerOptions.length < 2) return "At least two answers are required";
 
         let hasCorrectAnswer = false;
@@ -350,7 +349,6 @@ function QuestionsEditing() {
         let question = getSelectedQuestion();
         if (question == null || question.type !== 'multipleChoice') return;
         if (draft.title == "") return;
-        if (draft.img_link == "") return;
         if (draft.answers.length < 2) return;
 
         let hasCorrectAnswer = false;
