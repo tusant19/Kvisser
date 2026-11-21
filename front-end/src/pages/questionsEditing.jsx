@@ -95,36 +95,32 @@ function QuestionsEditing() {
         if (!draft) return;
         let question = getSelectedQuestion();
         if (question == null || question.type !== 'multipleChoice') return;
-        if (draft.title == "") {
-            setError("Question title is required");
+        let incompleteReason = getDraftIncompleteReason();
+        if (incompleteReason != "") {
+            setError(incompleteReason);
             return;
         }
-        if (draft.answers.length < 2) {
-            setError("At least two answers are required");
-            return;
-        }
-        let hasCorrectAnswer = false;
-        for (let i = 0; i < draft.answers.length; i++) {
-            if (draft.answers[i].answer == "") {
-                setError("Every answer needs text");
-                return;
-            }
-            if (draft.answers[i].is_correct) hasCorrectAnswer = true;
-        }
-        if (!hasCorrectAnswer) {
-            setError("Select at least one correct answer");
-            return;
-        }
-        axios.put(`${apiBaseUrl}/v1/quiz/edit/question/multiplechoice/${quizid}/${questionid}`, {
+        let requestData = {
             title: draft.title,
             img_link: draft.img_link,
             score_value: Number(draft.score_value),
             time_given: Number(draft.time_given),
             answers: draft.answers
-        }, { withCredentials: true })
-        .then(function () {
+        };
+
+        let saveRequest;
+        if (question.id == null) {
+            saveRequest = axios.put(`${apiBaseUrl}/v1/create/question/multiplechoice/${quizid}`, requestData, { withCredentials: true });
+        } else {
+            saveRequest = axios.put(`${apiBaseUrl}/v1/quiz/edit/question/multiplechoice/${quizid}/${questionid}`, requestData, { withCredentials: true });
+        }
+
+        saveRequest.then(function (response) {
             setError("");
             fetchQuestions();
+            if (question.id == null && response.data.orderNumber != undefined) {
+                navigate(`/quiz/edit/${quizid}/question/${response.data.orderNumber}`);
+            }
         })
         .catch(function (error) {
             setError(error.response && error.response.data ? error.response.data.error : "Failed to save question");
@@ -134,6 +130,23 @@ function QuestionsEditing() {
     function deleteQuestion(index) {
         let questionIndex = index;
         if (questionIndex == undefined) questionIndex = Number(questionid);
+        let question = questions[questionIndex];
+        if (question && question.id == null) {
+            let remainingQuestions = [];
+            for (let i = 0; i < questions.length; i++) {
+                if (i != questionIndex) remainingQuestions.push(questions[i]);
+            }
+            setQuestions(remainingQuestions);
+            setDraft(null);
+            if (remainingQuestions.length == 0) {
+                navigate(`/quiz/edit/${quizid}`);
+                return;
+            }
+            let nextQuestionId = questionIndex;
+            if (nextQuestionId >= remainingQuestions.length) nextQuestionId = remainingQuestions.length - 1;
+            navigate(`/quiz/edit/${quizid}/question/${nextQuestionId}`);
+            return;
+        }
         axios.delete(`${apiBaseUrl}/v1/quiz/edit/question/${quizid}/${questionIndex}`, { withCredentials: true })
         .then(function () {
             axios.get(`${apiBaseUrl}/v1/quiz/edit/details/${quizid}`, { withCredentials: true })
@@ -165,6 +178,8 @@ function QuestionsEditing() {
     function moveQuestion(direction) {
         if (direction === -1 && Number(questionid) <= 0) return;
         if (direction === 1 && Number(questionid) >= questions.length - 1) return;
+        let question = getSelectedQuestion();
+        if (question && question.id == null) return;
         axios.put(`${apiBaseUrl}/v1/quiz/edit/question/order/${quizid}/${questionid}`, {
             direction: direction
         }, { withCredentials: true })
@@ -177,15 +192,26 @@ function QuestionsEditing() {
     }
 
     function createMultipleChoice() {
-        axios.put(`${apiBaseUrl}/v1/create/question/multiplechoice/${quizid}`, {}, { withCredentials: true })
-        .then(function (response) {
-            fetchQuestions();
-            navigate(`/quiz/edit/${quizid}/question/${response.data.orderNumber}`);
-        })
-        .catch(function (error) {
-            console.error("Error creating multiple choice question:", error);
-            setError(error.response && error.response.data ? error.response.data.error : "Failed to create question");
-        });
+        let newQuestion = {
+            id: null,
+            title: "",
+            img_link: "",
+            type: "multipleChoice",
+            score_value: 1000,
+            time_given: 30,
+            answerOptions: [
+                { id: null, answer: "", order_number: 1, is_correct: false },
+                { id: null, answer: "", order_number: 2, is_correct: false }
+            ]
+        };
+        let newQuestions = [];
+        for (let i = 0; i < questions.length; i++) {
+            newQuestions.push(questions[i]);
+        }
+        newQuestions.push(newQuestion);
+        setQuestions(newQuestions);
+        setError("");
+        navigate(`/quiz/edit/${quizid}/question/${newQuestions.length - 1}`);
     }
 
     function changeQuestionTitle(event) {
@@ -344,29 +370,47 @@ function QuestionsEditing() {
         return "";
     }
 
+    function getDraftIncompleteReason() {
+        if (!draft) return "Question is incomplete";
+        if (draft.title == "") return "Question title is missing";
+        if (draft.answers.length < 2) return "At least two answers are required";
+
+        let hasCorrectAnswer = false;
+        for (let i = 0; i < draft.answers.length; i++) {
+            if (draft.answers[i].answer == "") return "An answer is missing text";
+            if (draft.answers[i].is_correct) hasCorrectAnswer = true;
+        }
+        if (!hasCorrectAnswer) return "No correct answer selected";
+        if (Number(draft.time_given) <= 0) return "Time must be greater than zero";
+        if (Number(draft.score_value) < 0) return "Score cannot be negative";
+        return "";
+    }
+
     function autoSaveDraft() {
         if (!draft) return;
         let question = getSelectedQuestion();
         if (question == null || question.type !== 'multipleChoice') return;
-        if (draft.title == "") return;
-        if (draft.answers.length < 2) return;
+        if (getDraftIncompleteReason() != "") return;
 
-        let hasCorrectAnswer = false;
-        for (let i = 0; i < draft.answers.length; i++) {
-            if (draft.answers[i].answer == "") return;
-            if (draft.answers[i].is_correct) hasCorrectAnswer = true;
-        }
-        if (!hasCorrectAnswer) return;
-
-        axios.put(`${apiBaseUrl}/v1/quiz/edit/question/multiplechoice/${quizid}/${questionid}`, {
+        let requestData = {
             title: draft.title,
             img_link: draft.img_link,
             score_value: Number(draft.score_value),
             time_given: Number(draft.time_given),
             answers: draft.answers
-        }, { withCredentials: true })
+        };
+
+        let saveRequest;
+        if (question.id == null) {
+            saveRequest = axios.put(`${apiBaseUrl}/v1/create/question/multiplechoice/${quizid}`, requestData, { withCredentials: true });
+        } else {
+            saveRequest = axios.put(`${apiBaseUrl}/v1/quiz/edit/question/multiplechoice/${quizid}/${questionid}`, requestData, { withCredentials: true });
+        }
+
+        saveRequest
         .then((res) => {
             console.log("Draft auto-saved successfully");
+            if (question.id == null) fetchQuestions();
         })
         .catch((error) => {
             console.error("Error auto-saving draft:", error);
@@ -438,9 +482,9 @@ function QuestionsEditing() {
                             return (
                                 <div className="questionSidebarItemContainer" key={index}>
                                     <div className="questionSidebarItemControls">
-                                        <button type="button" className='questionDeleteBtn' onClick={function () { deleteQuestion(index); }}>X</button>
+                                        <button type="button" className='questionDeleteBtn' title="Delete" onClick={function () { deleteQuestion(index); }}>X</button>
                                         {isIncompleteQuestion(question) && (
-                                            <div className="warnOfIncompleteQuestion" title={getIncompleteReason(question)}>
+                                            <div className="warnOfIncompleteQuestion" title={getIncompleteReason(question) + ". This question will not be saved unless you complete it."}>
                                                 <p className="warnOfIncompleteQuestionText">!</p>
                                             </div>
                                         )}

@@ -453,7 +453,7 @@
     place-items: center;
     border: 1px solid var(--border1);
     border-radius: 50%;
-    background: white;
+    background: var(--warn1);
 }
 
 .warnOfIncompleteQuestionText {

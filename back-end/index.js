@@ -1507,15 +1507,38 @@ app.put('/v1/create/question/multiplechoice/:quizUuid', checkQuizAccessForEdit, 
   let quiz = quizGetByUuid.get(req.params?.quizUuid);
   if (quiz == undefined) return res.sendStatus(404);
 
+  let title = req.body?.title;
+  let imgLink = req.body?.img_link;
+  let scoreValue = req.body?.score_value;
+  let timeGiven = req.body?.time_given;
+  let answers = req.body?.answers;
+
+  if (title == undefined || title == "" || scoreValue == undefined || timeGiven == undefined || !Array.isArray(answers) || answers.length < 2 || answers.length > 4) {
+    return res.status(422).json({ error: "Incomplete multiple choice question" });
+  }
+  if (imgLink == undefined) imgLink = "";
+  if (!Number.isInteger(Number(scoreValue)) || Number(scoreValue) < 0) return res.status(422).json({ error: "Invalid score" });
+  if (!Number.isInteger(Number(timeGiven)) || Number(timeGiven) <= 0) return res.status(422).json({ error: "Invalid time" });
+
+  let hasCorrectAnswer = false;
+  for (let i = 0; i < answers.length; i++) {
+    if (answers[i]?.answer == undefined || answers[i]?.answer == "") {
+      return res.status(422).json({ error: "Every answer needs text" });
+    }
+    if (answers[i].is_correct) hasCorrectAnswer = true;
+  }
+  if (!hasCorrectAnswer) return res.status(422).json({ error: "No correct answer selected" });
+
   let questions = getQuestions.all(quiz.id);
   let orderNumber = questions.length + 1;
-  questionInsert.run(quiz.id, "multipleChoice", orderNumber, "", 1000, 30, "");
+  questionInsert.run(quiz.id, "multipleChoice", orderNumber, imgLink, Number(scoreValue), Number(timeGiven), title);
   let question = getQuestion.get(quiz.id, orderNumber);
   if (question == undefined) return res.sendStatus(500);
 
   answerOptionDeleteByQuestionId.run(question.id);
-  answerOptionInsert.run(question.id, "", 1, 0);
-  answerOptionInsert.run(question.id, "", 2, 0);
+  for (let i = 0; i < answers.length; i++) {
+    answerOptionInsert.run(question.id, answers[i].answer, i + 1, answers[i].is_correct ? 1 : 0);
+  }
   return res.status(200).json({ orderNumber: orderNumber - 1 });
 });
 
@@ -1531,15 +1554,22 @@ app.put('/v1/quiz/edit/question/multiplechoice/:quizUuid/:orderNumber', checkQui
   let timeGiven = req.body?.time_given;
   let answers = req.body?.answers;
 
-  if (title == undefined || imgLink == undefined || scoreValue == undefined || timeGiven == undefined || !Array.isArray(answers) || answers.length < 2 || answers.length > 4) {
+  if (title == undefined || scoreValue == undefined || timeGiven == undefined || !Array.isArray(answers) || answers.length < 2 || answers.length > 4) {
     return res.status(422).json({ error: "Invalid multiple choice question" });
   }
+  if (imgLink == undefined) imgLink = "";
 
   let correctAnswers = answers.filter(answer => answer.is_correct);
   if (correctAnswers.length < 1) {
     return res.status(422).json({ error: "A multiple choice question needs at least one correct answer" });
   }
   if (title == "") return res.status(422).json({ error: "Question title is required" });
+  if (!Number.isInteger(Number(scoreValue)) || Number(scoreValue) < 0) {
+    return res.status(422).json({ error: "Invalid score" });
+  }
+  if (!Number.isInteger(Number(timeGiven)) || Number(timeGiven) <= 0) {
+    return res.status(422).json({ error: "Invalid time" });
+  }
   for (let i = 0; i < answers.length; i++) {
     if (answers[i]?.answer == undefined || answers[i]?.answer == "") {
       return res.status(422).json({ error: "Every answer needs text" });
