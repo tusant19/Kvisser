@@ -1,0 +1,24 @@
+.gameResultsPageMain {
+    min-height: 85.5vh;
+    background-color: var(--bg1);
+}
+
+.gameResultsPageMain p,
+.gameResultsPageMain a {
+    margin: 0;
+    text-decoration: none;
+    color: var(--text1);
+}
+
+.gameResultsQuestionCollapseContent {
+    display: none;
+    flex-direction: column;
+    gap: 1vh;
+    margin-bottom: 1.5vh;
+}
+
+.gameResultsQuestionAnswerItem {
+    display: flex;
+    flex-direction: row;
+    gap: 1vw;
+}

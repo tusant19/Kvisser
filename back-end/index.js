@@ -38,27 +38,6 @@ function setInactivePlayers(room) {
   let playerCount = getPlayerCount.all(room);
   //console.log(playerCount)
 
-  let host = getHostUuid.get(room);
-  let hostInactive = false;
-  if (host == undefined || host.socket_id == undefined || !io.sockets.adapter.sids.has(host.socket_id)) {
-    hostInactive = true;
-  }
-  if (hostInactive) {
-    //wait 5 seconds to see if host reconnects
-    setTimeout(() => {
-      let host = getHostUuid.get(room);
-      let hostInactive = false;
-      if (host == undefined || host.socket_id == undefined || !io.sockets.adapter.sids.has(host.socket_id)) {
-        hostInactive = true;
-      }
-      if (hostInactive) {
-        // If the host is still inactive, mark the room as inactive
-        console.log("host inactive, marking room as inactive: " + room)
-        gameInactive.run(room);
-      }
-    }, 5000);
-  }
-
   io.to(room).emit("playerCount", playerCount[0]['COUNT(*)'])
   sendPlayersToHost(room);
 };
@@ -95,29 +74,23 @@ io.on("connection", (socket) => {
     if (!uuid) return;
     socket.join(roomCode + "host")
     updateSocket.run(socket.id, 1, uuid)
+    reactivateGame.run(roomCode)
     sendPlayersToHost(roomCode);
     
   })
   socket.on("nextQuestion", (roomCode, uuid) => {
     console.log("nextQuestion: " + roomCode)
     setInactivePlayers(roomCode)
-    //console.log("nextQuestion: " + roomCode)
     let host = getHostUuid.get(roomCode);
     let questionCount = getQuestionCountByRoomCode.all((roomCode))
     let gameState = getGameState.get(roomCode)
-    //console.log("gameState: " + gameState?.state)
     let game = gameCheck.all(roomCode)
     let questionType = getQuestionType.get(game[0]?.quiz_id, (Math.floor(gameState?.state / 2) + 1))
-    //console.log("questionType: " + questionType?.type)
     if (host?.uuid == uuid) {
-      //console.log("host is correct")
       if (gameState?.state < (questionCount[0]['COUNT(*)'] * 2)) {
-        //console.log("gameState check pass")
-        //console.log("emit " + roomCode)
-        io.to(roomCode).to(roomCode + "host").emit("nextQuestionSwap", (questionType?.type));
         updapteGameState.run(gameState?.state + 2, roomCode)
         addGameStateChange.run(roomCode, gameState?.state + 2, Date.now());
-
+        io.to(roomCode).to(roomCode + "host").emit("nextQuestionSwap", (questionType?.type));
       }
     }
   });
@@ -131,22 +104,30 @@ io.on("connection", (socket) => {
     let questionType = getQuestionTypeByRoomCodeAndOrder.get(roomCode, (Math.floor(gameState?.state / 2) + 1))
     if (host?.uuid == uuid) {
       if (gameState?.state < questionCount) {
-        io.to(roomCode).to(roomCode + "host").emit("nextQuestionSwap", (questionType?.type));
         updapteGameState.run(gameState?.state + 2, roomCode)
         addGameStateChange.run(roomCode, gameState?.state + 2, Date.now());
+        io.to(roomCode).to(roomCode + "host").emit("nextQuestionSwap", (questionType?.type));
       }
     }
   });
   socket.on("disconnect", () => {
-    //console.log("disconnect");
     let player = getPlayerBySocket.all(socket.id)
     if (player[0] != undefined) {
       let room = player[0]?.game_code
       setInactivePlayers(room);
+      if (player[0]?.role == "host") {
+        setTimeout(() => {
+          let host = getHostUuid.get(room);
+          let hostStillConnected = host?.socket_id != undefined
+            && io.sockets.adapter.sids.has(host.socket_id);
+          if (!hostStillConnected) {
+            gameInactive.run(room);
+          }
+        }, 5000);
+      }
     }
   });
   socket.on("skipQuestion", (roomCode, uuid) => {
-    console.log("skipQuestion: " + roomCode)
     let host = getHostUuid.get(roomCode);
     let questionCount = getQuestionCountByRoomCode.all((roomCode))[0]['COUNT(*)'] * 2
     let gameState = getGameState.get(roomCode);
@@ -154,9 +135,9 @@ io.on("connection", (socket) => {
 
     if (host?.uuid == uuid) {
       if (gameState?.state < questionCount) {
-        io.to(roomCode).to(roomCode + "host").emit("skipQuestion", (questionType?.type));
         updapteGameState.run(gameState?.state + 2, roomCode)
         addGameStateChange.run(roomCode, gameState?.state + 2, Date.now());
+        io.to(roomCode).to(roomCode + "host").emit("skipQuestion", (questionType?.type));
       }
     }
   });
@@ -213,6 +194,7 @@ db.exec(`
     score INTEGER,
     socket_id TEXT,
     connected INTEGER,
+    game_uuid TEXT,
     role TEXT
   );
 `); 
@@ -268,6 +250,7 @@ db.exec(`
     player_uuid TEXT,
     answer TEXT,
     answer_time INTEGER,
+    game_uuid TEXT,
     is_correct INTEGER
   );
 `);
@@ -313,20 +296,23 @@ const gameInsert = db.prepare('INSERT INTO games (user_id, room_code, capacity, 
 const gameDelete = db.prepare('DELETE FROM games WHERE user_id = -1');
 const gameCheck = db.prepare('SELECT * FROM games WHERE room_code = ? AND active = 1 LIMIT 1');
 const gameInactive = db.prepare('UPDATE games SET active = 0 WHERE room_code = ? AND active = 1');
+const reactivateGame = db.prepare('UPDATE games SET active = 1 WHERE room_code = ?');
 const getGameState = db.prepare('SELECT state FROM games WHERE room_code = ? LIMIT 1');
 const updateQuizIdInGame = db.prepare('UPDATE games SET quiz_id = ? WHERE room_code = ? AND active = 1');
 const updapteGameState = db.prepare('UPDATE games SET state = ? WHERE room_code = ? AND active = 1');
 const getGamesByUserId = db.prepare('SELECT * FROM games WHERE user_id = ? ORDER BY time_started DESC');
 const updateGameTime = db.prepare('UPDATE games SET time_started = ? WHERE room_code = ? AND active = 1');
 const updateGameUuid = db.prepare('UPDATE games SET public_uuid = ? WHERE room_code = ? AND active = 1');
+const getGameByUuid = db.prepare('SELECT * FROM games WHERE public_uuid = ? LIMIT 1');
+const getGameByCode = db.prepare('SELECT * FROM games WHERE room_code = ? AND active = 1 LIMIT 1');
 
-const playerInsert = db.prepare('INSERT INTO game_players (game_id, game_code, time_joined, user_id, uuid, name, score) VALUES (?, ?, ?, ?, ?, ?, ?)');
+const playerInsert = db.prepare('INSERT INTO game_players (game_id, game_code, time_joined, user_id, uuid, name, score, game_uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
 const getPlayer = db.prepare('SELECT * FROM game_players WHERE uuid = ? ORDER BY time_joined DESC')
 const getPlayerBySocket = db.prepare('SELECT * FROM game_players WHERE socket_id = ? ORDER BY time_joined DESC LIMIT 1')
 const deletePlayerBySocket = db.prepare('DELETE FROM game_players WHERE socket_id = ?')
 const getPlayerCount = db.prepare('SELECT COUNT(*) FROM game_players WHERE game_code = ? AND connected = 1 AND role != \'host\'')
 const getPlayers = db.prepare('SELECT * FROM game_players WHERE game_code = ? AND connected = 1 AND role != ? ORDER BY time_joined ASC')
-const hostInsert = db.prepare('INSERT INTO game_players (game_id, game_code, time_joined, user_id, uuid, name, score, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
+const hostInsert = db.prepare('INSERT INTO game_players (game_id, game_code, time_joined, user_id, uuid, name, score, role, game_uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
 const getHostUuid = db.prepare('SELECT * FROM game_players WHERE game_code = ? AND role = \'host\' ORDER BY time_joined DESC LIMIT 1')
 const setAsPlayerByUuid = db.prepare('UPDATE game_players SET role = ? WHERE uuid = ?')
 const setAsPlayerByName = db.prepare('UPDATE game_players SET role = ? WHERE name = ?')
@@ -334,6 +320,7 @@ const updatePlayerScore = db.prepare('UPDATE game_players SET score = ? WHERE uu
 const getPlayersSortedScore = db.prepare('SELECT * FROM game_players WHERE game_code = ? AND connected = 1 AND role != \'host\' ORDER BY score DESC, time_joined ASC')
 const getPlayersSortedScoreNoConnect = db.prepare('SELECT * FROM game_players WHERE game_code = ? AND role != \'host\' ORDER BY score DESC, time_joined ASC')
 const getPlayersPlace = db.prepare('SELECT COUNT(*) FROM game_players WHERE game_code = ? AND connected = 1 AND role != \'host\' AND score > (SELECT score FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1)')
+const getPlayersLeaderboardAfter = db.prepare('SELECT * FROM game_players WHERE game_uuid = ? AND role != \'host\' ORDER BY score DESC, time_joined')
 
 const markPlayerInactive = db.prepare('UPDATE game_players SET connected = 0 WHERE socket_id = ?')
 const updateSocket = db.prepare('UPDATE game_players SET socket_id = ?, connected = ? WHERE id = (SELECT id FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1)')
@@ -369,8 +356,7 @@ const getCorrectAnswerByQuestionId = db.prepare('SELECT * FROM answer_options WH
 const getCorrectAnswersByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? AND is_correct = 1');
 const getAnswerOptionsByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? ORDER BY order_number ASC');
 
-
-const insertAnswerForPlayer = db.prepare('INSERT INTO game_answers (game_code, question_id, player_uuid, answer, is_correct, answer_time) VALUES (?, ?, ?, ?, ?, ?)');
+const insertAnswerForPlayer = db.prepare('INSERT INTO game_answers (game_code, question_id, player_uuid, answer, is_correct, answer_time, game_uuid) VALUES (?, ?, ?, ?, ?, ?, ?)');
 const hasAnswered = db.prepare('SELECT * FROM game_answers WHERE game_code = ? AND question_id = ? AND player_uuid = ? LIMIT 1');
 const updateCorrectnessForPlayer = db.prepare('UPDATE game_answers SET is_correct = ? WHERE game_code = ? AND question_id = ? AND player_uuid = ?');
 const getCorrectnessForPlayer = db.prepare('SELECT is_correct FROM game_answers WHERE game_code = ? AND question_id = ? AND player_uuid = ? LIMIT 1');
@@ -378,6 +364,8 @@ const isCorrectAnswer = db.prepare('SELECT is_correct FROM game_answers WHERE ga
 const getAnswerCountForQuestion = db.prepare('SELECT COUNT(*) FROM game_answers WHERE game_code = ? AND question_id = ?');
 const getAnswersForQuestion = db.prepare('SELECT * FROM game_answers WHERE game_code = ? AND question_id = ?');
 const getLatestCorrectnessForPlayer = db.prepare('SELECT is_correct FROM game_answers WHERE game_code = ? AND player_uuid = ? ORDER BY answer_time DESC LIMIT 1');
+const getAnswersForGame = db.prepare('SELECT * FROM game_answers WHERE game_uuid = ? ORDER BY answer_time ASC');
+const getAnswersForQuestionInGame = db.prepare('SELECT * FROM game_answers WHERE game_uuid = ? AND question_id = ? ORDER BY answer_time ASC');
 
 const addGameStateChange = db.prepare('INSERT INTO game_state_changes (game_code, state, time_changed) VALUES (?, ?, ?)');
 const getLatestGameStateChange = db.prepare('SELECT * FROM game_state_changes WHERE game_code = ? ORDER BY time_changed DESC LIMIT 1');
@@ -541,6 +529,40 @@ function checkQuizAccessForEdit(req, res, next) {
     return res.sendStatus(404);
   }
   if (quiz[0].user_id !== userThatRequested[0].user_id) {
+    return res.sendStatus(401);
+  }
+  return next();
+}
+
+function checkWasHost(req, res, next) {
+  let token = req?.cookies?.sessionToken
+  if (token === null || token === undefined) {
+    console.log("no token")
+    return res.sendStatus(401);
+  }
+  let sessionThatRequested = getUserIdByToken.all(token);
+  if (sessionThatRequested[0] === undefined) {
+    console.log("invalid token")
+    return res.sendStatus(401);
+  }
+  let userThatRequested = getuserById.get(sessionThatRequested[0].user_id);
+  if (userThatRequested == undefined) {
+    console.log("invalid user")
+    return res.sendStatus(401);
+  }
+  let gameUuid = req.params.gameUuid;
+  if (gameUuid === undefined) {
+    return res.sendStatus(400);
+  }
+  let game = getGameByUuid.all(gameUuid);
+  if (game.length === 0) {
+    return res.sendStatus(404);
+  }
+  if (game[0].user_id !== userThatRequested?.public_uuid) {
+    console.log("user is not the host of this game")
+    console.log("game[0].user_id: " + game[0].user_id)
+    console.log("userThatRequested[0]: " + JSON.stringify(userThatRequested))
+    console.log("userThatRequested[0].public_uuid: " + userThatRequested?.public_uuid)
     return res.sendStatus(401);
   }
   return next();
@@ -785,7 +807,7 @@ app.put('/v1/joinRoom', async (req, res) => {
           playerId = user[0]?.user_id
         }
         let name = req.body.name + "-" + uuid.slice(0,3)
-        playerInsert.run(gameId, caseUpperCode, Date.now(), playerId, uuid, name, 0)
+        playerInsert.run(gameId, caseUpperCode, Date.now(), playerId, uuid, name, 0, gameExists[0]?.public_uuid);
         setAsPlayerByName.run("player", name)
       }
       
@@ -900,7 +922,7 @@ app.put('/v1/host/:uuid', checkQuizAccess, (req, res) => {
   let quiz = quizGetByUuid.all(req.params?.uuid);
   updateQuizIdInGame.run(quiz[0]?.id, gamecode);
   let game = gameCheck.all(gamecode);
-  hostInsert.run(game[0]?.id, gamecode, Date.now(), uuidGivenToClient, uuidGivenToClient, "host", 0, "host");
+  hostInsert.run(game[0]?.id, gamecode, Date.now(), uuidGivenToClient, uuidGivenToClient, "host", 0, "host", game[0]?.public_uuid);
   res.cookie('playerUuid', uuidGivenToClient, { maxAge: (3600000), httpOnly: true })
   res.status(200)
   res.json(
@@ -982,7 +1004,8 @@ app.put('/v1/answer/:roomCode', (req, res) => {
   if (hasAlreadyAnswered != undefined) {
     return res.sendStatus(409)
   }
-  insertAnswerForPlayer.run(req.params?.roomCode, question[0]?.id, player[0]?.uuid, orderNumber, 0, Date.now())
+  let game = getGameByCode.all(req.params?.roomCode)
+  insertAnswerForPlayer.run(req.params?.roomCode, question[0]?.id, player[0]?.uuid, orderNumber, 0, Date.now(), game[0]?.public_uuid)
   let correctAnswers = getCorrectAnswersByQuestionId.all(question[0]?.id)
   let isCorrectAnswerSelected = false
   for (let i = 0; i < correctAnswers.length; i++) {
@@ -1128,7 +1151,8 @@ app.put('/v1/autolateanswer/:roomCode', (req, res) => {
     return res.sendStatus(409)
   }
   console.log("inserting late answer for player " + player[0]?.uuid + " for question " + question[0]?.id)
-  insertAnswerForPlayer.run(req.params?.roomCode, question[0]?.id, player[0]?.uuid, null, 2, Date.now())
+  let game = getGameByCode.all(req.params?.roomCode)
+  insertAnswerForPlayer.run(req.params?.roomCode, question[0]?.id, player[0]?.uuid, null, 2, Date.now(), game[0]?.public_uuid)
   return res.sendStatus(200)
 });
 
@@ -1652,6 +1676,9 @@ app.get('/v1/account/:uuid/games', checkAccountAccess, (req, res) => {
   }
   let sanitizedGames = []
   for (let i = 0; i < games.length; i++) {
+    if (games[i]?.state == 0) {
+      continue; // Skip games that never got started
+    }
     let quiz = quizGetById.all(games[i]?.quiz_id)
     sanitizedGames.push({
       title: quiz[0]?.title,
@@ -1664,6 +1691,74 @@ app.get('/v1/account/:uuid/games', checkAccountAccess, (req, res) => {
   return res.json(
     {
       games: sanitizedGames
+    }
+  )
+})
+
+app.get('/v1/gamedetails/:gameUuid', checkWasHost, (req, res) => {
+  let game = getGameByUuid.all(req.params?.gameUuid)
+  if (game[0] == undefined) {
+    return res.sendStatus(404)
+  }
+  let questions = getQuestions.all(game[0]?.quiz_id) 
+  let sanitizedQuestions = [];
+  for (let i = 0; i < questions?.length; i++) {
+    sanitizedQuestions.push({
+      id: questions[i]?.id,
+      order_number: questions[i]?.order_number,
+      title: questions[i]?.title,
+      img_link: questions[i]?.img_link,
+      type: questions[i]?.type,
+      score_value: questions[i]?.score_value,
+      time_given: questions[i]?.time_given,
+      randomize_order: questions[i]?.randomize_order === 1
+    });
+  }
+  let answers = []
+  for (let i = 0; i < questions?.length; i++) {
+    let questionAnswers = getAnswersForQuestionInGame.all(game[0]?.public_uuid, questions[i].id)
+    answers[i] = questionAnswers;
+  }
+  let sanitizedAnswers = []
+  for (let i = 0; i < questions?.length; i++) {
+    let sanitizedQuestionAnswers = []
+    for (let j = 0; j < answers[i]?.length; j++) {
+      let player = getPlayer.all(answers[i][j]?.player_uuid)
+      let answerOptions = getAnswerOptionsByQuestionId.all(questions[i]?.id)
+      sanitizedQuestionAnswers.push({
+        playerName: player[0]?.name,
+        correct: answers[i][j]?.is_correct === 1,
+        wasLate: answers[i][j]?.is_correct === 2,
+        answer: answerOptions[Number(answers[i][j]?.answer) - 1]?.answer,
+        timeTaken: answers[i][j]?.time_taken,
+        score: answers[i][j]?.score
+      })
+    }
+    sanitizedAnswers.push({
+      questionOrder: questions[i]?.order_number,
+      inner_answers: sanitizedQuestionAnswers
+    })
+  }
+  
+  let players = getPlayersLeaderboardAfter.all(game[0]?.public_uuid)
+  let sanitizedPlayers = []
+  for (let i = 0; i < players?.length; i++) {
+    sanitizedPlayers.push({
+      name: players[i]?.name,
+      score: players[i]?.score,
+      place: i + 1
+    })
+  }
+  let quiz = quizGetById.all(game[0]?.quiz_id)
+  return res.json(
+    {
+      title: quiz[0]?.title,
+      timePlayed: game[0]?.time_started,
+      roomCode: game[0]?.room_code,
+      quizUuid: quiz[0]?.public_uuid,
+      questions: sanitizedQuestions,
+      answers: sanitizedAnswers,
+      leaderboard: sanitizedPlayers
     }
   )
 })

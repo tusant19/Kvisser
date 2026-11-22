@@ -15,8 +15,9 @@
 .myGamesList {
     width: 100dvw;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
+    align-items: center;
 }
 
 .myGamesListItem {

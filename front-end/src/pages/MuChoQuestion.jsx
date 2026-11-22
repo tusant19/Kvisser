@@ -87,7 +87,7 @@ function MuChoQuestion() {
             console.error(error);
         });
     }, [])
-        
+
     useEffect(() => {
         axios.get(`${apiBaseUrl}/v1/role`, {
             withCredentials: true
@@ -133,8 +133,10 @@ function MuChoQuestion() {
             }
             
         })
+        socket.on("nextQuestionSwap", (type) => {
+            window.location.replace(`${siteBaseUrl}/${type}`);
+        })
         socket.on("skipQuestion", (type) => {
-            console.log("skipQuestion: " + type)
             window.location.replace(`${siteBaseUrl}/${type}`);
         })
         return () => socket.disconnect()
