@@ -65,7 +65,7 @@ function MuChoQuestion() {
             let answerOptions = response.data.answerOptions;
             console.log("before randomize: ", answerOptions);
             if (response.data.question.randomize_order) {
-                answerOptions = pseudoRandomizeArrayOrder(answerOptions, response.data.question.text);
+                answerOptions = pseudoRandomizeArrayOrder(answerOptions, response.data.question.title);
             }
             console.log("after randomize: ", answerOptions);
             setAnswerOptions(answerOptions);
@@ -389,7 +389,7 @@ function MuChoQuestion() {
                 </div>
                 
                     {answerOptions?.map((answer, order_number) => (
-                        <div key={order_number} ref={el => answerOptionRefs.current[order_number + 1] = el} onClick={() => handleAnswerOptionClick(order_number + 1)} className='answerOption'>
+                        <div key={order_number} ref={el => answerOptionRefs.current[order_number + 1] = el} onClick={() => handleAnswerOptionClick(answer?.order_number || order_number + 1)} className='answerOption'>
                             <p>{answer?.answer}</p>
                             <div className='muChoAnswerOptionColorSpot' ref={el => answerOptionColorSpotRefs.current[order_number + 1] = el}></div>
                         </div>

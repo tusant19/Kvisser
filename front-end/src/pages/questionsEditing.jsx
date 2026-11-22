@@ -401,7 +401,6 @@ function QuestionsEditing() {
         if (!draft) return;
         let question = getSelectedQuestion();
         if (question == null || question.type !== 'multipleChoice') return;
-        if (getDraftIncompleteReason() != "") return;
 
         let requestData = {
             title: draft.title,
@@ -431,6 +430,7 @@ function QuestionsEditing() {
 
     function handleSwitch(quizId, index) {
         autoSaveDraft();
+        fetchQuestions();
         navigate(`/quiz/edit/${quizId}/question/${index}`);
     }
 

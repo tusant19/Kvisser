@@ -922,6 +922,7 @@ app.get('/v1/question/:roomCode', (req, res) => {
       img_link: question[0]?.img_link,
       score_value: question[0]?.score_value,
       time_given: question[0]?.time_given,
+      randomize_order: question[0]?.randomize_order,
       type: question[0]?.type,
     })
   } else {
