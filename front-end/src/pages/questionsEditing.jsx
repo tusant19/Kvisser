@@ -48,6 +48,7 @@ function QuestionsEditing() {
                 title: question.title || "",
                 img_link: question.img_link || "",
                 score_value: question.score_value || 1000,
+                randomize_order: question.randomize_order || false,
                 time_given: question.time_given || 30,
                 answers: answers
             });
@@ -105,6 +106,7 @@ function QuestionsEditing() {
             img_link: draft.img_link,
             score_value: Number(draft.score_value),
             time_given: Number(draft.time_given),
+            randomize_order: Number(draft.randomize_order),
             answers: draft.answers
         };
 
@@ -198,6 +200,7 @@ function QuestionsEditing() {
             img_link: "",
             type: "multipleChoice",
             score_value: 1000,
+            randomize_order: false,
             time_given: 30,
             answerOptions: [
                 { id: null, answer: "", order_number: 1, is_correct: false },
@@ -220,6 +223,7 @@ function QuestionsEditing() {
             img_link: draft.img_link,
             score_value: draft.score_value,
             time_given: draft.time_given,
+            randomize_order: draft.randomize_order,
             answers: draft.answers
         };
         setDraft(newDraft);
@@ -230,6 +234,7 @@ function QuestionsEditing() {
             title: draft.title,
             img_link: event.target.value,
             score_value: draft.score_value,
+            randomize_order: draft.randomize_order,
             time_given: draft.time_given,
             answers: draft.answers
         };
@@ -242,6 +247,7 @@ function QuestionsEditing() {
             img_link: draft.img_link,
             score_value: draft.score_value,
             time_given: draft.time_given,
+            randomize_order: draft.randomize_order,
             answers: []
         };
         for (let i = 0; i < draft.answers.length; i++) {
@@ -260,6 +266,7 @@ function QuestionsEditing() {
             title: draft.title,
             img_link: draft.img_link,
             score_value: draft.score_value,
+            randomize_order: draft.randomize_order,
             time_given: draft.time_given,
             answers: []
         };
@@ -280,6 +287,7 @@ function QuestionsEditing() {
             title: draft.title,
             img_link: draft.img_link,
             score_value: draft.score_value,
+            randomize_order: draft.randomize_order,
             time_given: draft.time_given,
             answers: []
         };
@@ -303,6 +311,7 @@ function QuestionsEditing() {
             img_link: draft.img_link,
             score_value: draft.score_value,
             time_given: draft.time_given,
+            randomize_order: draft.randomize_order,
             answers: []
         };
         for (let i = 0; i < draft.answers.length; i++) {
@@ -322,6 +331,7 @@ function QuestionsEditing() {
             img_link: draft.img_link,
             score_value: draft.score_value,
             time_given: event.target.value,
+            randomize_order: draft.randomize_order,
             answers: draft.answers
         };
         setDraft(newDraft);
@@ -333,6 +343,7 @@ function QuestionsEditing() {
             img_link: draft.img_link,
             score_value: event.target.value,
             time_given: draft.time_given,
+            randomize_order: draft.randomize_order,
             answers: draft.answers
         };
         setDraft(newDraft);
@@ -397,6 +408,7 @@ function QuestionsEditing() {
             img_link: draft.img_link,
             score_value: Number(draft.score_value),
             time_given: Number(draft.time_given),
+            randomize_order: Number(draft.randomize_order),
             answers: draft.answers
         };
 
@@ -420,6 +432,18 @@ function QuestionsEditing() {
     function handleSwitch(quizId, index) {
         autoSaveDraft();
         navigate(`/quiz/edit/${quizId}/question/${index}`);
+    }
+
+    function changeQuestionRandomizeOrder(event) {
+        let newDraft = {
+            title: draft.title,
+            img_link: draft.img_link,
+            score_value: draft.score_value,
+            time_given: draft.time_given,
+            randomize_order: event.target.checked,
+            answers: draft.answers
+        };
+        setDraft(newDraft);
     }
 
 
@@ -453,6 +477,7 @@ function QuestionsEditing() {
                     <div className="questionEditorSettings">
                         <label>Seconds to answer <input type="number" min="1" value={draft.time_given} onChange={changeQuestionTime} className="questionEditorNumber" /></label>
                         <label>Maximum score <input type="number" min="0" value={draft.score_value} onChange={changeQuestionScore} className="questionEditorNumber" /></label>
+                        <label>Randomize the order of answers <input type="checkbox" checked={draft.randomize_order} onChange={changeQuestionRandomizeOrder} className="questionEditorCheckbox" /></label>
                     </div>
 
                     {error && <p className="questionEditorError">{error}</p>}

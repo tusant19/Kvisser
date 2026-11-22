@@ -12,6 +12,7 @@ import { useEffect } from 'react';
 import '../Main.css'
 import correctSymbol from "../assets/check_24dp_505050_FILL0_wght400_GRAD0_opsz24.svg"
 import noImg from '../assets/noImg.png'
+import pseudoRandomizeArrayOrder from '../components/pseudoRand.js';
 
 
 function MuChoQuestion() {
@@ -61,7 +62,13 @@ function MuChoQuestion() {
             console.log(response.data.question);
             setQuestion(response.data.question);
             console.log(response.data.answerOptions);
-            setAnswerOptions(response.data.answerOptions);
+            let answerOptions = response.data.answerOptions;
+            console.log("before randomize: ", answerOptions);
+            if (response.data.question.randomize_order) {
+                answerOptions = pseudoRandomizeArrayOrder(answerOptions, response.data.question.text);
+            }
+            console.log("after randomize: ", answerOptions);
+            setAnswerOptions(answerOptions);
             setupTimerBar(response.data.question.time_given);
         })
         .catch((error) => {
@@ -134,28 +141,35 @@ function MuChoQuestion() {
     }, [roleLoaded, roomCodeLoStor])
 
     function handleAnswerOptions() {   
-        console.log(answerOptionRefs?.current[1]?.style)
-        console.log(answerOptions?.length)
-        if (answerOptionRefs?.current[1]?.style) {
-            
-            if (answerOptions?.length == 2) {
-                for (let i = 0; i < answerOptions?.length - 1; i++) {
-                    // set the row and column
-                    answerOptionRefs.current[i + 1].style.gridRow = "3, 4";
-                    answerOptionRefs.current[i + 1].style.gridColumn = `${i + 1}, ${i + 1}`;
+        if (answerOptions?.length > 0) {
+            if (answerOptions?.length == 1) {
+                if (answerOptionRefs.current[1]) {
+                    answerOptionRefs.current[1].style.gridRow = "7";
+                    answerOptionRefs.current[1].style.gridColumn = "2 / span 3";
+                }
+            } else if (answerOptions?.length == 2) {
+                if (answerOptionRefs.current[1]) {
+                    answerOptionRefs.current[1].style.gridRow = "7";
+                    answerOptionRefs.current[1].style.gridColumn = "2";
+                }
+                if (answerOptionRefs.current[2]) {
+                    answerOptionRefs.current[2].style.gridRow = "7";
+                    answerOptionRefs.current[2].style.gridColumn = "4";
                 }
             } else if (answerOptions?.length == 3) {
-                for (let i = 0; i < answerOptions?.length - 1; i++) {
-                    // set the row and column
-                    let column = i % 2
-                    if (i == 2) {
-                        answerOptionRefs.current[i + 1].style.gridRow = "4";
-                    } else {
-                        answerOptionRefs.current[i + 1].style.gridRow = "3";
-                    }
-                    answerOptionRefs.current[i + 1].style.gridColumn = `${column + 1}, ${column + 1}`;
+                if (answerOptionRefs.current[1]) {
+                    answerOptionRefs.current[1].style.gridRow = "7";
+                    answerOptionRefs.current[1].style.gridColumn = "2";
                 }
-            } else if (answerOptions?.length > 3) {
+                if (answerOptionRefs.current[2]) {
+                    answerOptionRefs.current[2].style.gridRow = "7";
+                    answerOptionRefs.current[2].style.gridColumn = "4";
+                }
+                if (answerOptionRefs.current[3]) {
+                    answerOptionRefs.current[3].style.gridRow = "9";
+                    answerOptionRefs.current[3].style.gridColumn = "2 / span 3";
+                }
+            } else if (answerOptions?.length >= 4) {
                 for (let i = 0; i < answerOptions?.length; i++) {
                     // set the row and column
                     let modulo = i % 2
@@ -172,17 +186,15 @@ function MuChoQuestion() {
                     else {
                         row = 7
                     }
-                    console.log("row: " + row)
-                    console.log("column: " + column)
-                    console.log("style: ", answerOptionRefs.current[i + 1].style)
-                    answerOptionRefs.current[i + 1].style.gridRow = `${row} / ${row}`;
-                    answerOptionRefs.current[i + 1].style.gridColumn = `${column} / ${column}`;
+                    if (answerOptionRefs.current[i + 1]) {
+                        answerOptionRefs.current[i + 1].style.gridRow = `${row}`;
+                        answerOptionRefs.current[i + 1].style.gridColumn = `${column}`;
+                    }
                 }
             }
         }
         //set bg colors
         for (let i = 0; i < answerOptions?.length; i++) {
-            console.log("answerOptionColorSpotRefs.current[i + 1] color: ", answerOptionColorSpotRefs.current[i + 1].style.backgroundColor)
             let color;
             if (i == 0) {
                 color = "var(--answer1)"
@@ -193,9 +205,15 @@ function MuChoQuestion() {
             } else if (i == 3) {
                 color = "var(--answer4)"
             }
-            answerOptionColorSpotRefs.current[i + 1].style.backgroundColor = color;
+            if (answerOptionColorSpotRefs.current[i + 1]) {
+                answerOptionColorSpotRefs.current[i + 1].style.backgroundColor = color;
+            }
         }
     }
+
+    useEffect(() => {
+        handleAnswerOptions();
+    }, [answerOptions]);
     
     function setupTimerBar(seconds) {
         let hasSentLateAnswer = false;
@@ -311,7 +329,9 @@ function MuChoQuestion() {
         if (results) {
             let maxheight = 0.35;
             let totalCount = results.reduce((acc, result) => acc + result.count, 0);
-            let uniqueResults = [...new Set(results.map(result => result.count))];
+            if (totalCount === 0) {
+                totalCount = 1;
+            }
             results.forEach((result, index) => {
                 let percentage = (result.count / totalCount) * 100;
                 if (percentage < 20) {
@@ -319,7 +339,7 @@ function MuChoQuestion() {
                 }
                 console.log("percentage: " + percentage)
                 answerResultBarRefs.current[index].style.height = percentage * maxheight + "vh";
-                answerResultBarRefs.current[index].style.width = 80 / uniqueResults.length + "vw";
+                answerResultBarRefs.current[index].style.width = 80 / results.length + "vw";
                 
             });
         }

@@ -225,7 +225,8 @@ db.exec(`
     img_link TEXT,
     score_value INTEGER,
     time_given INTEGER,
-    title TEXT
+    title TEXT,
+    randomize_order INTEGER
   );
 `);
 
@@ -333,7 +334,7 @@ const getPlayersPlace = db.prepare('SELECT COUNT(*) FROM game_players WHERE game
 const markPlayerInactive = db.prepare('UPDATE game_players SET connected = 0 WHERE socket_id = ?')
 const updateSocket = db.prepare('UPDATE game_players SET socket_id = ?, connected = ? WHERE id = (SELECT id FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1)')
 
-const questionInsert = db.prepare('INSERT INTO quiz_questions (quiz_id, type, order_number, img_link, score_value, time_given, title) VALUES (?, ?, ?, ?, ?, ?, ?)');
+const questionInsert = db.prepare('INSERT INTO quiz_questions (quiz_id, type, order_number, img_link, score_value, time_given, title, randomize_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
 const questionDelete = db.prepare('DELETE FROM quiz_questions WHERE id = ?');
 const questionDeleteByQuiz = db.prepare('DELETE FROM quiz_questions WHERE quiz_id = ?');
 const getQuestions = db.prepare('SELECT * FROM quiz_questions WHERE quiz_id = ? ORDER BY order_number ASC')
@@ -343,6 +344,9 @@ const getQuestionCountByRoomCode = db.prepare('SELECT COUNT(*) FROM quiz_questio
 const getQuestionTypeByRoomCodeAndOrder = db.prepare('SELECT type FROM quiz_questions WHERE quiz_id = (SELECT quiz_id FROM games WHERE room_code = ? LIMIT 1) AND order_number = ? LIMIT 1')
 const getQuestionType = db.prepare('SELECT type FROM quiz_questions WHERE quiz_id = ? AND order_number = ? LIMIT 1')
 const getQuestionByRoomCodeAndOrder = db.prepare('SELECT * FROM quiz_questions WHERE quiz_id = (SELECT quiz_id FROM games WHERE room_code = ? LIMIT 1) AND order_number = ? LIMIT 1')
+const updateQuestion = db.prepare('UPDATE quiz_questions SET title = ?, img_link = ?, score_value = ?, time_given = ?, randomize_order = ? WHERE id = ?');
+const updateQuestionOrder = db.prepare('UPDATE quiz_questions SET order_number = ? WHERE id = ?');
+const updateRandomizeTrueFalse = db.prepare('UPDATE quiz_questions SET randomize_order = ? WHERE id = ?');
 
 const userInsert = db.prepare('INSERT INTO users (name, public_uuid, password) VALUES (?, ?, ?)');
 const getUserByName = db.prepare('SELECT * FROM users WHERE name = ? LIMIT 1'); 
@@ -360,8 +364,7 @@ const answerOptionDeleteByQuestionId = db.prepare('DELETE FROM answer_options WH
 const getCorrectAnswerByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? AND is_correct = 1 LIMIT 1');
 const getCorrectAnswersByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? AND is_correct = 1');
 const getAnswerOptionsByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? ORDER BY order_number ASC');
-const updateQuestion = db.prepare('UPDATE quiz_questions SET title = ?, img_link = ?, score_value = ?, time_given = ? WHERE id = ?');
-const updateQuestionOrder = db.prepare('UPDATE quiz_questions SET order_number = ? WHERE id = ?');
+
 
 const insertAnswerForPlayer = db.prepare('INSERT INTO game_answers (game_code, question_id, player_uuid, answer, is_correct, answer_time) VALUES (?, ?, ?, ?, ?, ?)');
 const hasAnswered = db.prepare('SELECT * FROM game_answers WHERE game_code = ? AND question_id = ? AND player_uuid = ? LIMIT 1');
@@ -1370,6 +1373,7 @@ app.get('/v1/quiz/edit/details/:uuid', checkQuizAccessForEdit, (req, res) => {
       type: questions[i]?.type,
       score_value: questions[i]?.score_value,
       time_given: questions[i]?.time_given,
+      randomize_order: questions[i]?.randomize_order === 1,
       answerOptions: answerOptions.map(answer => ({
         id: answer.id,
         answer: answer.answer,
@@ -1512,6 +1516,10 @@ app.put('/v1/create/question/multiplechoice/:quizUuid', checkQuizAccessForEdit, 
   let scoreValue = req.body?.score_value;
   let timeGiven = req.body?.time_given;
   let answers = req.body?.answers;
+  let randomizeOrder = req.body?.randomize_order;
+  if (randomizeOrder === undefined || randomizeOrder === null || randomizeOrder === "" || (randomizeOrder !== 1 && randomizeOrder !== 0)) {
+    return res.status(422).json({ error: "Invalid randomize order value" });
+  }
 
   if (title == undefined || title == "" || scoreValue == undefined || timeGiven == undefined || !Array.isArray(answers) || answers.length < 2 || answers.length > 4) {
     return res.status(422).json({ error: "Incomplete multiple choice question" });
@@ -1531,7 +1539,7 @@ app.put('/v1/create/question/multiplechoice/:quizUuid', checkQuizAccessForEdit, 
 
   let questions = getQuestions.all(quiz.id);
   let orderNumber = questions.length + 1;
-  questionInsert.run(quiz.id, "multipleChoice", orderNumber, imgLink, Number(scoreValue), Number(timeGiven), title);
+  questionInsert.run(quiz.id, "multipleChoice", orderNumber, imgLink, Number(scoreValue), Number(timeGiven), title, randomizeOrder);
   let question = getQuestion.get(quiz.id, orderNumber);
   if (question == undefined) return res.sendStatus(500);
 
@@ -1553,6 +1561,9 @@ app.put('/v1/quiz/edit/question/multiplechoice/:quizUuid/:orderNumber', checkQui
   let scoreValue = req.body?.score_value;
   let timeGiven = req.body?.time_given;
   let answers = req.body?.answers;
+  let randomizeOrder = req.body?.randomize_order;
+
+  console.log("edited multiple choice question received: " + JSON.stringify(req.body));
 
   if (title == undefined || scoreValue == undefined || timeGiven == undefined || !Array.isArray(answers) || answers.length < 2 || answers.length > 4) {
     return res.status(422).json({ error: "Invalid multiple choice question" });
@@ -1570,13 +1581,16 @@ app.put('/v1/quiz/edit/question/multiplechoice/:quizUuid/:orderNumber', checkQui
   if (!Number.isInteger(Number(timeGiven)) || Number(timeGiven) <= 0) {
     return res.status(422).json({ error: "Invalid time" });
   }
+  if (randomizeOrder !== 1 && randomizeOrder !== 0) {
+    return res.status(422).json({ error: "Invalid randomize order value" });
+  }
   for (let i = 0; i < answers.length; i++) {
     if (answers[i]?.answer == undefined || answers[i]?.answer == "") {
       return res.status(422).json({ error: "Every answer needs text" });
     }
   }
 
-  updateQuestion.run(title, imgLink, scoreValue, timeGiven, question.id);
+  updateQuestion.run(title, imgLink, scoreValue, timeGiven, randomizeOrder, question.id);
   answerOptionDeleteByQuestionId.run(question.id);
   for (let i = 0; i < answers.length; i++) {
     if (answers[i]?.answer == undefined) return res.status(422).json({ error: "Invalid answer option" });
