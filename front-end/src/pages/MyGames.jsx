@@ -40,7 +40,7 @@ function MyGames() {
                                     <div key={index} className="myGamesListItem">
                                         <p className="myGamesListItemDate">{new Date(game.timePlayed).toLocaleString()}</p>
                                         <a className="myGamesListItemTitle myGamesListLinkBtn" href={`${siteBaseUrl}/quiz/${game.quizUuid}`}>{game.title}</a>
-                                        <a className="myGamesListItemLink myGamesListLinkBtn" href={`${siteBaseUrl}/game/${game.publicUuid}`}>See results</a>
+                                        <a className="myGamesListItemLink myGamesListLinkBtn" href={`${siteBaseUrl}/game/${game.gameUuid}`}>See results</a>
                                     </div>
                             ))
                         ) : (
