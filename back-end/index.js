@@ -1158,6 +1158,7 @@ app.put('/v1/autolateanswer/:roomCode', (req, res) => {
   console.log("inserting late answer for player " + player[0]?.uuid + " for question " + question[0]?.id)
   let game = getGameByCode.all(req.params?.roomCode)
   insertAnswerForPlayer.run(req.params?.roomCode, question[0]?.id, player[0]?.uuid, null, 2, Date.now(), game[0]?.public_uuid)
+  updatePointsGivenForAnswer.run(0, req.params?.roomCode, player[0]?.uuid, question[0]?.id)
   return res.sendStatus(200)
 });
 
