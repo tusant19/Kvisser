@@ -138,6 +138,8 @@ io.on("connection", (socket) => {
         updapteGameState.run(gameState?.state + 2, roomCode)
         addGameStateChange.run(roomCode, gameState?.state + 2, Date.now());
         io.to(roomCode).to(roomCode + "host").emit("skipQuestion", (questionType?.type));
+      } else {
+        io.to(roomCode + "host").emit("goToLeaderboard");
       }
     }
   });
@@ -339,6 +341,7 @@ const getQuestionByRoomCodeAndOrder = db.prepare('SELECT * FROM quiz_questions W
 const updateQuestion = db.prepare('UPDATE quiz_questions SET title = ?, img_link = ?, score_value = ?, time_given = ?, randomize_order = ? WHERE id = ?');
 const updateQuestionOrder = db.prepare('UPDATE quiz_questions SET order_number = ? WHERE id = ?');
 const updateRandomizeTrueFalse = db.prepare('UPDATE quiz_questions SET randomize_order = ? WHERE id = ?');
+
 
 const userInsert = db.prepare('INSERT INTO users (name, public_uuid, password) VALUES (?, ?, ?)');
 const getUserByName = db.prepare('SELECT * FROM users WHERE name = ? LIMIT 1'); 
@@ -967,10 +970,21 @@ app.get('/v1/question/:roomCode', (req, res) => {
       order_number: answerOptions[i]?.order_number,
     })
   }
+  let questionCount = getQuestionCountByRoomCode.get(req.params?.roomCode)['COUNT(*)']
+  let isFinalQuestion = false
+  let questionNumber = Math.floor(currentQuestionNumber?.state / 2)
+  let questionNumberForClient = questionNumber + 1
+  let questionCountForClient = questionCount
+  console.log("questionNumberForClient: " + questionNumberForClient)
+  console.log("questionCountForClient: " + questionCountForClient)
+  if (questionNumberForClient > questionCountForClient) {
+    isFinalQuestion = true
+  }
   return res.json(
     {
       question: sanitizedQuestion[0],
-      answerOptions: sanitizedAnswerOptions
+      answerOptions: sanitizedAnswerOptions,
+      isFinalQuestion: isFinalQuestion
     }
   )
 });

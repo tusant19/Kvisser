@@ -33,6 +33,7 @@ function MuChoQuestion() {
     const answerResultBarRefs = useRef([]);
     const answerOptionColorSpotRefs = useRef([]);
     const answerResultBarDivRef = useRef(null);
+    const [isFinalQuestion, setIsFinalQuestion] = useState(false);
     
     let answerOptionRefs = useRef([]);
 
@@ -68,6 +69,7 @@ function MuChoQuestion() {
                 answerOptions = pseudoRandomizeArrayOrder(answerOptions, response.data.question.title);
             }
             console.log("after randomize: ", answerOptions);
+            setIsFinalQuestion(response.data.isFinalQuestion);
             setAnswerOptions(answerOptions);
             setupTimerBar(response.data.question.time_given);
         })
@@ -128,8 +130,7 @@ function MuChoQuestion() {
                 setAnswerCount(count + "/" + playerCount.current + " answer")
             }
             if (isHost.current && count >= playerCount.current) {
-                getResults();
-                setIsFinalized(true);
+                                          
             }
             
         })
@@ -138,6 +139,9 @@ function MuChoQuestion() {
         })
         socket.on("skipQuestion", (type) => {
             window.location.replace(`${siteBaseUrl}/${type}`);
+        })
+        socket.on("goToLeaderboard", () => {
+            window.location.replace(`${siteBaseUrl}/leaderboard`);
         })
         return () => socket.disconnect()
     }, [roleLoaded, roomCodeLoStor])
@@ -408,7 +412,8 @@ function MuChoQuestion() {
                     {isHost.current && <p>{roomCode}</p>}
                 </div>}
                 <div className='skipButtonDiv'>
-                    {isHost.current && !isFinalized && <button className='skipButton' onClick={handleSkip}>Skip</button>}
+                    {isHost.current && !isFinalized && !isFinalQuestion && <button className='skipButton' onClick={handleSkip}>Skip</button>}
+                    {isHost.current && !isFinalized && isFinalQuestion && <button className='skipButton' onClick={handleLeaderboardClick}>Skip to the end</button>}
                 </div>
                 <div className='leaderBoardBtnDiv'>
                     {isHost.current && isFinalized && <button className='leaderBoardBtn' onClick={handleLeaderboardClick}>Leaderboard</button>}
