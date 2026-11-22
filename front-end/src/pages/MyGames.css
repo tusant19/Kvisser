@@ -1,0 +1,41 @@
+.myGamesPageMain{
+    background-color: var(--bg1);
+    margin: 0;
+    padding: 0;
+    min-height: 85.5vh;
+}
+
+.myGamesListItem p,
+.myGamesListItem a {
+    margin: 0;
+    text-decoration: none;
+    color: var(--text1);
+}
+
+.myGamesList {
+    width: 100dvw;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.myGamesListItem {
+    margin: 1vh 0;
+    padding: 1.2vh 3vw;
+    border-radius: 1.5vh;
+    background-color: white;
+    border: 2px solid var(--border1);
+    display: flex;
+    width: 98dvw;
+    max-width: 600px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.myGamesListLinkBtn {
+    background-color: var(--bg1);
+    padding: 0.7vh 1vw;
+    border-radius: 1vh;
+    border: 2px solid var(--border1);
+    box-shadow: 1px 1px 0px 0px rgba(0, 0, 0, 0.1);
+}

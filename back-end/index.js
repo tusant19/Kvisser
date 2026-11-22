@@ -1657,7 +1657,8 @@ app.get('/v1/account/:uuid/games', checkAccountAccess, (req, res) => {
       title: quiz[0]?.title,
       timePlayed: games[i]?.time_started,
       roomCode: games[i]?.room_code,
-      quizUuid: quiz[0]?.public_uuid
+      quizUuid: quiz[0]?.public_uuid,
+      gameUuid: games[i].public_uuid
     })
   }
   return res.json(
