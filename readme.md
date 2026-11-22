@@ -23,7 +23,9 @@ IMPORTANT
  - To access the search page click on the search icon in the bottom bar
  - To access your account page login or create an account and then click the icon in the bottom bar
  - To see your public profile copy the uuid from your profile and go to https://kvisser.santtu.uk/user/YourUUID
- - You can access the (in progress) quiz creation from your personal account page 
+ - You can access the quiz creation from your personal account page
+ - You can access the quiz editor after you create a quiz by clicking the associated button in the screen you'll be taken to after creation
+ - You can access your game details after you host a game yet again in the profile. Click see details to see the leaderboard and what everyone answered.
 
 
 <p>Note: the page for changing your password is in your account page.</p>
@@ -48,7 +50,7 @@ Current features that exist:
 <p>The front page</p>
 <img alt="Image of the front page" src="./readme/image-5.png" height="200"/>
 
-<p>Auth pages</p>
+<p>Auth pages (out of date images)</p>
 <img alt="Image of login page" src="./readme/image-6.png" height="200"/>
 <img alt="Image of logout page" src="./readme/image-7.png" height="200"/>
 <img alt="Image of account creation page" src="./readme/image-8.png" height="200"/>
@@ -65,6 +67,14 @@ Current features that exist:
 <img alt="image of the status page with a correct answer" src="./readme/image-12.png" height="200">
 <img alt="image of the status page with an incrorrect answer" src="./readme/image-13.png" height="200">
 <img alt="image of the status page with a late answer" src="./readme/image-14.png" height="200">
+
+<p>the pages for quiz creation (missing images)</p>
+
+<p>The question editor (missing images)</p>
+
+<p>The list of games youve hosted (also missing images)</p>
+
+<p>The details page of a game you've hosted showing the leaderboard and what everyone has answered (yet again missing images)</p>
 
 
 
