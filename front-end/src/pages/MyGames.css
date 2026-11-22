@@ -34,7 +34,7 @@
 }
 
 .myGamesListLinkBtn {
-    background-color: var(--bg1);
+    background-color: white;
     padding: 0.7vh 1vw;
     border-radius: 1vh;
     border: 2px solid var(--border1);

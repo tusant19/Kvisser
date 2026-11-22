@@ -1,13 +1,21 @@
 .gameResultsPageMain {
+    padding-top: 2vh;
     min-height: 85.5vh;
     background-color: var(--bg1);
+    width: 100dvw;
+    max-width: 100dvw;
+    overflow-x: hidden;
+    display: flex;
+    justify-content: center;
+    padding-bottom: 8vh;
 }
 
-.gameResultsPageMain p,
-.gameResultsPageMain a {
-    margin: 0;
+.gameResultsPageMain {
     text-decoration: none;
     color: var(--text1);
+    max-width: 100dvw;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .gameResultsQuestionCollapseContent {
@@ -21,4 +29,214 @@
     display: flex;
     flex-direction: row;
     gap: 1vw;
+}
+
+.gameResultsTitle {
+    background-color: white;
+    border-radius: 1.2vh;
+    padding: 1vh 1vw;
+    border: 2px solid var(--border1);
+    width: 98dvw;
+    box-sizing: border-box;
+    max-width: 600px;
+    text-align: center;
+    margin-bottom: 1vh;
+}
+
+.gameResultsContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gameResultsInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (width < 600px) {
+    .gameResultsTitle {
+        font-size: 90%;
+        width: 95dvw;
+    }
+}
+
+.quizResultsInfoExtra {
+    width: 95dvw;
+    box-sizing: border-box;
+    max-width: 600px;
+    margin: 1vh 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+    background-color: white;
+    padding: 1vh 1.5vw;
+    border-radius: 1.2vh;
+    border: 2px solid var(--border1);
+}
+
+.quizResultsInfoExtra p {
+    margin: 0.2vh 0;
+}
+
+@media (width > 600px) {
+    .quizResultsInfoExtra {
+        position: absolute;
+        right: 1vh;
+        width: auto;
+        top: 8.2vh;
+    }
+}
+
+.gameResultsLeaderboardTitle {
+    background-color: white;
+    border-radius: 1.2vh;
+    padding: 1vh 1vw;
+    border: 2px solid var(--border1);
+    width: 95dvw;
+    box-sizing: border-box;
+    max-width: 600px;
+    text-align: center;
+    margin: 1vh 0;
+}
+
+.gameResultsLeaderboardList {
+    display: flex;
+    background-color: white;
+    border-radius: 1.2vh;
+    padding: 1vh 1vw;
+    border: 2px solid var(--border1);
+    box-sizing: border-box;
+    width: 95dvw;
+    max-width: 600px;
+    text-align: center;
+    margin: 1vh 0;
+    align-items: center;
+    justify-content: center;
+    gap: 1vh;
+}
+
+@media (width < 600px) {
+}
+
+.gameResultsLeaderboardItem {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.gameResultsLeaderboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.gameResultsQuestionsList {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+@media (width < 600px) {
+    .gameResultsQuestionItem {
+        width: 95dvw;
+    }
+}
+
+@media (width > 600px) {
+    .gameResultsQuestionItem {
+        width: 95dvw;
+        max-width: 600px;
+    }
+}
+
+.firstAnswer {
+    width: 100%;
+    box-sizing: border-box;
+    border: 2px solid var(--border1);
+    border-bottom: none;
+    background-color: white;
+    border-top-left-radius: 1.2vh;
+    border-top-right-radius: 1.2vh;
+    padding: 0.9vh 1vw;
+    margin: 0;
+}
+
+.middleAnswer {
+    width: 100%;
+    box-sizing: border-box;
+    border: 2px solid var(--border1);
+    border-top: none;
+    border-bottom: none;
+    background-color: white;
+    padding: 1.2vh 1vw;
+}
+
+.lastAnswer {
+    width: 100%;
+    box-sizing: border-box;
+    border: 2px solid var(--border1);
+    border-top: none;
+    background-color: white;
+    border-bottom-right-radius: 1.2vh;
+    border-bottom-left-radius: 1.2vh;
+    padding: 1.2vh 1vw;
+}
+
+.gameResultsQuestionCollapseOpenBtn:hover {
+    background-color: var(--bg2);
+    color: var(--text1);
+}
+
+.gameResultsQuestionAnswersListTitle {
+    text-align: center;
+    margin: 0;
+}
+.gameResultsQuestionAnswersListHint {
+    text-align: center;
+    margin: 0.5vh 0;
+    color: var(--text3);
+}
+
+@media (width > 600px) {
+    .gameResultsQuestionAnswersListHint {
+        font-size: 90%;
+    }
+}
+
+.gameResultsQuestionAnswerItem {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.noAnswer {
+    width: 100%;
+    text-align: center;
+}
+
+.gameResultsQuestionAnswersList {
+    background-color: white;
+    box-sizing: border-box;
+    border: 2px solid var(--border1);
+    padding: 2vh 2vw;
+    
+}
+
+.gameResultsQuestionCollapseContent {
+    margin: 0;
+    
+}
+
+.gameResultsQuestionAnswerItem p {
+    margin: 0;
 }

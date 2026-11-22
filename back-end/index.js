@@ -251,7 +251,8 @@ db.exec(`
     answer TEXT,
     answer_time INTEGER,
     game_uuid TEXT,
-    is_correct INTEGER
+    is_correct INTEGER,
+    points_given INTEGER
   );
 `);
 
@@ -355,6 +356,7 @@ const answerOptionDeleteByQuestionId = db.prepare('DELETE FROM answer_options WH
 const getCorrectAnswerByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? AND is_correct = 1 LIMIT 1');
 const getCorrectAnswersByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? AND is_correct = 1');
 const getAnswerOptionsByQuestionId = db.prepare('SELECT * FROM answer_options WHERE question_id = ? ORDER BY order_number ASC');
+const updatePointsGivenForAnswer = db.prepare('UPDATE game_answers SET points_given = ? WHERE game_code = ? AND player_uuid = ? AND question_id = ?');
 
 const insertAnswerForPlayer = db.prepare('INSERT INTO game_answers (game_code, question_id, player_uuid, answer, is_correct, answer_time, game_uuid) VALUES (?, ?, ?, ?, ?, ?, ?)');
 const hasAnswered = db.prepare('SELECT * FROM game_answers WHERE game_code = ? AND question_id = ? AND player_uuid = ? LIMIT 1');
@@ -1039,7 +1041,10 @@ app.put('/v1/answer/:roomCode', (req, res) => {
   }
   if (isCorrectAnswerSelected && player[0]?.role !== "host" && question[0]?.type === "multipleChoice" && question[0]?.score_value != undefined && question[0]?.score_value != null && question[0]?.score_value > 0) {
     console.log("points to give: " + Math.floor(leftOverTimeSeconds * question[0]?.score_value / question[0]?.time_given))
-    updatePlayerScore.run(player[0]?.score + Math.floor(leftOverTimeSeconds * question[0]?.score_value / question[0]?.time_given), player[0]?.uuid)
+    let scoreAddition = Math.floor(leftOverTimeSeconds * question[0]?.score_value / question[0]?.time_given)
+    let newScore = player[0]?.score + scoreAddition;
+    updatePlayerScore.run(newScore, player[0]?.uuid)
+    updatePointsGivenForAnswer.run(scoreAddition, req.params?.roomCode, player[0]?.uuid, question[0]?.id)
     updateCorrectnessForPlayer.run(1, req.params?.roomCode, question[0]?.id, player[0]?.uuid)
     res.status(200)
     return res.json(
@@ -1731,7 +1736,7 @@ app.get('/v1/gamedetails/:gameUuid', checkWasHost, (req, res) => {
         wasLate: answers[i][j]?.is_correct === 2,
         answer: answerOptions[Number(answers[i][j]?.answer) - 1]?.answer,
         timeTaken: answers[i][j]?.time_taken,
-        score: answers[i][j]?.score
+        scoreGiven: answers[i][j]?.points_given
       })
     }
     sanitizedAnswers.push({

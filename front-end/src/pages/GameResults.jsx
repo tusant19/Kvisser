@@ -46,11 +46,23 @@ function GameResults() {
     function handleCollapseClick(event) {
         const button = event.currentTarget;
         const content = button.nextElementSibling;
-        if (content.style.display === "none") {
-            content.style.display = "flex";
-        } else {
+        if (content.style.display === "flex") {
             content.style.display = "none";
+        } else {
+            content.style.display = "flex";
         }
+    }
+
+    function determineAnswerClass(index) {
+        let className = "gameResultsQuestionCollapseOpenBtn ";
+        if (index === 0) {
+            className += "firstAnswer";
+        } else if (index === questions.length - 1) {
+            className += "lastAnswer";
+        } else {
+            className += "middleAnswer";
+        }
+        return className;
     }
 
     return (
@@ -64,9 +76,11 @@ function GameResults() {
                         <div className="gameResultsContent">
                             <div className="gameResultsInfo">
                                 <p className="gameResultsTitle">{title}</p>
-                                <p className="gameResultsRoomCode">Room Code: {roomCode}</p>
-                                <p className="gameResultsQuizUuid">Quiz UUID: {quizUuid}</p>
-                                <p className="gameResultsStartTime">Start Time: {new Date(startTime).toLocaleString()}</p>
+                                <div className="quizResultsInfoExtra">
+                                    <p className="gameResultsRoomCode">Room Code: {roomCode}</p>
+                                    <p className="gameResultsQuizUuid">Quiz UUID: {quizUuid}</p>
+                                    <p className="gameResultsStartTime">Start Time: {new Date(startTime).toLocaleString()}</p>
+                                </div>
                             </div>
                             <div className="gameResultsLeaderboard">
                                 <p className="gameResultsLeaderboardTitle">Leaderboard</p>
@@ -87,20 +101,21 @@ function GameResults() {
                                 
                                 {questions.length > 0 ? (
                                     <div className="gameResultsQuestionsList">
+                                        <p className="gameResultsQuestionAnswersListTitle">Answers</p>
+                                        <p className="gameResultsQuestionAnswersListHint">Click on a question to see the answers.</p>
                                         {questions.length > 0 ? (
                                             questions.map((question, index) => (
                                                 <div key={index} className="gameResultsQuestionItem">
-                                                    <button className="gameResultsQuestionCollapseOpenBtn" onClick={handleCollapseClick}> {question.title} </button>
+                                                    <button className={`${determineAnswerClass(index)}`} onClick={handleCollapseClick}> {question.title} </button>
                                                     <div className="gameResultsQuestionCollapseContent">
                                                         {answers?.length > 0 ? (
                                                             <div className="gameResultsQuestionAnswersList">
+                                                                
                                                                 {answers.filter(answer => answer.questionOrder === question.order_number).map((answer, answerIndex) => (
                                                                     <div key={answerIndex} className="gameResultsQuestionAnswerItem">
-                                                                        <p className="gameResultsQuestionAnswerPlayer">{answer.inner_answers[0]?.playerName}</p>
-                                                                        <p className="gameResultsQuestionAnswerText">{answer.inner_answers[0]?.answer}</p>
-                                                                        {!answer.inner_answers[0]?.wasLate && answer.inner_answers[0]?.isCorrect && <p className="gameResultsQuestionAnswerStatus correct">Correct</p>}
-                                                                        {!answer.inner_answers[0]?.wasLate && !answer.inner_answers[0]?.isCorrect && answer.inner_answers[0] != null && <p className="gameResultsQuestionAnswerStatus incorrect">Incorrect</p>}
-                                                                        {answer.inner_answers[0]?.wasLate && <p className="gameResultsQuestionAnswerStatus late">Late</p>}
+                                                                        {answer.inner_answers[0] != null && <p className="gameResultsQuestionAnswerPlayer">{answer.inner_answers[0]?.playerName}</p>}
+                                                                        {answer.inner_answers[0] != null && <p className="gameResultsQuestionAnswerText">{answer.inner_answers[0]?.answer}</p>}
+                                                                        {answer.inner_answers[0]?.scoreGiven != null && <p className="gameResultsQuestionAnswerScore">{answer.inner_answers[0]?.scoreGiven}</p>}
                                                                         {answer.inner_answers[0] == null && <p className="gameResultsQuestionAnswerStatus noAnswer">No Answers</p>}
                                                                     </div>
                                                                 ))}
