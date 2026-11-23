@@ -3,7 +3,7 @@ import TopBar from '../components/TopBar.jsx'
 import BottomBar from '../components/BottomBar.jsx'
 import axios from "axios";
 import { useState } from 'react';
-import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
+import { io } from "../components/socket.js";
 import { useEffect } from 'react';
 import apiBaseUrl from '../components/apiAdress.js';
 import { useNavigate } from 'react-router';

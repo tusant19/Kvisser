@@ -1,7 +1,7 @@
 import TopBar from '../components/TopBar';
 import BottomBar from '../components/BottomBar';
 import './MuChoQuestion.css';
-import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
+import { io } from "../components/socket.js";
 import { useState } from 'react';
 import { useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';

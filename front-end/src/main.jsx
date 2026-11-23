@@ -24,11 +24,13 @@ import QuestionsEditing from './pages/questionsEditing.jsx'
 import MyGames from './pages/MyGames.jsx'
 import GameResults from './pages/GameResults.jsx'
 import ChangeName from './pages/ChangeName.jsx'
+import SocketProvider from './components/SocketProvider.jsx'
 
 const root = document.getElementById("root");
 
 ReactDOM.createRoot(root).render(
   <BrowserRouter>
+    <SocketProvider />
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/play" element={<Play />} />

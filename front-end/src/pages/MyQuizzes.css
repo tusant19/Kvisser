@@ -29,6 +29,7 @@
 
 .myQuizzesListItem {
     width: 25dvw;
+    max-width: 25dvw;
     background-color: var(--bg2);
     margin: 1vh;
     border-radius: 1vh;
@@ -42,13 +43,13 @@
 }
 
 .myQuizzesListItemLink {
-    width: 150dvw; 
     display: flex;
 }
 
 @media (width < 600px) {
     .myQuizzesListItem {
         width: 96dvw;
+        max-width: 96dvw;
         margin-left: 2vw;
     }
 }

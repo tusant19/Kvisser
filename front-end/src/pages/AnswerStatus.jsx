@@ -8,7 +8,7 @@ import "../Main.css";
 import "./AnswerStatus.css";
 import correctSymbol from "../assets/check_24dp_505050_FILL0_wght400_GRAD0_opsz24.svg";
 import incorrectSymbol from "../assets/close_24dp_505050_FILL0_wght400_GRAD0_opsz24.svg";
-import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
+import { io } from "../components/socket.js";
 
 function AnswerStatus() { 
     let roomCodeLoStor = localStorage.getItem("roomCode") 

@@ -4,7 +4,7 @@ import BottomBar from '../components/BottomBar';
 import { useEffect, useState } from 'react';
 import apiBaseUrl from '../components/apiAdress';
 import axios from 'axios';
-import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
+import { io } from "../components/socket.js";
 import { useNavigate } from 'react-router';
 
 function Leaderboard() {
