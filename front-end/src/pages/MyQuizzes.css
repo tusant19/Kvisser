@@ -15,6 +15,7 @@
 }
 
 .myQuizzesList {
+    width: 100dvw;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -22,6 +23,8 @@
     align-items: center;
     max-width: 95dvw;
     margin-bottom: 7vh;
+    max-width: 100dvw;
+    overflow-x: hidden;
 }
 
 .myQuizzesListItem {
@@ -36,6 +39,18 @@
     justify-content: center;
     color: var(--text1);
     text-decoration: none;
+}
+
+.myQuizzesListItemLink {
+    width: 150dvw; 
+    display: flex;
+}
+
+@media (width < 600px) {
+    .myQuizzesListItem {
+        width: 96dvw;
+        margin-left: 2vw;
+    }
 }
 
 .myQuizzesListItemImage {

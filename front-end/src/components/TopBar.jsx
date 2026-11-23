@@ -34,7 +34,7 @@ function TopBar() {
     return (
         <div className='topBar'>
             <div className='topBarContent'>
-                <a href="../">
+                <a href={`${siteBaseUrl}/`} className='titleLink'>
                     <p className='title dark'>Kvisser</p>
                 </a>
                 

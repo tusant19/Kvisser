@@ -13,15 +13,17 @@
 }
 
 .myGamesList {
+    padding-top: 1vh;
     width: 100dvw;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    gap: 1vh;
 }
 
 .myGamesListItem {
-    margin: 1vh 0;
+    margin: 0;
     padding: 1.2vh 3vw;
     border-radius: 1.5vh;
     background-color: white;
@@ -39,4 +41,11 @@
     border-radius: 1vh;
     border: 2px solid var(--border1);
     box-shadow: 1px 1px 0px 0px rgba(0, 0, 0, 0.1);
+}
+
+@media (width < 600px) {
+    .myGamesListItem {
+        width: 95dvw;
+        box-sizing: border-box;
+    }
 }
