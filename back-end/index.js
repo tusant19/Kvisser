@@ -645,7 +645,7 @@ app.put('/v1/changepassword', (req, res) => {
   let user = getUserByName.get(name);
   if (user?.id == undefined) {
     res.status(401)
-    res.json(
+    return res.json(
       {
         error: "Wrong username or password"
       }
@@ -656,7 +656,7 @@ app.put('/v1/changepassword', (req, res) => {
       bcrypt.hash(newPassword, saltRounds, function(err, hash) {
         if (err) {
           res.status(500)
-          res.json(
+          return res.json(
             {
               error: "A server error occured"
             }
@@ -669,13 +669,13 @@ app.put('/v1/changepassword', (req, res) => {
           let expiry = Date.now() + 3600000 * 24 * 7; // 1 week
           tokenInsert.run(user?.id, token, expiry);
           res.cookie('sessionToken', token, { maxAge: (3600000 * 24 * 7), httpOnly: true })
-          res.sendStatus(200)
+          return res.sendStatus(200)
         }
       });
     }
     else if (!result) {
         res.status(401)
-        res.json(
+        return res.json(
           {
             error: "Wrong username or password"
           }
@@ -683,7 +683,7 @@ app.put('/v1/changepassword', (req, res) => {
     }
     else if (err) {
       res.status(500)
-      res.json(
+      return res.json(
         {
           error: "A server error occured"
         }
@@ -691,7 +691,7 @@ app.put('/v1/changepassword', (req, res) => {
     }
     else {
       res.status(500)
-      res.json(
+      return res.json(
         {
           error: "A server error occured"
         }
