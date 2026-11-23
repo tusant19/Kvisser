@@ -351,6 +351,7 @@ const updateUserPassword = db.prepare('UPDATE users SET password = ? WHERE id = 
 const deleteSessionByToken = db.prepare('DELETE FROM sessions WHERE token = ?');
 const getuserById = db.prepare('SELECT * FROM users WHERE id = ? LIMIT 1')
 const getuserByPublicUuid = db.prepare('SELECT * FROM users WHERE public_uuid = ? LIMIT 1')
+const updateUserName = db.prepare('UPDATE users SET name = ? WHERE id = ?');
 
 const answerOptionInsert = db.prepare('INSERT INTO answer_options (question_id, answer, order_number, is_correct) VALUES (?, ?, ?, ?)');
 const answerOptionInsertByQuizIdAndOrder = db.prepare('INSERT INTO answer_options (question_id, answer, order_number, is_correct) VALUES ((SELECT id FROM quiz_questions WHERE quiz_id = ? AND order_number = ? LIMIT 1), ?, ?, ?)');
@@ -1781,4 +1782,20 @@ app.get('/v1/gamedetails/:gameUuid', checkWasHost, (req, res) => {
       leaderboard: sanitizedPlayers
     }
   )
+})
+
+app.put('/v1/account/:uuid/changeName', checkAccountAccess, (req, res) => {
+  let user = getuserByPublicUuid.all(req.params?.uuid)
+  if (user[0] == undefined) {
+    return res.sendStatus(404)
+  }
+  let newName = req.body?.newName
+  if (newName == undefined || newName == null || newName == "") {
+    return res.status(422).json({ error: "Missing required fields" });
+  }
+  if (newName.length > 50) {
+    return res.status(422).json({ error: "Name exceeds maximum length" });
+  }
+  updateUserName.run(newName, user[0]?.id)
+  return res.sendStatus(200)
 })

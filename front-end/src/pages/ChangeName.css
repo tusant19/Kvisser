@@ -1,0 +1,52 @@
+.changeNamePageMain {
+    min-height: 85.5dvh;
+    background-color: var(--bg1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.changeNameTitle {
+    margin: 0;
+    padding: 1vh 0;
+}
+
+.changeNameForm {
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 1vh;
+}
+
+.changeNamePageFormContainer {
+    background-color: white;
+    padding: 2vh 1.5vw;
+    border-radius: 1vh;
+    border: 2px solid var(--border1);
+    text-align: center;
+}
+
+.changeNameInput {
+    background-color: white;
+    border: 2px solid var(--border1);
+    padding: 0.5vh 1vw;
+    border-radius: 0.8vh;
+}
+
+.changeNameButton {
+    background-color: white;
+    border: 2px solid var(--border1);
+    padding: 0.5vh 1vw;
+    border-radius: 0.8vh;
+}
+
+.changeNameCurrent {
+    margin-top: 0;
+    margin-bottom: 3vh;
+}
+
+@media (width <= 700px) {
+    .changeNamePageFormContainer {
+        width: 70dvw;
+    }
+}
