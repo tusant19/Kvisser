@@ -26,6 +26,7 @@ IMPORTANT
  - You can access the quiz creation from your personal account page
  - You can access the quiz editor after you create a quiz by clicking the associated button in the screen you'll be taken to after creation
  - You can access your game details after you host a game yet again in the profile. Click see details to see the leaderboard and what everyone answered.
+ - Changing your username can be done trough the account page
 
 
 <p>Note: the page for changing your password is in your account page.</p>
@@ -75,6 +76,8 @@ Current features that exist:
 <p>The list of games youve hosted (also missing images)</p>
 
 <p>The details page of a game you've hosted showing the leaderboard and what everyone has answered (yet again missing images)</p>
+
+<p>The page for changing your name</p>
 
 
 

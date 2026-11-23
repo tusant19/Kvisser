@@ -1796,6 +1796,13 @@ app.put('/v1/account/:uuid/changeName', checkAccountAccess, (req, res) => {
   if (newName.length > 50) {
     return res.status(422).json({ error: "Name exceeds maximum length" });
   }
+  if (newName === user[0]?.name) {
+    return res.status(422).json({ error: "New name is the same as the current name" });
+  }
+  let doesAlreadyExist = getUserByName.all(newName)
+  if (doesAlreadyExist[0] != undefined) {
+    return res.status(409).json({ error: "Name already exists" });
+  }
   updateUserName.run(newName, user[0]?.id)
   return res.sendStatus(200)
 })
