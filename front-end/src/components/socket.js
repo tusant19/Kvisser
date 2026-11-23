@@ -1,6 +1,8 @@
 import { io as createSocketClient } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 import apiBaseUrl from "./apiAdress.js";
 
+const rejoinEvents = ["joinRoom", "joinRoomAsHost"];
+const channels = new Set();
 let connection = null;
 
 export function getSocket(url = apiBaseUrl) {
@@ -8,6 +10,17 @@ export function getSocket(url = apiBaseUrl) {
         connection = createSocketClient(url);
         connection.disconnect = function () {};
         connection.close = function () {};
+        let connectedBefore = false;
+        connection.on("connect", function () {
+            if (connectedBefore) {
+                for (const channel of channels) {
+                    if (channel.lastJoin) {
+                        connection.emit(...channel.lastJoin);
+                    }
+                }
+            }
+            connectedBefore = true;
+        });
     }
     return connection;
 }
@@ -15,7 +28,8 @@ export function getSocket(url = apiBaseUrl) {
 function createChannel(socket) {
     const handlers = [];
 
-    return {
+    const channel = {
+        lastJoin: null,
         get id() {
             return socket.id;
         },
@@ -23,6 +37,9 @@ function createChannel(socket) {
             return socket.connected;
         },
         emit(...args) {
+            if (rejoinEvents.includes(args[0])) {
+                channel.lastJoin = args;
+            }
             socket.emit(...args);
             return this;
         },
@@ -45,6 +62,8 @@ function createChannel(socket) {
                 socket.off(entry.event, entry.handler);
             }
             handlers.length = 0;
+            channel.lastJoin = null;
+            channels.delete(channel);
             return this;
         },
         connect() {
@@ -52,6 +71,9 @@ function createChannel(socket) {
             return this;
         }
     };
+
+    channels.add(channel);
+    return channel;
 }
 
 export function io(url = apiBaseUrl) {

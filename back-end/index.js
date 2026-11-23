@@ -64,7 +64,7 @@ io.on("connection", (socket) => {
     if (!uuid) return;
     //console.log("joinRoom: " + room)
     socket.join(room);
-    updateSocket.run(socket.id, 1, uuid)
+    updateSocket.run(socket.id, 1, uuid, room)
 
     setInactivePlayers(room);
     //console.log("room joined " +  room)
@@ -73,7 +73,7 @@ io.on("connection", (socket) => {
     if (!roomCode) return;
     if (!uuid) return;
     socket.join(roomCode + "host")
-    updateSocket.run(socket.id, 1, uuid)
+    updateSocket.run(socket.id, 1, uuid, roomCode)
     reactivateGame.run(roomCode)
     sendPlayersToHost(roomCode);
     
@@ -97,7 +97,7 @@ io.on("connection", (socket) => {
   socket.on("nextQuestionFromLeaderboard", (roomCode, uuid) => {
     console.log("nextQuestionFromLeaderboard: " + roomCode)
     socket.join(roomCode + "host");
-    updateSocket.run(socket.id, 1, uuid);
+    updateSocket.run(socket.id, 1, uuid, roomCode);
     let host = getHostUuid.get(roomCode);
     let questionCount = getQuestionCountByRoomCode.all((roomCode))[0]['COUNT(*)'] * 2
     let gameState = getGameState.get(roomCode)
@@ -326,7 +326,8 @@ const getPlayersPlace = db.prepare('SELECT COUNT(*) FROM game_players WHERE game
 const getPlayersLeaderboardAfter = db.prepare('SELECT * FROM game_players WHERE game_uuid = ? AND role != \'host\' ORDER BY score DESC, time_joined')
 
 const markPlayerInactive = db.prepare('UPDATE game_players SET connected = 0 WHERE socket_id = ?')
-const updateSocket = db.prepare('UPDATE game_players SET socket_id = ?, connected = ? WHERE id = (SELECT id FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1)')
+const markPlayerInactiveInGame = db.prepare("UPDATE game_players SET connected = 0 WHERE uuid = ? AND game_id = ? AND role != 'host'")
+const updateSocket = db.prepare('UPDATE game_players SET socket_id = ?, connected = ? WHERE id = (SELECT id FROM game_players WHERE uuid = ? AND game_code = ? ORDER BY time_joined DESC LIMIT 1)')
 
 const questionInsert = db.prepare('INSERT INTO quiz_questions (quiz_id, type, order_number, img_link, score_value, time_given, title, randomize_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
 const questionDelete = db.prepare('DELETE FROM quiz_questions WHERE id = ?');
@@ -775,17 +776,18 @@ app.get('/v1/mostPlayed', (req, res) => {
 app.put('/v1/joinRoom', async (req, res) => {
   let caseUpperCode = req?.body?.code?.toLowerCase();
   console.log("joinRoom " + caseUpperCode + " " + req?.body?.name)
-  let alrInRoom = false;
   if (caseUpperCode != null && req.body.name != null && caseUpperCode != "" && req.body.name != "") {
     if (req?.body?.name?.length > 30) {
       return res.sendStatus(422);
     }
-    for (let game of getPlayer.iterate(req?.cookies?.playerUuid)) {
-      //console.log("BODY code" + req.body?.code)
-      let active = gameCheck.all(game?.game_code)
-      //console.log("result" + active[0]?.active)
-      if (active[0]?.active == 1) {
-        alrInRoom = true;
+    for (let pastRow of getPlayer.all(req?.cookies?.playerUuid)) {
+      if (pastRow?.game_code == caseUpperCode) continue;
+      let pastGame = gameCheck.all(pastRow?.game_code);
+      if (pastGame[0]?.active == 1) {
+        console.log("player " + req?.cookies?.playerUuid + " left active room " + pastRow?.game_code + " for " + caseUpperCode);
+        markPlayerInactiveInGame.run(req?.cookies?.playerUuid, pastRow?.game_id);
+        io.to(pastRow?.game_code).emit("playerCount", getPlayerCount.all(pastRow?.game_code)[0]['COUNT(*)']);
+        sendPlayersToHost(pastRow?.game_code);
       }
     }
     
@@ -805,7 +807,8 @@ app.put('/v1/joinRoom', async (req, res) => {
         uuid = req.cookies.playerUuid
 
       }
-      if (alrInRoom !== true) {
+      let alreadyInThisGame = getPlayer.all(uuid).some((row) => row?.game_id == gameId && row?.role != "host");
+      if (alreadyInThisGame !== true) {
         let playerId = 0;
         let token = req?.cookies?.sessionToken
         if (token != null && token != undefined) {

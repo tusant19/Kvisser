@@ -30,3 +30,4 @@ backup.txt
 toDO.txt
 *.db-shm
 *.db-wal
+/back-end/scripts/
