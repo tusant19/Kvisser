@@ -5,9 +5,10 @@ import { useEffect, useState } from 'react';
 import apiBaseUrl from '../components/apiAdress';
 import axios from 'axios';
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
-import siteBaseUrl from '../components/baseAdress';
+import { useNavigate } from 'react-router';
 
 function Leaderboard() {
+    const navigate = useNavigate();
     const [leaderboardData, setLeaderboardData] = useState([]);
     let roomCodeLoStor = localStorage.getItem("roomCode");
     let uuid = localStorage.getItem("uuid");
@@ -29,7 +30,8 @@ function Leaderboard() {
         const socket = io(apiBaseUrl)
         socket.on("nextQuestionSwap", (type) => {
             console.log("NQS")
-            window.location.replace(`${siteBaseUrl}/${type}`);
+            socket.disconnect();
+            navigate(`/${type}`);
         });
         socket.emit("nextQuestionFromLeaderboard", roomCodeLoStor, uuid)
         
@@ -52,7 +54,7 @@ function Leaderboard() {
                 title.textContent = "Thanks for playing!";
                 button.textContent = "Return to Home";
                 button.addEventListener("click", () => {
-                    window.location.replace(`${siteBaseUrl}/`);
+                    navigate('/');
                 });
             }
         })

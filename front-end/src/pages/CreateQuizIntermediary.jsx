@@ -4,10 +4,11 @@ import BottomBar from '../components/BottomBar.jsx';
 import { useState, useRef } from 'react';
 import axios from 'axios';
 import apiBaseUrl from '../components/apiAdress.js';
-import siteBaseUrl from '../components/baseAdress.js';
+import { useNavigate } from 'react-router';
 import noImg from '../assets/noImg.png';
 
 function CreateQuizIntermediary() {
+    const navigate = useNavigate();
     const quizIdRef = useRef(null);
     const [error, setError] = useState(null);
     const languageRef = useRef(null);
@@ -28,7 +29,7 @@ function CreateQuizIntermediary() {
         })
         .then((res) => {
             let quizId = res.data.quizId;
-            window.location.replace(`${siteBaseUrl}/create/quiz/details/${res.data?.quizid}`);
+            navigate(`/create/quiz/details/${res.data?.quizid}`);
         })
         .catch((error) => {
             console.error(error);

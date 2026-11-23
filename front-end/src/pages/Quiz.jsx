@@ -3,13 +3,14 @@ import BottomBar from '../components/BottomBar.jsx'
 import axios from "axios";
 import { useEffect, useRef, useState } from 'react';
 import './Quiz.css'
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import apiBaseUrl from '../components/apiAdress.js';
 import noImg from '../assets/noImg.png'
 
 function Quiz(props) {
     
     const { quizid } = useParams();
+    const navigate = useNavigate();
     const [imgLink, setImgLink] = useState("https://placehold.co/600x400");
     const [title, setTitle] = useState(quizid)
     const [questions, setQuestions] = useState([]);
@@ -70,7 +71,7 @@ function Quiz(props) {
             })
             .then((res) => {
                 if (res.status === 200) {
-                    window.location.assign(`../host/${quizid}`)
+                    navigate(`/host/${quizid}`)
                 } else {
                     popupRef.current.style.display = "flex";
                 }

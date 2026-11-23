@@ -4,11 +4,12 @@ import BottomBar from '../components/BottomBar.jsx'
 import axios from "axios";
 import { useRef } from 'react';
 import apiBaseUrl from '../components/apiAdress.js';
-import siteBaseUrl from '../components/baseAdress.js';
+import { useNavigate } from 'react-router';
 
 import { useState } from 'react';
 
 function ChangePassword() {
+    const navigate = useNavigate();
     const nameRef = useRef();
     const passwordRef = useRef();
     const newPasswordRef = useRef();
@@ -24,7 +25,7 @@ function ChangePassword() {
         })
         .then((res) => {
             if (res.status === 200) {
-                window.history.back()
+                navigate(-1)
                 
             }
             else if (res.status === 401) {

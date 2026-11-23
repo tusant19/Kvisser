@@ -4,10 +4,12 @@ import BottomBar from '../components/BottomBar.jsx'
 import axios from "axios";
 import { useRef } from 'react';
 import apiBaseUrl from '../components/apiAdress.js';
-import siteBaseUrl from '../components/baseAdress.js';
+import referrerPath from '../components/referrerPath.js';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router';
 
 function Logout() {
+    const navigate = useNavigate();
     const [errorState, setErrorState] = useState(null);
 
     useEffect(() => {
@@ -19,11 +21,11 @@ function Logout() {
         })
         .then((res) => {
             if (res.data.msg === "Log in") {
-                window.history.back()
+                navigate(-1)
             }
         })
         .catch((error) => {
-            window.history.back()
+            navigate(-1)
         });
     }, []);
 
@@ -33,7 +35,7 @@ function Logout() {
         })
         .then((res) => {
             if (res.status === 200) {
-                window.location.replace(document.referrer || `${siteBaseUrl}/`)
+                navigate(referrerPath('/'))
             }
             else if (res.status === 401) {
                 setErrorState(res?.data?.error);
@@ -57,7 +59,7 @@ function Logout() {
                         <button onClick={logout} className='logOutBtn'>
                             Sign out
                         </button>
-                        <button onClick={() => window.location.replace(document.referrer || `${siteBaseUrl}/`)} className='logOutBtn cancelBtn'>
+                        <button onClick={() => navigate(referrerPath('/'))} className='logOutBtn cancelBtn'>
                             Cancel
                         </button>
                     </div>

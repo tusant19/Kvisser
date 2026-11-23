@@ -3,11 +3,13 @@ import TopBar from '../components/TopBar.jsx'
 import BottomBar from '../components/BottomBar.jsx'
 import axios from "axios";
 import { useRef } from 'react';
+import { useNavigate } from 'react-router';
 import apiBaseUrl from '../components/apiAdress.js';
-import siteBaseUrl from '../components/baseAdress.js';
+import referrerPath from '../components/referrerPath.js';
 import { useState } from 'react';
 
 function Login() {
+    const navigate = useNavigate();
     const nameRef = useRef();
     const passwordRef = useRef();
     const [errorState, setErrorState] = useState(null);
@@ -21,7 +23,7 @@ function Login() {
         })
         .then((res) => {
             if (res.status === 200) {
-                window.location.replace(document.referrer || `${siteBaseUrl}/`)
+                navigate(referrerPath('/'))
             }
             console.log(res.status)
         })

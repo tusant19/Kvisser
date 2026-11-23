@@ -4,10 +4,11 @@ import BottomBar from '../components/BottomBar.jsx'
 import axios from "axios";
 import { useRef } from 'react';
 import apiBaseUrl from '../components/apiAdress.js';
-import siteBaseUrl from '../components/baseAdress.js';
+import { useNavigate } from 'react-router';
 import { useState } from 'react';
 
 function CreateAccount() {
+    const navigate = useNavigate();
     const nameRef = useRef();
     const passwordRef = useRef();
     const [errorState, setErrorState] = useState(null);
@@ -21,7 +22,7 @@ function CreateAccount() {
         })
         .then((res) => {
             if (res.status === 200) {
-                window.location.replace(`${siteBaseUrl}/`);
+                navigate('/');
             }
             else if (res.status === 401) {
                 setErrorState(res?.data?.error);

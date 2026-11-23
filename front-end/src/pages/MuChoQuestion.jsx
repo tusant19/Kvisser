@@ -4,7 +4,7 @@ import './MuChoQuestion.css';
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 import { useState } from 'react';
 import { useRef } from 'react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import axios from 'axios';
 import apiBaseUrl from '../components/apiAdress';
 import siteBaseUrl from '../components/baseAdress';
@@ -16,6 +16,7 @@ import pseudoRandomizeArrayOrder from '../components/pseudoRand.js';
 
 
 function MuChoQuestion() {
+    const navigate = useNavigate();
     const [playerDetails, setPlayerDetails] = useState(null)
     const isHost = useRef(null)
     const [question, setQuestion] = useState(null)
@@ -141,7 +142,7 @@ function MuChoQuestion() {
             window.location.replace(`${siteBaseUrl}/${type}`);
         })
         socket.on("goToLeaderboard", () => {
-            window.location.replace(`${siteBaseUrl}/leaderboard`);
+            navigate('/leaderboard');
         })
         return () => socket.disconnect()
     }, [roleLoaded, roomCodeLoStor])
@@ -251,11 +252,11 @@ function MuChoQuestion() {
                     })
                     .then((res) => {
                         hasSentLateAnswer = true;
-                        window.location.replace(`${siteBaseUrl}/answer/late`);
+                        navigate('/answer/late');
                     })
                     .catch((error) => {
                         console.error(error);
-                        window.location.replace(`${siteBaseUrl}/answer/late`);
+                        navigate('/answer/late');
                     })
                 } else if (!hasSentLateAnswer && isHost.current) {
                     getResults();
@@ -281,22 +282,22 @@ function MuChoQuestion() {
             if (res.status === 200) {
                 if (res.data.correct) {
                     //redirect to correct answer page
-                    window.location.replace(`${siteBaseUrl}/answer/correct`);
+                    navigate('/answer/correct');
                 } else {
                     //redirect to incorrect answer page
-                    window.location.replace(`${siteBaseUrl}/answer/incorrect`);
+                    navigate('/answer/incorrect');
                 }
             } else if (res.status == 409) {
                 //redirect to already answered page
-                window.location.replace(`${siteBaseUrl}/answer/conflict`);
+                navigate('/answer/conflict');
             }
         })
         .catch((error) => {
             if (error.response && error.response.status === 409) {
                 //redirect to already answered page
-                window.location.replace(`${siteBaseUrl}/answer/conflict`);
+                navigate('/answer/conflict');
             } else {
-                window.location.replace(`${siteBaseUrl}/answer/error`);
+                navigate('/answer/error');
             }
             console.error(error);
         })
@@ -356,7 +357,7 @@ function MuChoQuestion() {
     }, [results]);
 
     function handleLeaderboardClick() {
-        window.location.replace(`${siteBaseUrl}/leaderboard`);
+        navigate('/leaderboard');
     }
 
     function handleSkip() {

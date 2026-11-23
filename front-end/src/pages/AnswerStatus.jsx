@@ -2,18 +2,18 @@ import apiBaseUrl from "../components/apiAdress";
 import BottomBar from "../components/BottomBar";
 import TopBar from "../components/TopBar";
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import axios from "axios";
 import "../Main.css";
 import "./AnswerStatus.css";
 import correctSymbol from "../assets/check_24dp_505050_FILL0_wght400_GRAD0_opsz24.svg";
 import incorrectSymbol from "../assets/close_24dp_505050_FILL0_wght400_GRAD0_opsz24.svg";
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
-import siteBaseUrl from "../components/baseAdress";
 
 function AnswerStatus() { 
     let roomCodeLoStor = localStorage.getItem("roomCode") 
     const { status } = useParams();
+    const navigate = useNavigate();
     const [answerStatus, setAnswerStatus] = useState("waiting");
     const [points, setPoints] = useState(0);
     const [placeMsg, setPlaceMsg] = useState(null);
@@ -68,8 +68,9 @@ function AnswerStatus() {
         socket.emit("joinRoom", roomCodeLoStor, uuid)
         socket.on("nextQuestionSwap", (type) => {
             console.log("NQS")
-            window.location.replace(`${siteBaseUrl}/${type}`);
+            navigate(`/${type}`);
         });
+        return () => socket.disconnect()
     }, [])
 
     return (

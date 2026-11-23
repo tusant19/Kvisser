@@ -6,12 +6,13 @@ import { useState } from 'react';
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 import { useEffect } from 'react';
 import apiBaseUrl from '../components/apiAdress.js';
-import siteBaseUrl from '../components/baseAdress.js';
+import { useNavigate } from 'react-router';
 
 axios.defaults.withCredentials = true;
 
 
 function Waiting() {
+    const navigate = useNavigate();
     const [name, setName] = useState("user")
     const [count, setCount] = useState(0)
     const [room, setRoom] = useState(null)
@@ -67,7 +68,7 @@ function Waiting() {
         })
         socket.on("nextQuestionSwap", (type) => {
             console.log("NQS")
-            window.location.replace(`${siteBaseUrl}/${type}`);
+            navigate(`/${type}`);
         })
 
         return () => {

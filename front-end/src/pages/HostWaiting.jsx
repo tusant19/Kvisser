@@ -3,14 +3,14 @@ import BottomBar from '../components/BottomBar';
 import './HostWaiting.css';
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 import { useState } from 'react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import axios from 'axios';
 import apiBaseUrl from '../components/apiAdress';
-import siteBaseUrl from '../components/baseAdress';
 import { useEffect } from 'react';
 import '../Main.css'
 
 function HostWaiting() {
+    const navigate = useNavigate();
     const [roomCode, setRoomCode] = useState(null);
     const [uuid, setUuid] = useState(null);
     const [players, setPlayers] = useState([]);
@@ -43,7 +43,7 @@ function HostWaiting() {
         })
         socket.on("nextQuestionSwap", (type) => {
             console.log("NQS")
-            window.location.replace(`${siteBaseUrl}/${type}`);
+            navigate(`/${type}`);
         })
         socket.emit("joinRoomAsHost", roomCode, uuid)
 
@@ -54,11 +54,15 @@ function HostWaiting() {
     }, [roomCode, uuid])
 
     //if bfcache, setup new room
-    window.onpageshow = function(event) {
-        if (event.persisted) {
-            setUpNewRoom();
+    useEffect(() => {
+        function handlePageShow(event) {
+            if (event.persisted) {
+                setUpNewRoom();
+            }
         }
-    };
+        window.addEventListener("pageshow", handlePageShow);
+        return () => window.removeEventListener("pageshow", handlePageShow);
+    }, []);
 
     function setUpNewRoom() {
         localStorage.removeItem("uuid");

@@ -5,9 +5,10 @@ import BottomBar from '../components/BottomBar.jsx'
 import axios from "axios";
 import { useRef } from 'react';
 import apiBaseUrl from '../components/apiAdress.js';
-import siteBaseUrl from '../components/baseAdress.js';
+import { useNavigate } from 'react-router';
 
 function Play() {
+    const navigate = useNavigate();
     const codeRef = useRef();
     const nameRef = useRef();
 
@@ -33,7 +34,7 @@ function Play() {
             if (res.status = 200) {
                 console.log(res.data.playerUuid)
                 localStorage.setItem("uuid", res.data.playerUuid)
-                window.location.replace(`${siteBaseUrl}/waiting`)
+                navigate('/waiting')
             } else {
                 console.log(res.status)
             }
