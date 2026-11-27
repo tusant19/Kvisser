@@ -17,7 +17,7 @@ db.pragma('journal_mode = WAL');
 const httpServer = createServer(app)
 const io = new Server(httpServer, {
   cors: {
-    origin: ["http://localhost:5173", "http://192.168.68.100:5173", "https://kvisser.santtu.uk"],
+    origin: ["http://localhost:5173", "http://192.168.68.100:5173", "https://kvisser.santtu.uk", "https://kysely.santtu.uk"],
     credentials: true
   }
 });
