@@ -9,6 +9,7 @@ import cookieParser from 'cookie-parser';
 import { createServer } from "http";
 import { Server } from "socket.io";
 import bcrypt from 'bcrypt';
+import { platform } from 'os';
 
 db.pragma('journal_mode = WAL');
 
@@ -308,9 +309,11 @@ const updateGameTime = db.prepare('UPDATE games SET time_started = ? WHERE room_
 const updateGameUuid = db.prepare('UPDATE games SET public_uuid = ? WHERE room_code = ? AND active = 1');
 const getGameByUuid = db.prepare('SELECT * FROM games WHERE public_uuid = ? LIMIT 1');
 const getGameByCode = db.prepare('SELECT * FROM games WHERE room_code = ? AND active = 1 LIMIT 1');
+const getMostRecentGameByCodeNoActive = db.prepare('SELECT * FROM games WHERE room_code = ? ORDER BY time_started DESC LIMIT 1')
 
 const playerInsert = db.prepare('INSERT INTO game_players (game_id, game_code, time_joined, user_id, uuid, name, score, game_uuid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
 const getPlayer = db.prepare('SELECT * FROM game_players WHERE uuid = ? ORDER BY time_joined DESC')
+const getPlayerLimited = db.prepare('SELECT * FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1')
 const getPlayerBySocket = db.prepare('SELECT * FROM game_players WHERE socket_id = ? ORDER BY time_joined DESC LIMIT 1')
 const deletePlayerBySocket = db.prepare('DELETE FROM game_players WHERE socket_id = ?')
 const getPlayerCount = db.prepare('SELECT COUNT(*) FROM game_players WHERE game_code = ? AND connected = 1 AND role != \'host\'')
@@ -1808,4 +1811,52 @@ app.put('/v1/account/:uuid/changeName', checkAccountAccess, (req, res) => {
   }
   updateUserName.run(newName, user[0]?.id)
   return res.sendStatus(200)
+})
+
+app.get('/v1/finalresults/:roomcode/:uuid', (req, res) => {
+  let uuid = req.body?.uuid
+  if (uuid == null || uuid == undefined || uuid == '') {
+    return res.sendStatus(422)
+  }
+  let player = getPlayerLimited.get(uuid)
+  console.log(JSON.stringify(player))
+  if (player[0] == undefined || player[0] == null) {
+    return res.sendStatus(404)
+  }
+  let roomCode = req.body?.uuid
+  if (roomCode == null || roomCode == undefined || roomCode == '') {
+    return res.sendStatus(422)
+  }
+  let gamePlayerList = getPlayersSortedScoreNoConnect.all(roomCode)
+  if (gamePlayerList[0] == undefined || gamePlayerList[0] == null) {
+    return res.sendStatus(404)
+  }
+  let placement = 1;
+  let found = false;
+  for (let i = 0; i < gamePlayerList.length; i++) {
+    if (!found && gamePlayerList[i].uuid != uuid) {
+      placement++;
+    }
+  }
+  console.log("placement: " + placement); 
+  let name = player[0].name;
+  let score = player[0].score;
+  let game = getMostRecentGameByCodeNoActive.get(roomCode)
+  if (game[0].quiz_id == null || game[0].quiz_id == undefined) {
+    return res.sendStatus(404)
+  }
+  let quiz = quizGetById.get(game[0].quiz_id)
+  if (quiz[0].title == null || quiz[0].title == undefined) {
+    return res.sendStatus(404)
+  }
+  let title = quiz[0].title
+
+  return res.json(
+    {
+      title: title,
+      playerName: name,
+      playerScore: score,
+      playerPlacement: placement
+    }
+  )
 })

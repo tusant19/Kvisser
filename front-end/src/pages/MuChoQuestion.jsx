@@ -131,7 +131,8 @@ function MuChoQuestion() {
                 setAnswerCount(count + "/" + playerCount.current + " answer")
             }
             if (isHost.current && count >= playerCount.current) {
-                                          
+                getResults();
+                setIsFinalized(true);
             }
             
         })
