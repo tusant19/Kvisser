@@ -162,7 +162,7 @@ io.on("connection", (socket) => {
 
 
 const corsOptions = {
-    origin: ["http://localhost:5173", "http://192.168.68.100:5173", "https://kvisser.santtu.uk"],
+    origin: ["http://localhost:5173", "http://192.168.68.100:5173", "https://kvisser.santtu.uk", "https://kysely.santtu.uk"],
     credentials: true
 }
 
