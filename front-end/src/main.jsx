@@ -25,6 +25,7 @@ import MyGames from './pages/MyGames.jsx'
 import GameResults from './pages/GameResults.jsx'
 import ChangeName from './pages/ChangeName.jsx'
 import SocketProvider from './components/SocketProvider.jsx'
+import FinalResultsPlayer from "./pages/FinalResultsPlayer.jsx";
 
 const root = document.getElementById("root");
 
@@ -55,6 +56,7 @@ ReactDOM.createRoot(root).render(
       <Route path="/account/games" element={<MyGames/>}/>
       <Route path="/game/:gameid" element={<GameResults/>}/>
       <Route path="/changename" element={<ChangeName/>}/>
+      <Route path="/results/player" element={<FinalResultsPlayer/>}/>
     </Routes>
   </BrowserRouter>,
 );

@@ -37,6 +37,7 @@ function MuChoQuestion() {
     const [isFinalQuestion, setIsFinalQuestion] = useState(false);
     
     let answerOptionRefs = useRef([]);
+    const socketRef = useRef(null);
 
     useEffect(() => {
         axios.get(`${apiBaseUrl}/v1/playercount/${roomCodeLoStor}`, {
@@ -111,17 +112,18 @@ function MuChoQuestion() {
     useEffect(() => {
         const uuid = localStorage.getItem("uuid")
         const roomCodeLoStor = localStorage.getItem("roomCode")
-        if (!roleLoaded) return
-        if (!roomCodeLoStor) return
-        if (!uuid) return
+        if (!roleLoaded || !roomCodeLoStor || !uuid) return
+
         const socket = io(apiBaseUrl)
+
         if (isHost.current) {
             console.log("joining room as host: " + roomCodeLoStor)
             socket.emit("joinRoomAsHost", roomCodeLoStor, uuid)
         } else {
             console.log("joining room as player: " + roomCodeLoStor)
             socket.emit("joinRoom", roomCodeLoStor, uuid)
-        } 
+        }
+
         socket.on("answerCount", (count) => {
             console.log("answerCount: " + count)
             latestAnswerCount.current = count;
@@ -134,7 +136,6 @@ function MuChoQuestion() {
                 getResults();
                 setIsFinalized(true);
             }
-            
         })
         socket.on("nextQuestionSwap", (type) => {
             window.location.replace(`${siteBaseUrl}/${type}`);
@@ -145,6 +146,20 @@ function MuChoQuestion() {
         socket.on("goToLeaderboard", () => {
             navigate('/leaderboard');
         })
+        socket.on("goToFinalResults", () => {
+            if (isHost.current) {
+                navigate('/results/host')
+            } else {
+                navigate('results/player')
+            }
+        })
+
+        const handleFinal = () => {
+            socket.emit("finalLeaderboardClick", roomCodeLoStor, uuid)
+        }
+
+        socketRef.current = { socket, handleFinal }
+
         return () => socket.disconnect()
     }, [roleLoaded, roomCodeLoStor])
 
@@ -358,7 +373,11 @@ function MuChoQuestion() {
     }, [results]);
 
     function handleLeaderboardClick() {
-        navigate('/leaderboard');
+        if (!isFinalQuestion) {
+            navigate('/leaderboard');
+        } else {
+            socketRef.current?.handleFinal?.();
+        }
     }
 
     function handleSkip() {

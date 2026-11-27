@@ -140,10 +140,19 @@ io.on("connection", (socket) => {
         addGameStateChange.run(roomCode, gameState?.state + 2, Date.now());
         io.to(roomCode).to(roomCode + "host").emit("skipQuestion", (questionType?.type));
       } else {
-        io.to(roomCode + "host").emit("goToLeaderboard");
+        io.to(roomCode + "host").to(roomCode).emit(" goToFinalResults");
       }
     }
   });
+  socket.on("finalLeaderboardClick", (roomCode, uuid) => {
+    console.log("finalLeaderboardClick")
+    let host = getHostUuid.get(roomCode);
+    console.log(host?.uuid + " " + uuid)
+    if (host?.uuid == uuid) {
+      console.log("approved")
+      io.to(roomCode + "host").to(roomCode).emit("goToFinalResults");
+    }
+  })
 });
 
 
@@ -1814,21 +1823,25 @@ app.put('/v1/account/:uuid/changeName', checkAccountAccess, (req, res) => {
 })
 
 app.get('/v1/finalresults/:roomcode/:uuid', (req, res) => {
-  let uuid = req.body?.uuid
+  let uuid = req.params?.uuid
   if (uuid == null || uuid == undefined || uuid == '') {
+    console.log("uuid is null or undefined or empty")
     return res.sendStatus(422)
   }
   let player = getPlayerLimited.get(uuid)
   console.log(JSON.stringify(player))
-  if (player[0] == undefined || player[0] == null) {
+  if (player == undefined || player == null) {
+    console.log("player not found")
     return res.sendStatus(404)
   }
-  let roomCode = req.body?.uuid
+  let roomCode = req.params?.roomcode
   if (roomCode == null || roomCode == undefined || roomCode == '') {
+    console.log("roomCode is null or undefined or empty")
     return res.sendStatus(422)
   }
   let gamePlayerList = getPlayersSortedScoreNoConnect.all(roomCode)
   if (gamePlayerList[0] == undefined || gamePlayerList[0] == null) {
+    console.log("gamePlayerList not found")
     return res.sendStatus(404)
   }
   let placement = 1;
@@ -1839,17 +1852,19 @@ app.get('/v1/finalresults/:roomcode/:uuid', (req, res) => {
     }
   }
   console.log("placement: " + placement); 
-  let name = player[0].name;
-  let score = player[0].score;
+  let name = player?.name;
+  let score = player?.score;
   let game = getMostRecentGameByCodeNoActive.get(roomCode)
-  if (game[0].quiz_id == null || game[0].quiz_id == undefined) {
+  if (game?.quiz_id == null || game?.quiz_id == undefined) {
+    console.log("quiz_id is null or undefined")
     return res.sendStatus(404)
   }
-  let quiz = quizGetById.get(game[0].quiz_id)
-  if (quiz[0].title == null || quiz[0].title == undefined) {
+  let quiz = quizGetById.get(game?.quiz_id)
+  if (quiz?.title == null || quiz?.title == undefined) {
+    console.log("quiz title is null or undefined")
     return res.sendStatus(404)
   }
-  let title = quiz[0].title
+  let title = quiz?.title
 
   return res.json(
     {

@@ -70,6 +70,9 @@ function AnswerStatus() {
             console.log("NQS")
             navigate(`/${type}`);
         });
+        socket.on("goToFinalResults", () => {
+            navigate('/results/player')
+        })
         return () => socket.disconnect()
     }, [])
 

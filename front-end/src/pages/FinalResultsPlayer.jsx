@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import axios from 'axios';
 import apiBaseUrl from '../components/apiAdress';
@@ -10,46 +10,58 @@ function FinalResultsPlayer() {
     const navigate = useNavigate();
     const [roomCode, setRoomCode] = useState(null);
     const [uuid, setUuid] = useState(null);
+    const placeRef = useRef(null);
     const [place, setPlace] = useState('');
     const [quizTitle, setQuizTitle] = useState('');
     const [name, setName] = useState(null);
     const [score, setScore] = useState(null);
+    const [hasTried, setHasTried] = useState(false);
 
-    setUuid(localStorage.getItem('uuid'));
-    setRoomCode(localStorage.getItem('roomCode'));
+    let roomCodeLoStor = localStorage.getItem("roomCode");
+    let uuidLoStor = localStorage.getItem("uuid");
 
     useEffect(() => {
-        if (!roomCode || !uuid) {
+        setRoomCode(roomCodeLoStor)
+        setUuid(uuidLoStor)
+        if (!roomCodeLoStor || !uuidLoStor) {
             return;
         }
-        axios.get(`${apiBaseUrl}/v1/finalresults/${roomCode}/${uuid}`, {
+        if (hasTried) {
+            return;
+        }
+        axios.get(`${apiBaseUrl}/v1/finalresults/${roomCodeLoStor}/${uuidLoStor}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
         })
         .then(response => {
-            setPlace(response.data?.playerPlacement);
+            console.log(response.data)
+            placeRef.current = response.data?.playerPlacement;
             setQuizTitle(response.data?.title);
             setName(response.data?.playerName);
             setScore(response.data?.playerScore);
+            setHasTried(true);
         })
         .catch(error => {
             console.error('Error fetching final results:', error);
+            setHasTried(true);
         });
-    }, [roomCode, uuid]);
+    }, []);
 
-    function fancyPlaceName(place) {
-        if (place === 1) {
-            return `${place}st Place`;
-        }
-        if (place === 2) {
-            return `${place}nd Place`;
-        }
-        if (place === 3) {
-            return `${place}rd Place`;
-        }
-        return `${place}th Place`;
-    }
+    useEffect(() => {
+        let placeName = '';
+            if (placeRef.current === 1) {
+                placeName = `${placeRef.current}st Place`;
+            } else if (placeRef.current === 2) {
+                placeName = `${placeRef.current}nd Place`;
+            } else if (placeRef.current === 3) {
+                placeName = `${placeRef.current}rd Place`;
+            } else {
+                placeName = `${placeRef.current}th Place`;
+            }
+            setPlace(placeName);
+    }, [placeRef.current]);
+        
     
     function handleHomeClick() {
         navigate('/');
@@ -66,7 +78,7 @@ function FinalResultsPlayer() {
                     <p className="finalResultsPlayerContentText">Quiz Title: {quizTitle}</p>
                     <p className="finalResultsPlayerContentText">{name}</p>
                     <p className="finalResultsPlayerContentText">{score} points</p>
-                    <p className="finalResultsPlayerContentText">{fancyPlaceName(place)}</p>
+                    <p className="finalResultsPlayerContentText">{place}</p>
                 </div>
                 <div className='finalResultsHomeButtonDiv'>
                     <button onClick={handleHomeClick} className='finalResultsHomeButton'>Home</button>
@@ -75,3 +87,6 @@ function FinalResultsPlayer() {
         </div>
     );
 }
+
+
+export default FinalResultsPlayer
