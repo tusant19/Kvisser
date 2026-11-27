@@ -5,6 +5,7 @@ import apiBaseUrl from '../components/apiAdress';
 import '../Main.css'
 import './FinalResultsPlayer.css';
 import TopBar from '../components/TopBar';
+import BottomBar from '../components/BottomBar';
 
 function FinalResultsPlayer() {
     const navigate = useNavigate();
@@ -71,20 +72,30 @@ function FinalResultsPlayer() {
         <div className="finalResultsPlayerPage">
             <TopBar />
             <div className="finalResultsPlayerPageMain">
-                <div className="finalResultsTitleDiv">
-                    <p className="finalResultsPlayerTitle">Final Results</p>
-                </div>
-                <div className="finalResultsPlayerContent">
-                    <p className="finalResultsPlayerContentText">Quiz Title: {quizTitle}</p>
-                    <p className="finalResultsPlayerContentText">{name}</p>
-                    <p className="finalResultsPlayerContentText">{score} points</p>
-                    <p className="finalResultsPlayerContentText">{place}</p>
-                </div>
-                <div className='finalResultsHomeButtonDiv'>
-                    <button onClick={handleHomeClick} className='finalResultsHomeButton'>Home</button>
-                </div>
+                {!hasTried && <p>Loading results...</p>}
+                {hasTried && placeRef.current != null && (
+                    <>
+                        <p className="finalResultsPlayerTitle">{quizTitle}</p>
+                    
+                    <div className='finalResultsPlayerPlaceDiv'>
+                        <p className="finalResultsPlayerPlace">{place}</p>
+                    </div>
+                    <div className="finalResultsPlayerContent">
+                        <p className="finalResultsPlayerName">{name}</p>
+                        <p className="finalResultsPlayerScore">{score} points</p>
+                    </div>
+                    <div className='finalResultsHomeButtonDiv'>
+                        <button onClick={handleHomeClick} className='finalResultsHomeButton'>Home</button>
+                    </div>
+                </>
+                )}
+                {hasTried && placeRef.current == null && (
+                    <p>Results not found.</p>
+                )}
             </div>
+            <BottomBar/>
         </div>
+        
     );
 }
 
