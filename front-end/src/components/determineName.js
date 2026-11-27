@@ -1,7 +1,6 @@
 
 function determineName() {
     let subdomain = window.location.hostname.split('.')[0];
-    console.log("Subdomain: " + subdomain);
     if (subdomain === 'kvisser') {
         return "Kvisser";
     } else if (subdomain === '192') {
@@ -9,6 +8,7 @@ function determineName() {
     } else if (subdomain === 'localhost') {
         return "Kvisser";
     } else {
+        subdomain = subdomain.charAt(0).toUpperCase() + subdomain.slice(1);
         return subdomain;
     }
 }
