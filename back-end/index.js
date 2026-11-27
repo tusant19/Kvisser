@@ -339,6 +339,7 @@ const setAsPlayerByName = db.prepare('UPDATE game_players SET role = ? WHERE nam
 const updatePlayerScore = db.prepare('UPDATE game_players SET score = ? WHERE uuid = ?')
 const getPlayersSortedScore = db.prepare('SELECT * FROM game_players WHERE game_code = ? AND connected = 1 AND role != \'host\' ORDER BY score DESC, time_joined ASC')
 const getPlayersSortedScoreNoConnect = db.prepare('SELECT * FROM game_players WHERE game_code = ? AND role != \'host\' ORDER BY score DESC, time_joined ASC')
+const getPlayersSortedScoreNoConnectStrictGameUUID = db.prepare('SELECT * FROM game_players WHERE game_uuid = ? AND role != \'host\' ORDER BY score DESC, time_joined ASC')
 const getPlayersPlace = db.prepare('SELECT COUNT(*) FROM game_players WHERE game_code = ? AND connected = 1 AND role != \'host\' AND score > (SELECT score FROM game_players WHERE uuid = ? ORDER BY time_joined DESC LIMIT 1)')
 const getPlayersLeaderboardAfter = db.prepare('SELECT * FROM game_players WHERE game_uuid = ? AND role != \'host\' ORDER BY score DESC, time_joined')
 
@@ -1827,7 +1828,7 @@ app.put('/v1/account/:uuid/changeName', checkAccountAccess, (req, res) => {
   return res.sendStatus(200)
 })
 
-app.get('/v1/finalresults/:roomcode/:uuid', (req, res) => {
+app.get('/v1/finalresults/player/:roomcode/:uuid', (req, res) => {
   let uuid = req.params?.uuid
   if (uuid == null || uuid == undefined || uuid == '') {
     console.log("uuid is null or undefined or empty")
@@ -1877,6 +1878,50 @@ app.get('/v1/finalresults/:roomcode/:uuid', (req, res) => {
       playerName: name,
       playerScore: score,
       playerPlacement: placement
+    }
+  )
+})
+
+app.get('/v1/finalresults/host/:roomcode', (req, res) => {
+  let roomCode = req.params?.roomcode
+  if (roomCode == null || roomCode == undefined || roomCode == '') {
+    console.log("roomCode is null or undefined or empty")
+    return res.sendStatus(422)
+  }
+  let game = getMostRecentGameByCodeNoActive.get(roomCode)
+  if (game?.quiz_id == null || game?.quiz_id == undefined) {
+    console.log("quiz_id is null or undefined")
+    return res.sendStatus(404)
+  }
+  let quizUuid = quizGetById.get(game?.quiz_id)?.public_uuid
+  if (quizUuid == null || quizUuid == undefined) {
+    console.log("quizUuid is null or undefined")
+    return res.sendStatus(404)
+  }
+  let gamePlayerList = getPlayersSortedScoreNoConnectStrictGameUUID.all(game?.public_uuid)
+  if (gamePlayerList[0] == undefined || gamePlayerList[0] == null) {
+    console.log("gamePlayerList not found")
+    return res.sendStatus(404)
+  }
+  let sanitizedPlayers = []
+  for (let i = 0; i < gamePlayerList?.length; i++) {
+    sanitizedPlayers.push({
+      name: gamePlayerList[i]?.name,
+      score: gamePlayerList[i]?.score,
+      place: i + 1
+    })
+  }
+  let quiz = quizGetById.get(game?.quiz_id)
+  if (quiz?.title == null || quiz?.title == undefined) {
+    console.log("quiz title is null or undefined")
+    return res.sendStatus(404)
+  }
+  let title = quiz?.title
+  console.log("success on /v1/finalresults/host/:roomcode")
+  return res.json(
+    {
+      title: title,
+      players: sanitizedPlayers
     }
   )
 })

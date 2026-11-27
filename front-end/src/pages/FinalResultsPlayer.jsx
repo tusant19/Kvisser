@@ -30,7 +30,7 @@ function FinalResultsPlayer() {
         if (hasTried) {
             return;
         }
-        axios.get(`${apiBaseUrl}/v1/finalresults/${roomCodeLoStor}/${uuidLoStor}`, {
+        axios.get(`${apiBaseUrl}/v1/finalresults/player/${roomCodeLoStor}/${uuidLoStor}`, {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
