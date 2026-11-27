@@ -1,0 +1,70 @@
+.finalResultsHostPageMain {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 85.5dvh;
+    background-color: var(--bg1);
+    gap: 2vh;
+}
+
+.finalResultsHostQuizTitle {
+    position: absolute;
+    top: 9vh;
+    font-size: 120%;
+}
+
+.finalResultsHostPlayersList {
+    width: 98dvw;
+    max-width: 600px;
+    background-color: white;
+    padding: 2vh 2vw;
+    box-sizing: border-box;
+    border: 2px solid var(--border1);
+    border-radius: 1vh; 
+}
+
+.finalResultsHostLeaderboardItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.finalResultsHostLeaderboardItemRankAndName {
+    display: flex;
+    align-items: center;
+    gap: 1vw;
+}
+
+.finalResultsHostLeaderboardItemRank {
+    font-size: 100%;
+    margin: 0;
+}
+
+.finalResultsHostDetailedResultsButton {
+    width: 47dvw;
+    max-width: 270px;
+    box-sizing: border-box;
+    background-color: white;
+    border: 2px solid var(--border1);
+    padding: 1vh 1vw;
+    border-radius: 1vh;
+}
+
+.finalResultsHostHomeButton {
+    width: 47dvw;
+    max-width: 270px;
+    margin: 0;
+    box-sizing: border-box;
+    background-color: white;
+    border: 2px solid var(--border1);
+    padding: 1vh 1vw;
+    border-radius: 1vh;
+}
+
+.finalResultsHostButtonsDiv {
+    display: flex;
+    justify-content: space-around;
+    width: 98dvw;
+    max-width: 600px;
+}

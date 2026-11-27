@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import apiBaseUrl from '../components/apiAdress';
-import './FinalResultsPlayer.css';
+import './FinalResultsHost.css';
 import TopBar from '../components/TopBar';
 
 function FinalResultsHost() {
@@ -12,6 +12,7 @@ function FinalResultsHost() {
     const [hasTried, setHasTried] = useState(false);
     const [players, setPlayers] = useState([]);
     const [quizTitle, setQuizTitle] = useState('');
+    const [gameUUID, setGameUUID] = useState(null);
 
     useEffect(() => {
         if (hasTried) {
@@ -26,6 +27,7 @@ function FinalResultsHost() {
             console.log(response.data)
             setPlayers(response.data?.players);
             setQuizTitle(response.data?.title);
+            setGameUUID(response.data?.gameUUID);
             setHasTried(true);
         })
         .catch(error => {
@@ -37,6 +39,10 @@ function FinalResultsHost() {
     function handleHomeClick() {
         navigate('/');
     }
+    
+    function handleDetailedResultsClick() {
+        navigate(`/game/${gameUUID}`);
+    }
 
     return (
         <div className="finalResultsHostPage">
@@ -46,17 +52,18 @@ function FinalResultsHost() {
 
                 <div className="finalResultsHostPlayersList">
                     {players.map((player, index) => (
-                        <div key={index} className="finalResultHostLeaderboardItem">
-                            <div className="finalResultHostLeaderboardItemRankAndName">
-                                <p className="finalResultHostLeaderboardItemRank">{player.place}</p>
-                                <p className="finalResultHostLeaderboardItemName">{player.name}</p>
+                        <div key={index} className="finalResultsHostLeaderboardItem">
+                            <div className="finalResultsHostLeaderboardItemRankAndName">
+                                <p className="finalResultsHostLeaderboardItemRank">{player.place}</p>
+                                <p className="finalResultsHostLeaderboardItemName">{player.name}</p>
                             </div>
-                            <p className="finalResultHostLeaderboardItemScore">{player.score}</p>
+                            <p className="finalResultsHostLeaderboardItemScore">{player.score}</p>
                         </div>
                     ))}
                 </div>
-                <div className='finalResultsHomeButtonDiv'>
-                    <button onClick={handleHomeClick} className='finalResultsHomeButton'>Home</button>
+                <div className='finalResultsHostButtonsDiv'>
+                    <button onClick={handleDetailedResultsClick} className='finalResultsHostDetailedResultsButton'>Detailed Results</button>
+                    <button onClick={handleHomeClick} className='finalResultsHostHomeButton'>Home</button>
                 </div>
             </div>
         </div>

@@ -1921,7 +1921,8 @@ app.get('/v1/finalresults/host/:roomcode', (req, res) => {
   return res.json(
     {
       title: title,
-      players: sanitizedPlayers
+      players: sanitizedPlayers,
+      gameUUID: game?.public_uuid,
     }
   )
 })
