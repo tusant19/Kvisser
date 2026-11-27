@@ -4,12 +4,15 @@ import axios from 'axios'
 import apiBaseUrl from './apiAdress.js'
 import siteBaseUrl from './baseAdress.js'
 import { useEffect } from 'react'
+import determineName from './determineName.js'
 
 function TopBar() {
     const [loggedIn, setLoggedIn] = useState("log in")
     const [loggedInLink, setLoggedInLink] = useState(`${siteBaseUrl}/login`)
+    const [siteName, setSiteName] = useState("Kvisser")
 
     useEffect(() => {
+        setSiteName(determineName());
         axios.get(`${apiBaseUrl}/v1/loginstatus`, {
             withCredentials: true
         })
@@ -35,7 +38,7 @@ function TopBar() {
         <div className='topBar'>
             <div className='topBarContent'>
                 <a href={`${siteBaseUrl}/`} className='titleLink'>
-                    <p className='title dark'>Kvisser</p>
+                    <p className='title dark'>{siteName}</p>
                 </a>
                 
                 <a href={loggedInLink}>
