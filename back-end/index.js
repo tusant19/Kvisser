@@ -10,6 +10,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import bcrypt from 'bcrypt';
 import { platform } from 'os';
+import responseTime from 'response-time';
 
 db.pragma('journal_mode = WAL');
 
@@ -20,6 +21,10 @@ const io = new Server(httpServer, {
     credentials: true
   }
 });
+
+app.use(responseTime((req, res, time) => { 
+  console.log(`${req.method} ${req.originalUrl} ${res.statusCode} - ${time.toFixed(2)} ms`);
+}));
 
 function setInactivePlayers(room) {
   let inactivePlayerSocIds = [];
