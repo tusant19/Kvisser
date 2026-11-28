@@ -475,14 +475,21 @@
 }
 
 @media (width <= 600px) {
+    .questionsEditingPage {
+        max-width: 100dvw;
+        overflow-x: hidden;
+    }
+
     .questionsEditingLayout {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         grid-template-rows: 1fr auto;
     }
 
     .questionsSidebar {
         grid-row: 2;
         width: 100%;
+        min-width: 0;
+        max-width: 100dvw;
         max-height: 44dvh;
         height: auto;
         flex-direction: row;
@@ -516,9 +523,9 @@
 
     .questionTypesPopup {
         width: 160px;
-        left: 50%;
-        transform: translateX(-50%);
-        right: auto;
+        left: auto;
+        right: 0;
+        transform: none;
     }
 
     .questionEditingMain {
