@@ -575,9 +575,32 @@
     }
 
     .questionEditorAnswer {
-        position: static;
+        position: relative;
         width: 100%;
         height: 10dvh;
+    }
+
+    .questionEditorAnswer.answer1,
+    .questionEditorAnswer.answer2,
+    .questionEditorAnswer.answer3,
+    .questionEditorAnswer.answer4 {
+        top: auto;
+        left: auto;
+    }
+
+    .questionEditorCorrectAnswer {
+        top: 1dvh;
+        left: 1dvw;
+        width: min(4dvh, 4dvw);
+        height: min(4dvh, 4dvw);
+    }
+
+    .questionEditorDeleteAnswer {
+        top: 1dvh;
+        right: 1dvw;
+        width: min(4dvh, 4dvw);
+        height: min(4dvh, 4dvw);
+        font-size: max(100%, 3dvw);
     }
 
     .questionEditorAddAnswer,
