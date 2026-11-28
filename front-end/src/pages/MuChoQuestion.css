@@ -7,6 +7,14 @@
     background-color: var(--bg1);
 }
 
+@media (width <= 700px) {
+    .aargh {
+        grid-template-rows: 4dvh 1dvh 30dvh 1dvh 11dvh 1dvh 11dvh 1dvh 11dvh;
+        min-height: 85.4dvh;
+    }
+}
+
+
 .answerOption {
     display: flex;
     align-items: center;
@@ -80,6 +88,7 @@
     max-width: 98dvw;
     border: 0.2vh solid var(--border1);
      box-shadow: 1px 2px 0px 0px var(--border1);
+    font-size: min(2.5vh, 3.5dvw);
 }
 
 .playerDetailsDiv {
@@ -88,7 +97,7 @@
     justify-content: space-between;
     flex-direction: row;
     height: 8vh;
-    position: absolute;
+    position: fixed;
     bottom: 6.5vh;
     border-top: solid var(--border1) 2px;
     right: 0;
@@ -105,7 +114,7 @@
     justify-content: space-between;
     flex-direction: row;
     height: 8vh;
-    position: absolute;
+    position: fixed;
     bottom: 6.5vh;
     border-top: solid var(--border1) 2px;
     right: 0;

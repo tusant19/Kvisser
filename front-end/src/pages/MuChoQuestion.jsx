@@ -350,7 +350,7 @@ function MuChoQuestion() {
         }
 
         if (results) {
-            let maxheight = 0.35;
+            let maxheight = 0.25;
             let totalCount = results.reduce((acc, result) => acc + result.count, 0);
             if (totalCount === 0) {
                 totalCount = 1;
