@@ -473,3 +473,143 @@
     font-size: 100%;
     cursor: pointer;
 }
+
+@media (width <= 600px) {
+    .questionsEditingLayout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+    }
+
+    .questionsSidebar {
+        grid-row: 2;
+        width: 100%;
+        max-height: 44dvh;
+        height: auto;
+        flex-direction: row;
+        overflow: visible;
+        border-right: none;
+        border-top: 1px solid var(--border2);
+    }
+
+    .questionsSidebarList {
+        flex: 1;
+        min-width: 0;
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+        align-items: flex-start;
+    }
+
+    .questionSidebarItemContainer {
+        width: auto;
+    }
+
+    .questionSidebarItem {
+        width: 150px;
+        flex: 0 0 auto;
+    }
+
+    .questionsSidebarBackToQuizEdit {
+        width: auto;
+        max-width: 75%;
+    }
+
+    .questionTypesPopup {
+        width: 160px;
+        left: 50%;
+        transform: translateX(-50%);
+        right: auto;
+    }
+
+    .questionEditingMain {
+        grid-row: 1;
+        overflow: auto;
+    }
+
+    .multipleChoiceEditor {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto minmax(16dvh, 1fr) auto auto auto;
+        row-gap: 1dvh;
+        column-gap: 2%;
+        padding: 1dvh;
+        overflow: auto;
+        box-sizing: border-box;
+    }
+
+    .questionEditorImageLink {
+        grid-column: 1 / -1;
+        position: static;
+        width: 100%;
+        height: 4dvh;
+    }
+
+    .questionEditorImageDiv {
+        grid-column: 1 / -1;
+        position: static;
+        width: 100%;
+        height: 100%;
+    }
+
+    .questionEditorImage {
+        width: 100%;
+        height: 100%;
+        max-height: 36dvh;
+        max-width: 98%;
+    }
+
+    .questionEditorTitle {
+        grid-column: 1 / -1;
+        position: static;
+        width: 100%;
+        height: 7dvh;
+        font-size: max(110%, 3.5dvw);
+        box-sizing: border-box;
+    }
+
+    .questionEditorAnswer {
+        position: static;
+        width: 100%;
+        height: 10dvh;
+    }
+
+    .questionEditorAddAnswer,
+    .questionEditorAddAnswer.answerSlot3,
+    .questionEditorAddAnswer.answerSlot4 {
+        grid-column: 1 / -1;
+        position: static;
+        justify-self: center;
+        top: auto;
+        left: auto;
+        margin: 0;
+        transform: none;
+    }
+
+    .questionEditorSettings {
+        grid-column: 1 / -1;
+        position: static;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1dvh;
+    }
+
+    .questionEditorSettings label {
+        width: 100%;
+        justify-content: space-between;
+        gap: 1dvw;
+    }
+
+    .questionEditorError {
+        grid-column: 1 / -1;
+        position: static;
+        width: 100%;
+    }
+
+    .questionEditorControls {
+        grid-column: 1 / -1;
+        position: static;
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
